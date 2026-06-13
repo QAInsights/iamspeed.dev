@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
-import { useState, useRef } from "preact/hooks";
+import { useState, useRef, useEffect } from "preact/hooks";
+import { createPortal } from "preact/compat";
 
 interface TooltipProps {
   label: string;
@@ -10,7 +11,7 @@ const style = `
 .llm-tip {
   display: inline-flex;
   align-items: center;
-  cursor: help;
+  cursor: pointer;
 }
 .llm-tip-bubble {
   position: fixed;
@@ -23,6 +24,7 @@ const style = `
   padding: 0.55rem 0.8rem;
   border-radius: 8px;
   white-space: normal;
+  width: max-content;
   max-width: 220px;
   pointer-events: none;
   z-index: 9999;
@@ -40,10 +42,21 @@ const style = `
 }
 `;
 
+let styleInjected = false;
+function injectStyle() {
+  if (styleInjected || typeof document === "undefined") return;
+  const el = document.createElement("style");
+  el.textContent = style;
+  document.head.appendChild(el);
+  styleInjected = true;
+}
+
 export function Tooltip({ label, children }: TooltipProps) {
   const [visible, setVisible] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const ref = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => { injectStyle(); }, []);
 
   const onEnter = () => {
     if (ref.current) {
@@ -53,9 +66,22 @@ export function Tooltip({ label, children }: TooltipProps) {
     setVisible(true);
   };
 
+  const left = `max(8px, min(calc(100vw - 228px), ${pos.x - 110}px))`;
+
+  const bubble = visible
+    ? createPortal(
+        <div
+          class="llm-tip-bubble"
+          style={{ left, top: `${pos.y + 8}px` }}
+        >
+          {label}
+        </div>,
+        document.body
+      )
+    : null;
+
   return (
     <>
-      <style>{style}</style>
       <span
         class="llm-tip"
         ref={ref}
@@ -64,18 +90,7 @@ export function Tooltip({ label, children }: TooltipProps) {
       >
         {children}
       </span>
-      {visible && (
-        <div
-          class="llm-tip-bubble"
-          style={{
-            left: `${pos.x}px`,
-            top: `${pos.y + 8}px`,
-            transform: "translateX(-50%)",
-          }}
-        >
-          {label}
-        </div>
-      )}
+      {bubble}
     </>
   );
 }
