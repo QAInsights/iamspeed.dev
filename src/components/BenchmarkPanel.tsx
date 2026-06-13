@@ -11,6 +11,7 @@ import { ErrorBoundary } from "./ErrorBoundary";
 import { WeatherBackground } from "./WeatherBackground";
 import { RecentRuns } from "./RecentRuns";
 import { Sparkline } from "./Sparkline";
+import { ShareBar } from "./ShareBar";
 import { Tooltip } from "./Tooltip";
 import { loadHistory, saveRun, clearHistory, type RunSummary } from "../lib/history";
 import "../styles/components/BenchmarkPanel.css";
@@ -310,6 +311,16 @@ function BenchmarkPanelContent() {
                 <div class="llm-sec-label">Model</div>
               </div>
             </div>
+          )}
+
+          {/* Share bar — only when results are available */}
+          {runState === "done" && metrics && (
+            <ShareBar
+              provider={PROVIDERS[settings.providerId]?.displayName || settings.providerId}
+              model={settings.modelId}
+              tps={displayTps}
+              ttft={ttft}
+            />
           )}
 
           {/* Actions */}
