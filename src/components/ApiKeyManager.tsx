@@ -49,18 +49,15 @@ const style = `
 export function ApiKeyManager({ provider, onKeyChange }: ApiKeyManagerProps) {
   const [inputValue, setInputValue] = useState("");
   const [stored, setStored] = useState(false);
-  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     setStored(hasStoredKey(provider));
-    setLoaded(false);
     setInputValue("");
 
     loadKey(provider).then((key) => {
       if (key) {
         setInputValue(key);
         onKeyChange(key);
-        setLoaded(true);
       }
     });
   }, [provider]);

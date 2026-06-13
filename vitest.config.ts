@@ -2,8 +2,23 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    include: ['tests/unit/**/*.test.ts'],
-    environment: 'node',
-    setupFiles: ['tests/unit/setup.ts'],
+    projects: [
+      {
+        test: {
+          name: 'unit',
+          include: ['tests/unit/**/*.test.ts'],
+          environment: 'node',
+          setupFiles: ['tests/unit/setup.ts'],
+        },
+      },
+      {
+        test: {
+          name: 'integration',
+          include: ['tests/integration/**/*.test.tsx'],
+          environment: 'happy-dom',
+          setupFiles: ['tests/integration/setup.ts'],
+        },
+      },
+    ],
   },
 });
