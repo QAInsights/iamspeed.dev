@@ -14,7 +14,7 @@ Fast.com but for LLMs.
 ## Quick Start
 
 ```bash
-cd llmmark
+cd iamspeed.dev
 npm install
 npm run dev
 ```
@@ -36,14 +36,6 @@ Open `http://localhost:4321`, click the gear icon to configure your API key, the
 1. Create a new adapter in `src/lib/providers/` that implements the `ProviderAdapter` interface
 2. Register it in `src/lib/providers/index.ts`
 3. Add provider metadata to `src/lib/config.ts`
-
-## Tech Stack
-
-- **Astro** (static site generation)
-- **Preact** (interactive islands)
-- **TypeScript** (strict mode)
-- **Vitest** (unit tests)
-- **Playwright** (E2E tests)
 
 ## License
 
