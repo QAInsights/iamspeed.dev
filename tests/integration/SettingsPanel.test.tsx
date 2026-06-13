@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/preact';
+import { render, fireEvent, cleanup } from '@testing-library/preact';
 import { SettingsPanel, type SettingsState } from '../../src/components/SettingsPanel';
 
 const defaultSettings: SettingsState = {

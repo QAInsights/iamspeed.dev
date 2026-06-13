@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/preact';
+import { render } from '@testing-library/preact';
 import { MetricsDisplay } from '../../src/components/MetricsDisplay';
 import type { BenchmarkMetrics } from '../../src/lib/metrics';
 

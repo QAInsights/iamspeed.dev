@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/preact';
+import { describe, it, expect } from 'vitest';
+import { render, fireEvent } from '@testing-library/preact';
 import { RawResponsePanel } from '../../src/components/RawResponsePanel';
 
 describe('RawResponsePanel', () => {
