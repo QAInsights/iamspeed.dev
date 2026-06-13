@@ -1,23 +1,28 @@
 export interface BenchmarkMetrics {
   ttft: number | null;
-  totalTime: number | null;
+  ttlt: number | null;
   tokenCount: number;
   tokensPerSecond: number | null;
   provider: string;
   model: string;
   promptLength: number;
+  inputTokens: number | null;
+  outputTokens: number | null;
 }
 
 export interface MetricsTracker {
   start(): void;
   recordFirstToken(): void;
   recordChunk(text: string): void;
+  recordUsage(inputTokens: number, outputTokens: number): void;
   finish(): void;
   getMetrics(): BenchmarkMetrics;
 }
 
 function estimateTokenCount(text: string): number {
-  return text.split(/\s+/).filter(Boolean).length;
+  // ~4 chars per token is a better heuristic than word count
+  // words undercount punctuation, numbers, and subword tokens
+  return Math.ceil(text.length / 4);
 }
 
 export function createMetricsTracker(provider: string, model: string, promptLength: number): MetricsTracker {
@@ -26,6 +31,8 @@ export function createMetricsTracker(provider: string, model: string, promptLeng
   let endTime: number | null = null;
   let totalText = "";
   let tokenCount = 0;
+  let inputTokens: number | null = null;
+  let outputTokens: number | null = null;
 
   return {
     start() {
@@ -34,6 +41,8 @@ export function createMetricsTracker(provider: string, model: string, promptLeng
       endTime = null;
       totalText = "";
       tokenCount = 0;
+      inputTokens = null;
+      outputTokens = null;
     },
 
     recordFirstToken() {
@@ -47,6 +56,12 @@ export function createMetricsTracker(provider: string, model: string, promptLeng
       tokenCount = estimateTokenCount(totalText);
     },
 
+    recordUsage(input: number, output: number) {
+      inputTokens = input;
+      outputTokens = output;
+      tokenCount = output;
+    },
+
     finish() {
       if (startTime !== null) {
         endTime = performance.now() - startTime;
@@ -54,17 +69,30 @@ export function createMetricsTracker(provider: string, model: string, promptLeng
     },
 
     getMetrics(): BenchmarkMetrics {
-      const elapsed = endTime ?? (startTime !== null ? performance.now() - startTime : null);
-      const tokensPerSecond = elapsed && elapsed > 0 ? (tokenCount / elapsed) * 1000 : null;
+      const ttlt = endTime ?? (startTime !== null ? performance.now() - startTime : null);
+      
+      // generation time = ttlt minus ttft (exclude the wait for first token)
+      let generationTime = ttlt && firstTokenTime ? ttlt - firstTokenTime : ttlt;
+      
+      // Guard against near-zero generation times that would produce unrealistic TPS
+      const MIN_GENERATION_TIME_MS = 10;
+      if (generationTime !== null && generationTime > 0 && generationTime < MIN_GENERATION_TIME_MS) {
+        generationTime = MIN_GENERATION_TIME_MS;
+      }
+      
+      const outputForTps = outputTokens ?? estimateTokenCount(totalText);
+      const tokensPerSecond = generationTime && generationTime > 0 ? (outputForTps / generationTime) * 1000 : null;
 
       return {
         ttft: firstTokenTime,
-        totalTime: endTime,
+        ttlt,
         tokenCount,
         tokensPerSecond: tokensPerSecond !== null ? Math.round(tokensPerSecond * 10) / 10 : null,
         provider,
         model,
         promptLength,
+        inputTokens,
+        outputTokens,
       };
     },
   };

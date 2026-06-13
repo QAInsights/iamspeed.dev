@@ -184,7 +184,7 @@ export function RecentRuns({ open, onClose, runs, onClear }: RecentRunsProps) {
                     </td>
                     <td class="llm-history-tps">{formatTps(run.tokensPerSecond)}</td>
                     <td>{formatMs(run.ttft)}</td>
-                    <td>{formatMs(run.totalTime)}</td>
+                    <td>{formatMs(run.ttlt)}</td>
                   </tr>
                 ))}
               </tbody>

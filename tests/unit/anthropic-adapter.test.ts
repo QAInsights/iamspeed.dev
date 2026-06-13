@@ -164,4 +164,60 @@ describe("anthropic-adapter", () => {
     expect(onError).not.toHaveBeenCalled();
     globalThis.fetch = originalFetch;
   });
+
+  it("parses usage from message_start and message_delta and calls onUsage", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      body: createSSEStream([
+        { type: "message_start", message: { id: "msg_1", usage: { input_tokens: 25 } } },
+        { type: "content_block_delta", delta: { type: "text_delta", text: "Hi" } },
+        { type: "message_delta", usage: { output_tokens: 8 } },
+      ]),
+    });
+
+    const onUsage = vi.fn();
+    const abort = new AbortController();
+
+    await anthropicAdapter.stream({
+      apiKey: "sk-ant-test",
+      model: "claude-sonnet-4-6",
+      prompt: "test",
+      onChunk: vi.fn(),
+      onFirstToken: vi.fn(),
+      onUsage,
+      onDone: vi.fn(),
+      onError: vi.fn(),
+      signal: abort.signal,
+    });
+
+    expect(onUsage).toHaveBeenCalledWith({ inputTokens: 25, outputTokens: 8 });
+    globalThis.fetch = originalFetch;
+  });
+
+  it("does not call onUsage when usage events are missing", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      body: createSSEStream([
+        { type: "content_block_delta", delta: { type: "text_delta", text: "Hi" } },
+      ]),
+    });
+
+    const onUsage = vi.fn();
+    const abort = new AbortController();
+
+    await anthropicAdapter.stream({
+      apiKey: "sk-ant-test",
+      model: "claude-sonnet-4-6",
+      prompt: "test",
+      onChunk: vi.fn(),
+      onFirstToken: vi.fn(),
+      onUsage,
+      onDone: vi.fn(),
+      onError: vi.fn(),
+      signal: abort.signal,
+    });
+
+    expect(onUsage).not.toHaveBeenCalled();
+    globalThis.fetch = originalFetch;
+  });
 });

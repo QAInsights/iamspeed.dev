@@ -6,7 +6,9 @@ export interface RunSummary {
   provider: string;
   tokensPerSecond: number | null;
   ttft: number | null;
-  totalTime: number | null;
+  ttlt: number | null;
+  inputTokens: number | null;
+  outputTokens: number | null;
   timestamp: number;
 }
 

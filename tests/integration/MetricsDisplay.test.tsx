@@ -6,12 +6,14 @@ import type { BenchmarkMetrics } from '../../src/lib/metrics';
 describe('MetricsDisplay', () => {
   const makeMetrics = (overrides: Partial<BenchmarkMetrics> = {}): BenchmarkMetrics => ({
     ttft: null,
-    totalTime: null,
+    ttlt: null,
     tokenCount: 0,
     tokensPerSecond: null,
     provider: 'openai',
     model: 'gpt-4o',
     promptLength: 10,
+    inputTokens: null,
+    outputTokens: null,
     ...overrides,
   });
 

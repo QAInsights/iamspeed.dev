@@ -5,7 +5,7 @@ export const anthropicAdapter: ProviderAdapter = {
   id: PROVIDERS.anthropic.name,
   name: PROVIDERS.anthropic.displayName,
 
-  async stream({ apiKey, model, prompt, onChunk, onFirstToken, onDone, onError, signal }: StreamParams) {
+  async stream({ apiKey, model, prompt, onChunk, onFirstToken, onUsage, onDone, onError, signal }: StreamParams) {
     // Strip provider prefix (e.g. "anthropic/claude-..." → "claude-...")
     const modelId = model.includes("/") ? model.split("/").slice(1).join("/") : model;
 
@@ -58,6 +58,8 @@ export const anthropicAdapter: ProviderAdapter = {
     let buffer = "";
     let firstTokenFired = false;
     const rawEvents: object[] = [];
+    let inputTokens: number | null = null;
+    let outputTokens: number | null = null;
 
     try {
       while (true) {
@@ -77,6 +79,13 @@ export const anthropicAdapter: ProviderAdapter = {
             const parsed = JSON.parse(data);
             rawEvents.push(parsed);
 
+            if (parsed.type === "message_start" && parsed.message?.usage) {
+              inputTokens = parsed.message.usage.input_tokens;
+            }
+            if (parsed.type === "message_delta" && parsed.usage) {
+              outputTokens = parsed.usage.output_tokens;
+            }
+
             if (parsed.type === "content_block_delta" && parsed.delta?.text) {
               if (!firstTokenFired) {
                 firstTokenFired = true;
@@ -90,6 +99,9 @@ export const anthropicAdapter: ProviderAdapter = {
         }
       }
 
+      if (inputTokens !== null && outputTokens !== null && onUsage) {
+        onUsage({ inputTokens, outputTokens });
+      }
       onDone({ events: rawEvents });
     } catch (err) {
       if (signal.aborted) return;

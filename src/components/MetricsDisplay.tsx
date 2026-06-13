@@ -98,7 +98,7 @@ export function MetricsDisplay({ metrics }: MetricsDisplayProps) {
   const ttft = metrics?.ttft ?? null;
   const tps = metrics?.tokensPerSecond ?? null;
   const tokens = metrics?.tokenCount ?? 0;
-  const total = metrics?.totalTime ?? null;
+  const total = metrics?.ttlt ?? null;
 
   return (
     <>

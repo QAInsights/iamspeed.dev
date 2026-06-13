@@ -5,7 +5,7 @@ export const openaiAdapter: ProviderAdapter = {
   id: PROVIDERS.openai.name,
   name: PROVIDERS.openai.displayName,
 
-  async stream({ apiKey, model, prompt, onChunk, onFirstToken, onDone, onError, signal }: StreamParams) {
+  async stream({ apiKey, model, prompt, onChunk, onFirstToken, onUsage, onDone, onError, signal }: StreamParams) {
     // Strip provider prefix (e.g. "openai/gpt-4o" → "gpt-4o")
     const modelId = model.includes("/") ? model.split("/").slice(1).join("/") : model;
 
@@ -21,6 +21,7 @@ export const openaiAdapter: ProviderAdapter = {
           model: modelId,
           messages: [{ role: "user", content: prompt }],
           stream: true,
+          stream_options: { include_usage: true },
         }),
         signal,
       });
@@ -52,6 +53,7 @@ export const openaiAdapter: ProviderAdapter = {
     let buffer = "";
     let firstTokenFired = false;
     const rawChunks: object[] = [];
+    let usageData: { prompt_tokens: number; completion_tokens: number } | null = null;
 
     try {
       while (true) {
@@ -71,6 +73,9 @@ export const openaiAdapter: ProviderAdapter = {
           try {
             const parsed = JSON.parse(data);
             rawChunks.push(parsed);
+            if (parsed.usage) {
+              usageData = { prompt_tokens: parsed.usage.prompt_tokens, completion_tokens: parsed.usage.completion_tokens };
+            }
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) {
               if (!firstTokenFired) {
@@ -85,6 +90,9 @@ export const openaiAdapter: ProviderAdapter = {
         }
       }
 
+      if (usageData && onUsage) {
+        onUsage({ inputTokens: usageData.prompt_tokens, outputTokens: usageData.completion_tokens });
+      }
       onDone({ chunks: rawChunks });
     } catch (err) {
       if (signal.aborted) return;

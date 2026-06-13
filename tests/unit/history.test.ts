@@ -16,7 +16,9 @@ function makeRun(overrides: Partial<RunSummary> = {}): RunSummary {
     provider: "openai",
     tokensPerSecond: 50,
     ttft: 200,
-    totalTime: 3000,
+    ttlt: 3000,
+    inputTokens: 10,
+    outputTokens: 40,
     timestamp: Date.now(),
     ...overrides,
   };

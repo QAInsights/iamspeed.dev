@@ -100,8 +100,9 @@ function BenchmarkPanelContent() {
 
   const displayTps = metrics?.tokensPerSecond ?? null;
   const ttft = metrics?.ttft ?? null;
-  const tokenCount = metrics?.tokenCount ?? 0;
-  const totalTime = metrics?.totalTime ?? null;
+  const totalTime = metrics?.ttlt ?? null;
+  const inputTokens = metrics?.inputTokens ?? null;
+  const outputTokens = metrics?.outputTokens ?? null;
   const isActive = runState === "running";
 
   const handleRun = useCallback(async () => {
@@ -140,6 +141,10 @@ function BenchmarkPanelContent() {
           tracker.recordFirstToken();
           setMetrics(tracker.getMetrics());
         },
+        onUsage(usage) {
+          tracker.recordUsage(usage.inputTokens, usage.outputTokens);
+          setMetrics(tracker.getMetrics());
+        },
         onDone(raw) {
           tracker.finish();
           const finalMetrics = tracker.getMetrics();
@@ -151,7 +156,9 @@ function BenchmarkPanelContent() {
             provider: settings.providerId,
             tokensPerSecond: finalMetrics.tokensPerSecond,
             ttft: finalMetrics.ttft,
-            totalTime: finalMetrics.totalTime,
+            ttlt: finalMetrics.ttlt,
+            inputTokens: finalMetrics.inputTokens,
+            outputTokens: finalMetrics.outputTokens,
             timestamp: Date.now(),
           });
           setRecentRuns(updated);
@@ -168,7 +175,9 @@ function BenchmarkPanelContent() {
               provider: settings.providerId,
               tokensPerSecond: finalMetrics.tokensPerSecond,
               ttft: finalMetrics.ttft,
-              totalTime: finalMetrics.totalTime,
+              ttlt: finalMetrics.ttlt,
+              inputTokens: finalMetrics.inputTokens,
+              outputTokens: finalMetrics.outputTokens,
               timestamp: Date.now(),
             });
             setRecentRuns(updated);
@@ -195,7 +204,9 @@ function BenchmarkPanelContent() {
           provider: settings.providerId,
           tokensPerSecond: finalMetrics.tokensPerSecond,
           ttft: finalMetrics.ttft,
-          totalTime: finalMetrics.totalTime,
+          ttlt: finalMetrics.ttlt,
+          inputTokens: finalMetrics.inputTokens,
+          outputTokens: finalMetrics.outputTokens,
           timestamp: Date.now(),
         });
         setRecentRuns(updated);
@@ -262,12 +273,16 @@ function BenchmarkPanelContent() {
           {(runState === "done" || runState === "running") && showMore && (
             <div class="llm-secondary">
               <div class="llm-sec-item">
-                <div class="llm-sec-value">{tokenCount > 0 ? tokenCount : "--"}</div>
-                <div class="llm-sec-label">Tokens</div>
+                <div class="llm-sec-value">{inputTokens !== null ? inputTokens : "--"}</div>
+                <div class="llm-sec-label">Input</div>
+              </div>
+              <div class="llm-sec-item">
+                <div class="llm-sec-value">{outputTokens !== null ? outputTokens : "--"}</div>
+                <div class="llm-sec-label">Output</div>
               </div>
               <div class="llm-sec-item">
                 <div class="llm-sec-value">{totalTime !== null ? `${Math.round(totalTime)}ms` : "--"}</div>
-                <div class="llm-sec-label">Total Time</div>
+                <div class="llm-sec-label">TTLT</div>
               </div>
               <div class="llm-sec-item">
                 <div class="llm-sec-value">{settings.modelId}</div>
