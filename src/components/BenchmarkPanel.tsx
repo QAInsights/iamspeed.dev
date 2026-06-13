@@ -9,6 +9,8 @@ import { DEFAULT_PROMPT, PROVIDERS } from "../lib/config";
 import { loadModels } from "../lib/modelRegistry";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { WeatherBackground } from "./WeatherBackground";
+import { RecentRuns } from "./RecentRuns";
+import { loadHistory, saveRun, clearHistory, type RunSummary } from "../lib/history";
 import "../styles/components/BenchmarkPanel.css";
 
 type RunState = "idle" | "running" | "done" | "error";
@@ -49,6 +51,8 @@ function BenchmarkPanelContent() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [runState, setRunState] = useState<RunState>("idle");
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [recentRuns, setRecentRuns] = useState<RunSummary[]>(() => loadHistory());
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("iamspeed_theme") as "light" | "dark" | null;
@@ -138,15 +142,37 @@ function BenchmarkPanelContent() {
         },
         onDone(raw) {
           tracker.finish();
-          setMetrics(tracker.getMetrics());
+          const finalMetrics = tracker.getMetrics();
+          setMetrics(finalMetrics);
           setRawResponse(raw);
           setRunState("done");
+          const updated = saveRun({
+            model: settings.modelId,
+            provider: settings.providerId,
+            tokensPerSecond: finalMetrics.tokensPerSecond,
+            ttft: finalMetrics.ttft,
+            totalTime: finalMetrics.totalTime,
+            timestamp: Date.now(),
+          });
+          setRecentRuns(updated);
         },
         onError(err) {
           tracker.finish();
-          setMetrics(tracker.getMetrics());
+          const finalMetrics = tracker.getMetrics();
+          setMetrics(finalMetrics);
           setError(err.message);
           setRunState("error");
+          if (finalMetrics.tokenCount > 0) {
+            const updated = saveRun({
+              model: settings.modelId,
+              provider: settings.providerId,
+              tokensPerSecond: finalMetrics.tokensPerSecond,
+              ttft: finalMetrics.ttft,
+              totalTime: finalMetrics.totalTime,
+              timestamp: Date.now(),
+            });
+            setRecentRuns(updated);
+          }
         },
       });
     } catch (err) {
@@ -161,10 +187,22 @@ function BenchmarkPanelContent() {
     abortRef.current?.abort();
     trackerRef.current?.finish();
     if (trackerRef.current) {
-      setMetrics(trackerRef.current.getMetrics());
+      const finalMetrics = trackerRef.current.getMetrics();
+      setMetrics(finalMetrics);
+      if (finalMetrics.tokenCount > 0) {
+        const updated = saveRun({
+          model: settings.modelId,
+          provider: settings.providerId,
+          tokensPerSecond: finalMetrics.tokensPerSecond,
+          ttft: finalMetrics.ttft,
+          totalTime: finalMetrics.totalTime,
+          timestamp: Date.now(),
+        });
+        setRecentRuns(updated);
+      }
     }
     setRunState("done");
-  }, []);
+  }, [settings.modelId, settings.providerId]);
 
   const heroText = displayTps !== null ? String(displayTps) : "--";
   const hasConfig = !!settings.apiKey;
@@ -189,6 +227,12 @@ function BenchmarkPanelContent() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="theme-toggle-icon">
                 <path class="sun-icon" d="M12 12m-5 0a5 5 0 1 0 10 0a5 5 0 1 0-10 0 M12 1v2 M12 21v2 M4.22 4.22l1.42 1.42 M18.36 18.36l1.42 1.42 M1 12h2 M21 12h2 M4.22 19.78l1.42-1.42 M18.36 5.64l1.42-1.42" />
                 <path class="moon-icon" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+              </svg>
+            </button>
+            <button class="llm-history-btn" onClick={() => setHistoryOpen(true)} aria-label="History">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" />
+                <polyline points="12 7 12 12 15 14" />
               </svg>
             </button>
             <button class="llm-gear" onClick={() => setSettingsOpen(true)} aria-label="Settings">
@@ -270,13 +314,32 @@ function BenchmarkPanelContent() {
         </div>
 
         {/* Stream output section */}
-        {(streamText || isActive) && (
+        {(streamText || isActive) && showMore && (
           <div class="llm-stream-section">
             <StreamOutput text={streamText} streaming={isActive} />
             {runState === "done" && <RawResponsePanel data={rawResponse} />}
           </div>
         )}
+
+        <footer class="llm-footer">
+          <a href="https://qainsights.com" target="_blank" rel="noopener noreferrer">QAInsights</a>
+          <span class="llm-footer-dot">&middot;</span>
+          <a href="https://dosa.dev" target="_blank" rel="noopener noreferrer">Dosa</a>
+          <span class="llm-footer-dot">&middot;</span>
+          <a href="https://jmeter.ai" target="_blank" rel="noopener noreferrer">JMeter.ai</a>
+          <span class="llm-footer-dot">&middot;</span>
+          <a href="https://achu.app" target="_blank" rel="noopener noreferrer">Achu</a>
+          <span class="llm-footer-dot">&middot;</span>
+          <a href="https://github.com/qainsights/iamspeed.dev" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </footer>
       </main>
+
+      <RecentRuns
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        runs={recentRuns}
+        onClear={() => { clearHistory(); setRecentRuns([]); }}
+      />
 
       <SettingsPanel
         open={settingsOpen}
