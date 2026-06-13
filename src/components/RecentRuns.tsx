@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import type { RunSummary } from "../lib/history";
-import { PROVIDERS } from "../lib/config";
+import { Sparkline } from "./Sparkline";
 
 interface RecentRunsProps {
   open: boolean;
@@ -81,6 +81,7 @@ const style = `
     border-collapse: collapse;
     font-family: var(--mono);
     font-size: 0.75rem;
+    table-layout: fixed;
   }
   .llm-history-table thead th {
     font-size: 0.625rem;
@@ -88,15 +89,18 @@ const style = `
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding: 0.5rem 0.5rem;
+    padding: 0.5rem 0.375rem;
     text-align: left;
     border-bottom: 1px solid var(--border);
   }
   .llm-history-table thead th:not(:first-child) {
     text-align: right;
   }
+  .llm-history-table thead th:first-child {
+    width: 40%;
+  }
   .llm-history-table tbody td {
-    padding: 0.625rem 0.5rem;
+    padding: 0.625rem 0.375rem;
     color: var(--text);
     border-bottom: 1px solid var(--border-light);
     transition: color 0.3s ease-in-out;
@@ -114,11 +118,6 @@ const style = `
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .llm-history-provider {
-    font-size: 0.625rem;
-    color: var(--text-muted);
-    margin-top: 1px;
-  }
   .llm-history-tps {
     font-weight: 600;
     color: var(--accent);
@@ -130,6 +129,10 @@ const style = `
     justify-content: center;
     font-size: 0.8125rem;
     color: var(--text-muted);
+  }
+  .llm-history-sparkline {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-light);
   }
 `;
 
@@ -143,8 +146,20 @@ function formatMs(ms: number | null): string {
   return `${Math.round(ms)}ms`;
 }
 
+function formatModel(model: string): string {
+  return model.includes("/") ? model.split("/").slice(1).join("/") : model;
+}
+
 export function RecentRuns({ open, onClose, runs, onClear }: RecentRunsProps) {
   if (!open) return null;
+
+  const sparklineData = runs
+    .filter((r) => r.tokensPerSecond !== null)
+    .map((r) => ({
+      value: r.tokensPerSecond!,
+      label: formatModel(r.model),
+    }))
+    .reverse();
 
   return (
     <>
@@ -160,6 +175,12 @@ export function RecentRuns({ open, onClose, runs, onClear }: RecentRunsProps) {
               <button class="llm-history-close" onClick={onClose}>&#x2715;</button>
             </div>
           </div>
+
+          {sparklineData.length > 1 && (
+            <div class="llm-history-sparkline">
+              <Sparkline data={sparklineData} width={370} height={80} />
+            </div>
+          )}
 
           {runs.length === 0 ? (
             <div class="llm-history-empty">No runs yet</div>
@@ -177,10 +198,7 @@ export function RecentRuns({ open, onClose, runs, onClear }: RecentRunsProps) {
                 {runs.map((run, i) => (
                   <tr key={i}>
                     <td>
-                      <div class="llm-history-model">{run.model}</div>
-                      <div class="llm-history-provider">
-                        {PROVIDERS[run.provider]?.displayName || run.provider}
-                      </div>
+                      <div class="llm-history-model">{formatModel(run.model)}</div>
                     </td>
                     <td class="llm-history-tps">{formatTps(run.tokensPerSecond)}</td>
                     <td>{formatMs(run.ttft)}</td>

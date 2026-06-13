@@ -276,6 +276,15 @@
   padding: 0 0 2rem;
 }
 
+/* Sparkline section (hero) */
+.llm-hero-sparkline {
+  width: 100%;
+  max-width: var(--max-w);
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
 /* Error */
 .llm-error {
   color: #cf222e;

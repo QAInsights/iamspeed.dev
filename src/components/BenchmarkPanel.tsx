@@ -10,6 +10,7 @@ import { loadModels } from "../lib/modelRegistry";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { WeatherBackground } from "./WeatherBackground";
 import { RecentRuns } from "./RecentRuns";
+import { Sparkline } from "./Sparkline";
 import { loadHistory, saveRun, clearHistory, type RunSummary } from "../lib/history";
 import "../styles/components/BenchmarkPanel.css";
 
@@ -218,6 +219,14 @@ function BenchmarkPanelContent() {
   const heroText = displayTps !== null ? String(displayTps) : "--";
   const hasConfig = !!settings.apiKey;
 
+  const sparklineData = recentRuns
+    .filter((r) => r.tokensPerSecond !== null)
+    .map((r) => ({
+      value: r.tokensPerSecond!,
+      label: r.model.includes("/") ? r.model.split("/").slice(1).join("/") : r.model,
+    }))
+    .reverse();
+
   return (
     <>
       <WeatherBackground theme={theme} />
@@ -266,6 +275,13 @@ function BenchmarkPanelContent() {
             <div class="llm-ttft">
               <div class="llm-ttft-value">{Math.round(ttft)}ms</div>
               <div class="llm-ttft-label">First Token</div>
+            </div>
+          )}
+
+          {/* Compact sparkline for recent runs */}
+          {sparklineData.length > 1 && (
+            <div class="llm-hero-sparkline">
+              <Sparkline data={sparklineData} width={240} height={48} strokeWidth={1.5} />
             </div>
           )}
 
