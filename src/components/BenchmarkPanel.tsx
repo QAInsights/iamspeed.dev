@@ -11,6 +11,7 @@ import { ErrorBoundary } from "./ErrorBoundary";
 import { WeatherBackground } from "./WeatherBackground";
 import { RecentRuns } from "./RecentRuns";
 import { Sparkline } from "./Sparkline";
+import { Tooltip } from "./Tooltip";
 import { loadHistory, saveRun, clearHistory, type RunSummary } from "../lib/history";
 import "../styles/components/BenchmarkPanel.css";
 
@@ -274,7 +275,9 @@ function BenchmarkPanelContent() {
           {ttft !== null && (
             <div class="llm-ttft">
               <div class="llm-ttft-value">{Math.round(ttft)}ms</div>
-              <div class="llm-ttft-label">First Token</div>
+              <Tooltip label="How long before the model starts responding.">
+                <div class="llm-ttft-label">First Token</div>
+              </Tooltip>
             </div>
           )}
 
@@ -298,7 +301,9 @@ function BenchmarkPanelContent() {
               </div>
               <div class="llm-sec-item">
                 <div class="llm-sec-value">{totalTime !== null ? `${Math.round(totalTime)}ms` : "--"}</div>
-                <div class="llm-sec-label">TTLT</div>
+                <Tooltip label="Total duration from request to complete response.">
+                  <div class="llm-sec-label">TTLT</div>
+                </Tooltip>
               </div>
               <div class="llm-sec-item">
                 <div class="llm-sec-value">{settings.modelId}</div>

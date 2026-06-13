@@ -1,6 +1,7 @@
 /** @jsxImportSource preact */
 import type { RunSummary } from "../lib/history";
 import { Sparkline } from "./Sparkline";
+import { Tooltip } from "./Tooltip";
 
 interface RecentRunsProps {
   open: boolean;
@@ -189,9 +190,21 @@ export function RecentRuns({ open, onClose, runs, onClear }: RecentRunsProps) {
               <thead>
                 <tr>
                   <th>Model</th>
-                  <th>TPS</th>
-                  <th>TTFT</th>
-                  <th>Total Time</th>
+                  <th>
+                    <Tooltip label="Output generation speed.">
+                      <span>TPS</span>
+                    </Tooltip>
+                  </th>
+                  <th>
+                    <Tooltip label="How long before the model starts responding.">
+                      <span>TTFT</span>
+                    </Tooltip>
+                  </th>
+                  <th>
+                    <Tooltip label="Total duration from request to complete response.">
+                      <span>Total Time</span>
+                    </Tooltip>
+                  </th>
                 </tr>
               </thead>
               <tbody>

@@ -1,6 +1,7 @@
 /** @jsxImportSource preact */
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { BenchmarkMetrics } from "../lib/metrics";
+import { Tooltip } from "./Tooltip";
 
 interface MetricsDisplayProps {
   metrics: BenchmarkMetrics | null;
@@ -107,12 +108,16 @@ export function MetricsDisplay({ metrics }: MetricsDisplayProps) {
         <div class="llm-metric">
           <AnimatedNumber value={ttft} accent />
           <span class="llm-metric-unit">ms</span>
-          <div class="llm-metric-label">First Token</div>
+          <Tooltip label="How long before the model starts responding.">
+            <div class="llm-metric-label">First Token</div>
+          </Tooltip>
         </div>
         <div class="llm-metric">
           <span class="llm-metric-value">{formatNumber(tps)}</span>
           <span class="llm-metric-unit"> tok/s</span>
-          <div class="llm-metric-label">Throughput</div>
+          <Tooltip label="Tokens Per Second. Output generation speed.">
+            <div class="llm-metric-label">Throughput</div>
+          </Tooltip>
         </div>
         <div class="llm-metric">
           <span class="llm-metric-value">{tokens > 0 ? tokens : "--"}</span>
@@ -121,7 +126,9 @@ export function MetricsDisplay({ metrics }: MetricsDisplayProps) {
         <div class="llm-metric">
           <span class="llm-metric-value">{formatNumber(total)}</span>
           <span class="llm-metric-unit">ms</span>
-          <div class="llm-metric-label">Total Time</div>
+          <Tooltip label="Time to Last Token. Total duration from request to complete response.">
+            <div class="llm-metric-label">Total Time</div>
+          </Tooltip>
         </div>
       </div>
     </>
