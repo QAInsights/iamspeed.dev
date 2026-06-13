@@ -3,3 +3,4 @@ Allow: /
 
 # Host & Sitemap
 Host: https://iamspeed.dev
+Sitemap: https://iamspeed.dev/sitemap-index.xml
