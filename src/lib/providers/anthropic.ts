@@ -6,6 +6,9 @@ export const anthropicAdapter: ProviderAdapter = {
   name: PROVIDERS.anthropic.displayName,
 
   async stream({ apiKey, model, prompt, onChunk, onFirstToken, onDone, onError, signal }: StreamParams) {
+    // Strip provider prefix (e.g. "anthropic/claude-..." → "claude-...")
+    const modelId = model.includes("/") ? model.split("/").slice(1).join("/") : model;
+
     let response: Response;
     try {
       response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -17,7 +20,7 @@ export const anthropicAdapter: ProviderAdapter = {
           "anthropic-dangerous-direct-browser-access": "true",
         },
         body: JSON.stringify({
-          model,
+          model: modelId,
           max_tokens: 4096,
           messages: [{ role: "user", content: prompt }],
           stream: true,

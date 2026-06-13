@@ -5,7 +5,7 @@ import { createMetricsTracker, type BenchmarkMetrics } from "../lib/metrics";
 import { SettingsPanel, type SettingsState } from "./SettingsPanel";
 import { StreamOutput } from "./StreamOutput";
 import { RawResponsePanel } from "./RawResponsePanel";
-import { DEFAULT_PROMPT } from "../lib/config";
+import { DEFAULT_PROMPT, PROVIDERS } from "../lib/config";
 import { loadModels } from "../lib/modelRegistry";
 
 type RunState = "idle" | "running" | "done" | "error";
@@ -198,6 +198,16 @@ const style = `
   }
   .llm-show-more:hover { text-decoration: underline; }
 
+  /* Model context line */
+  .llm-model-context {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    text-align: center;
+    letter-spacing: 0.01em;
+  }
+
   /* Stream section */
   .llm-stream-section {
     width: 100%;
@@ -227,11 +237,37 @@ const style = `
   }
 `;
 
+const PREFS_KEY = "iamspeed_prefs";
+
+interface Prefs {
+  providerId?: string;
+  modelId?: string;
+  prompt?: string;
+}
+
+function loadPrefs(): Prefs {
+  try {
+    const raw = localStorage.getItem(PREFS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function savePrefs(prefs: Prefs): void {
+  try {
+    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+  } catch {
+    // ignore
+  }
+}
+
 export function BenchmarkPanel() {
+  const prefs = loadPrefs();
   const [settings, setSettings] = useState<SettingsState>({
-    providerId: "openai",
-    modelId: "",
-    prompt: DEFAULT_PROMPT,
+    providerId: prefs.providerId || "openai",
+    modelId: prefs.modelId || "",
+    prompt: prefs.prompt || DEFAULT_PROMPT,
     apiKey: null,
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -245,10 +281,19 @@ export function BenchmarkPanel() {
   const abortRef = useRef<AbortController | null>(null);
   const trackerRef = useRef<ReturnType<typeof createMetricsTracker> | null>(null);
 
-  // Load models on mount
+  // Persist settings to localStorage whenever they change
   useEffect(() => {
-    loadModels("openai").then((models) => {
-      if (models.length > 0) {
+    savePrefs({
+      providerId: settings.providerId,
+      modelId: settings.modelId,
+      prompt: settings.prompt,
+    });
+  }, [settings.providerId, settings.modelId, settings.prompt]);
+
+  // Load models on mount, only overriding modelId if nothing persisted
+  useEffect(() => {
+    loadModels(settings.providerId).then((models) => {
+      if (models.length > 0 && !settings.modelId) {
         setSettings((prev) => ({ ...prev, modelId: models[0].id }));
       }
     });
@@ -356,8 +401,8 @@ export function BenchmarkPanel() {
           {/* TTFT */}
           {ttft !== null && (
             <div class="llm-ttft">
-              <div class="llm-ttft-value">{Math.round(ttft)}</div>
-              <div class="llm-ttft-label">First Token (ms)</div>
+              <div class="llm-ttft-value">{Math.round(ttft)}ms</div>
+              <div class="llm-ttft-label">First Token</div>
             </div>
           )}
 
@@ -385,7 +430,6 @@ export function BenchmarkPanel() {
               <button
                 class="llm-btn-run"
                 onClick={handleRun}
-                disabled={runState === "running"}
               >
                 {runState === "idle" ? "Run" : "Run Again"}
               </button>
@@ -393,6 +437,13 @@ export function BenchmarkPanel() {
               <button class="llm-btn-stop" onClick={handleStop}>Stop</button>
             )}
           </div>
+
+          {/* Model context */}
+          {(runState === "done" || runState === "running") && settings.modelId && (
+            <div class="llm-model-context">
+              {settings.modelId} · {PROVIDERS[settings.providerId]?.displayName || settings.providerId}
+            </div>
+          )}
 
           {!hasConfig && runState === "idle" && (
             <p class="llm-hint">
@@ -403,7 +454,7 @@ export function BenchmarkPanel() {
           {/* Show more */}
           {(runState === "done" || runState === "running") && (
             <button class="llm-show-more" onClick={() => setShowMore((v) => !v)}>
-              {showMore ? "Show less" : "Show more info"}
+              {showMore ? "Hide response" : "Show response"}
             </button>
           )}
 

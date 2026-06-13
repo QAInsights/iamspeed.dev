@@ -6,6 +6,9 @@ export const openaiAdapter: ProviderAdapter = {
   name: PROVIDERS.openai.displayName,
 
   async stream({ apiKey, model, prompt, onChunk, onFirstToken, onDone, onError, signal }: StreamParams) {
+    // Strip provider prefix (e.g. "openai/gpt-4o" → "gpt-4o")
+    const modelId = model.includes("/") ? model.split("/").slice(1).join("/") : model;
+
     let response: Response;
     try {
       response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -15,7 +18,7 @@ export const openaiAdapter: ProviderAdapter = {
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model,
+          model: modelId,
           messages: [{ role: "user", content: prompt }],
           stream: true,
         }),

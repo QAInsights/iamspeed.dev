@@ -1,9 +1,7 @@
 /** @jsxImportSource preact */
 import { useState, useEffect } from "preact/hooks";
 import { saveKey, loadKey, clearKey, hasStoredKey } from "../lib/crypto";
-import { providers } from "../lib/providers";
 import { PROVIDERS } from "../lib/config";
-import { DEFAULT_PROMPT } from "../lib/config";
 import { loadModels, type ModelEntry } from "../lib/modelRegistry";
 
 export interface SettingsState {
