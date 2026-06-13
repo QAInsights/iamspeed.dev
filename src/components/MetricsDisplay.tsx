@@ -104,7 +104,7 @@ export function MetricsDisplay({ metrics }: MetricsDisplayProps) {
   return (
     <>
       <style>{style}</style>
-      <div class="llm-metrics">
+      <div class="llm-metrics" role="group" aria-label="Benchmark metrics">
         <div class="llm-metric">
           <AnimatedNumber value={ttft} accent />
           <span class="llm-metric-unit">ms</span>

@@ -1,4 +1,5 @@
 /** @jsxImportSource preact */
+import { useRef, useEffect } from "preact/hooks";
 import type { RunSummary } from "../lib/history";
 import { Sparkline } from "./Sparkline";
 import { Tooltip } from "./Tooltip";
@@ -152,6 +153,54 @@ function formatModel(model: string): string {
 }
 
 export function RecentRuns({ open, onClose, runs, onClear }: RecentRunsProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap and Escape key
+  useEffect(() => {
+    if (!open) return;
+
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const closeButton = panel.querySelector<HTMLButtonElement>(".llm-history-close");
+    closeButton?.focus();
+
+    const getFocusable = () =>
+      panel.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (e.key === "Tab") {
+        const focusable = getFocusable();
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   const sparklineData = runs
@@ -166,14 +215,14 @@ export function RecentRuns({ open, onClose, runs, onClear }: RecentRunsProps) {
     <>
       <style>{style}</style>
       <div class="llm-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-        <div class="llm-history">
+        <div class="llm-history" ref={panelRef} role="dialog" aria-modal="true" aria-label="Run history">
           <div class="llm-history-header">
-            <span class="llm-history-title">History</span>
+            <h2 class="llm-history-title">History</h2>
             <div class="llm-history-actions">
               {runs.length > 0 && (
-                <button class="llm-history-clear" onClick={onClear}>Clear All</button>
+                <button class="llm-history-clear" onClick={onClear} aria-label="Clear all history">Clear All</button>
               )}
-              <button class="llm-history-close" onClick={onClose}>&#x2715;</button>
+              <button class="llm-history-close" onClick={onClose} aria-label="Close history">&#x2715;</button>
             </div>
           </div>
 
@@ -184,23 +233,23 @@ export function RecentRuns({ open, onClose, runs, onClear }: RecentRunsProps) {
           )}
 
           {runs.length === 0 ? (
-            <div class="llm-history-empty">No runs yet</div>
+            <div class="llm-history-empty" role="status">No runs yet</div>
           ) : (
             <table class="llm-history-table">
               <thead>
                 <tr>
-                  <th>Model</th>
-                  <th>
+                  <th scope="col">Model</th>
+                  <th scope="col">
                     <Tooltip label="Output generation speed.">
                       <span>TPS</span>
                     </Tooltip>
                   </th>
-                  <th>
+                  <th scope="col">
                     <Tooltip label="How long before the model starts responding.">
                       <span>TTFT</span>
                     </Tooltip>
                   </th>
-                  <th>
+                  <th scope="col">
                     <Tooltip label="Total duration from request to complete response.">
                       <span>Total Time</span>
                     </Tooltip>

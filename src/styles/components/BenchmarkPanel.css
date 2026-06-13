@@ -240,6 +240,12 @@
   max-width: var(--max-w);
 }
 
+.llm-hero-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .llm-hero-label {
   font-size: 0.8125rem;
   color: var(--text-muted);
@@ -422,9 +428,15 @@
   margin-top: 1rem;
   text-align: center;
 }
-.llm-hint a {
+.llm-hint-link {
   color: var(--accent);
   cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  text-decoration: underline;
+  display: inline;
 }
 
 /* Footer */

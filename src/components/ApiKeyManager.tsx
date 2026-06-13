@@ -44,6 +44,17 @@ const style = `
     color: #cf222e;
     border-color: #cf222e;
   }
+  .llm-apikey-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
 `;
 
 export function ApiKeyManager({ provider, onKeyChange }: ApiKeyManagerProps) {
@@ -92,24 +103,28 @@ export function ApiKeyManager({ provider, onKeyChange }: ApiKeyManagerProps) {
     <>
       <style>{style}</style>
       <div class="llm-apikey">
+        <label for={`apikey-${provider}`} class="llm-apikey-label">
+          {provider} API key
+        </label>
         <input
+          id={`apikey-${provider}`}
           type="password"
           placeholder={`${provider} API key`}
           value={inputValue}
           onInput={handleInput}
           onBlur={handleBlur}
-          aria-label="API key"
+          aria-label={`${provider} API key`}
         />
-        <span class="llm-apikey-indicator">
-          {stored ? (
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--text)" stroke-width="1.5">
+        {stored && (
+          <span class="llm-apikey-indicator" aria-label="Key stored locally">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--text)" stroke-width="1.5" aria-hidden="true">
               <rect x="3" y="7" width="10" height="7" />
               <path d="M5 7V5a3 3 0 0 1 6 0v2" />
             </svg>
-          ) : null}
-        </span>
+          </span>
+        )}
         {stored && (
-          <button class="llm-apikey-clear" onClick={handleClear} title="Clear stored key">
+          <button class="llm-apikey-clear" onClick={handleClear} title="Clear stored key" aria-label={`Clear stored ${provider} API key`}>
             &#x2715;
           </button>
         )}

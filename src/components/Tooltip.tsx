@@ -1,10 +1,11 @@
 /** @jsxImportSource preact */
 import { useState, useRef, useEffect } from "preact/hooks";
 import { createPortal } from "preact/compat";
+import type { ComponentChildren } from "preact";
 
 interface TooltipProps {
   label: string;
-  children: any;
+  children: ComponentChildren;
 }
 
 const style = `
@@ -51,14 +52,17 @@ function injectStyle() {
   styleInjected = true;
 }
 
+let tooltipIdCounter = 0;
+
 export function Tooltip({ label, children }: TooltipProps) {
   const [visible, setVisible] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const ref = useRef<HTMLSpanElement>(null);
+  const [tooltipId] = useState(() => `llm-tip-${++tooltipIdCounter}`);
 
   useEffect(() => { injectStyle(); }, []);
 
-  const onEnter = () => {
+  const show = () => {
     if (ref.current) {
       const r = ref.current.getBoundingClientRect();
       setPos({ x: r.left + r.width / 2, y: r.bottom });
@@ -71,7 +75,9 @@ export function Tooltip({ label, children }: TooltipProps) {
   const bubble = visible
     ? createPortal(
         <div
+          id={tooltipId}
           class="llm-tip-bubble"
+          role="tooltip"
           style={{ left, top: `${pos.y + 8}px` }}
         >
           {label}
@@ -85,8 +91,12 @@ export function Tooltip({ label, children }: TooltipProps) {
       <span
         class="llm-tip"
         ref={ref}
-        onMouseEnter={onEnter}
+        onMouseEnter={show}
         onMouseLeave={() => setVisible(false)}
+        onFocus={show}
+        onBlur={() => setVisible(false)}
+        tabIndex={0}
+        aria-describedby={visible ? tooltipId : undefined}
       >
         {children}
       </span>

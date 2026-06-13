@@ -246,19 +246,19 @@ function BenchmarkPanelContent() {
           </span>
           <div class="llm-topbar-actions">
             <button class="llm-theme-toggle" onClick={toggleTheme} aria-label="Toggle Theme">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="theme-toggle-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="theme-toggle-icon" aria-hidden="true">
                 <path class="sun-icon" d="M12 12m-5 0a5 5 0 1 0 10 0a5 5 0 1 0-10 0 M12 1v2 M12 21v2 M4.22 4.22l1.42 1.42 M18.36 18.36l1.42 1.42 M1 12h2 M21 12h2 M4.22 19.78l1.42-1.42 M18.36 5.64l1.42-1.42" />
                 <path class="moon-icon" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
               </svg>
             </button>
-            <button class="llm-history-btn" onClick={() => setHistoryOpen(true)} aria-label="History">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <button class="llm-history-btn" onClick={() => setHistoryOpen(true)} aria-label="History" aria-expanded={historyOpen}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="9" />
                 <polyline points="12 7 12 12 15 14" />
               </svg>
             </button>
-            <button class="llm-gear" onClick={() => setSettingsOpen(true)} aria-label="Settings">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <button class="llm-gear" onClick={() => setSettingsOpen(true)} aria-label="Settings" aria-expanded={settingsOpen}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="3" />
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
               </svg>
@@ -268,9 +268,11 @@ function BenchmarkPanelContent() {
 
         {/* Hero */}
         <div class="llm-hero">
-          <span class="llm-hero-label">Your LLM speed is</span>
-          <span class={`llm-hero-number${isActive ? " active" : ""}`}>{heroText}</span>
-          <span class="llm-hero-unit">tokens / sec</span>
+          <span class="llm-hero-label" id="hero-label">Your LLM speed is</span>
+          <div class="llm-hero-result" aria-live="polite" aria-atomic="true" aria-describedby="hero-label">
+            <span class={`llm-hero-number${isActive ? " active" : ""}`}>{heroText}</span>
+            <span class="llm-hero-unit">tokens / sec</span>
+          </div>
 
           {/* TTFT */}
           {ttft !== null && (
@@ -291,7 +293,7 @@ function BenchmarkPanelContent() {
 
           {/* Secondary metrics */}
           {(runState === "done" || runState === "running") && showMore && (
-            <div class="llm-secondary">
+            <div class="llm-secondary" role="group" aria-label="Additional metrics">
               <div class="llm-sec-item">
                 <div class="llm-sec-value">{inputTokens !== null ? inputTokens : "--"}</div>
                 <div class="llm-sec-label">Input</div>
@@ -346,18 +348,18 @@ function BenchmarkPanelContent() {
 
           {!hasConfig && runState === "idle" && (
             <p class="llm-hint">
-              Click <a onClick={() => setSettingsOpen(true)}>Settings</a> to configure your API key
+              Click <button class="llm-hint-link" onClick={() => setSettingsOpen(true)}>Settings</button> to configure your API key
             </p>
           )}
 
           {/* Show more */}
           {(runState === "done" || runState === "running") && (
-            <button class="llm-show-more" onClick={() => setShowMore((v) => !v)}>
+            <button class="llm-show-more" onClick={() => setShowMore((v) => !v)} aria-expanded={showMore}>
               {showMore ? "Less metrics" : "More metrics"}
             </button>
           )}
 
-          {error && <div class="llm-error">{error}</div>}
+          {error && <div class="llm-error" role="alert">{error}</div>}
         </div>
 
         {/* Stream output section */}
@@ -368,16 +370,16 @@ function BenchmarkPanelContent() {
           </div>
         )}
 
-        <footer class="llm-footer">
-          <a href="https://qainsights.com" target="_blank" rel="noopener noreferrer">QAInsights</a>
-          <span class="llm-footer-dot">&middot;</span>
-          <a href="https://dosa.dev" target="_blank" rel="noopener noreferrer">Dosa</a>
-          <span class="llm-footer-dot">&middot;</span>
-          <a href="https://jmeter.ai" target="_blank" rel="noopener noreferrer">JMeter.ai</a>
-          <span class="llm-footer-dot">&middot;</span>
-          <a href="https://achu.app" target="_blank" rel="noopener noreferrer">Achu</a>
-          <span class="llm-footer-dot">&middot;</span>
-          <a href="https://github.com/qainsights/iamspeed.dev" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <footer class="llm-footer" role="contentinfo">
+          <a href="https://qainsights.com" target="_blank" rel="noopener noreferrer" aria-label="QAInsights (opens in new tab)">QAInsights</a>
+          <span class="llm-footer-dot" aria-hidden="true">&middot;</span>
+          <a href="https://dosa.dev" target="_blank" rel="noopener noreferrer" aria-label="Dosa (opens in new tab)">Dosa</a>
+          <span class="llm-footer-dot" aria-hidden="true">&middot;</span>
+          <a href="https://jmeter.ai" target="_blank" rel="noopener noreferrer" aria-label="JMeter.ai (opens in new tab)">JMeter.ai</a>
+          <span class="llm-footer-dot" aria-hidden="true">&middot;</span>
+          <a href="https://achu.app" target="_blank" rel="noopener noreferrer" aria-label="Achu (opens in new tab)">Achu</a>
+          <span class="llm-footer-dot" aria-hidden="true">&middot;</span>
+          <a href="https://github.com/qainsights/iamspeed.dev" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository (opens in new tab)">GitHub</a>
         </footer>
       </main>
 

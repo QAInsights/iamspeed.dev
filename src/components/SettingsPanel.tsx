@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { useState, useEffect } from "preact/hooks";
+import { useState, useEffect, useRef } from "preact/hooks";
 import { saveKey, loadKey, clearKey, hasStoredKey } from "../lib/crypto";
 import { PROVIDERS } from "../lib/config";
 import { loadModels, type ModelEntry } from "../lib/modelRegistry";
@@ -70,6 +70,12 @@ const style = `
     display: flex;
     flex-direction: column;
     gap: 0.375rem;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  .llm-field legend {
+    padding: 0;
   }
   .llm-field-label {
     font-size: 0.6875rem;
@@ -194,6 +200,7 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
   const [stored, setStored] = useState(false);
   const [models, setModels] = useState<ModelEntry[]>([]);
   const [modelsLoading, setModelsLoading] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -219,6 +226,53 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
       }
     });
   }, [open, settings.providerId]);
+
+  // Focus trap and Escape key
+  useEffect(() => {
+    if (!open) return;
+
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    // Focus the close button when panel opens
+    const closeButton = panel.querySelector<HTMLButtonElement>(".llm-settings-close");
+    closeButton?.focus();
+
+    const getFocusable = () =>
+      panel.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (e.key === "Tab") {
+        const focusable = getFocusable();
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -260,18 +314,20 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
     <>
       <style>{style}</style>
       <div class="llm-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-        <div class="llm-settings">
+        <div class="llm-settings" ref={panelRef} role="dialog" aria-modal="true" aria-label="Settings">
           <div class="llm-settings-header">
-            <span class="llm-settings-title">Settings</span>
-            <button class="llm-settings-close" onClick={onClose}>&#x2715;</button>
+            <h2 class="llm-settings-title">Settings</h2>
+            <button class="llm-settings-close" onClick={onClose} aria-label="Close settings">&#x2715;</button>
           </div>
 
-          <div class="llm-field">
-            <label class="llm-field-label">Provider</label>
-            <div class="llm-provider-tabs">
+          <fieldset class="llm-field">
+            <legend class="llm-field-label">Provider</legend>
+            <div class="llm-provider-tabs" role="tablist" aria-label="Provider selection">
               {Object.entries(PROVIDERS).map(([id, p]) => (
                 <button
                   key={id}
+                  role="tab"
+                  aria-selected={id === settings.providerId}
                   class={`llm-provider-tab${id === settings.providerId ? " active" : ""}`}
                   onClick={() => handleProviderChange(id)}
                 >
@@ -279,39 +335,42 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
                 </button>
               ))}
             </div>
-          </div>
+          </fieldset>
 
           <div class="llm-field">
-            <label class="llm-field-label">API Key</label>
+            <label class="llm-field-label" for="settings-apikey">API Key</label>
             <div class="llm-key-row">
               <input
+                id="settings-apikey"
                 type="password"
                 placeholder={`${settings.providerId} API key`}
                 value={inputValue}
                 onInput={handleKeyInput}
                 onBlur={handleKeyBlur}
-                aria-label="API key"
+                aria-label={`${settings.providerId} API key`}
+                aria-describedby="settings-disclaimer"
               />
               {stored && (
                 <>
-                  <span class="llm-key-indicator">
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--text)" stroke-width="1.5">
+                  <span class="llm-key-indicator" aria-label="Key stored locally">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--text)" stroke-width="1.5" aria-hidden="true">
                       <rect x="3" y="7" width="10" height="7" />
                       <path d="M5 7V5a3 3 0 0 1 6 0v2" />
                     </svg>
                   </span>
-                  <button class="llm-key-clear" onClick={handleClearKey}>&#x2715;</button>
+                  <button class="llm-key-clear" onClick={handleClearKey} aria-label="Clear stored API key">&#x2715;</button>
                 </>
               )}
             </div>
           </div>
 
           <div class="llm-field">
-            <label class="llm-field-label">Model</label>
+            <label class="llm-field-label" for="settings-model">Model</label>
             {modelsLoading ? (
-              <span class="llm-models-loading">Loading models...</span>
+              <span class="llm-models-loading" role="status">Loading models...</span>
             ) : (
               <select
+                id="settings-model"
                 class="llm-select"
                 value={settings.modelId}
                 onInput={(e) => onSettingsChange({ ...settings, modelId: (e.target as HTMLSelectElement).value })}
@@ -326,15 +385,16 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
           </div>
 
           <div class="llm-field">
-            <label class="llm-field-label">Prompt</label>
+            <label class="llm-field-label" for="settings-prompt">Prompt</label>
             <textarea
+              id="settings-prompt"
               class="llm-textarea"
               value={settings.prompt}
               onInput={(e) => onSettingsChange({ ...settings, prompt: (e.target as HTMLTextAreaElement).value })}
             />
           </div>
 
-          <p class="llm-disclaimer">
+          <p class="llm-disclaimer" id="settings-disclaimer">
             I am speed. sends requests directly from your browser to the provider API using your API key.
             You will be charged based on the model's published pricing. Keys are encrypted locally
             and never leave your device.

@@ -118,7 +118,10 @@ export function Sparkline({
           height={height}
           viewBox={`0 0 ${width} ${height}`}
           preserveAspectRatio="none"
+          role="img"
+          aria-label={`Sparkline chart showing ${data.length} benchmark runs`}
         >
+          <title>Benchmark performance sparkline</title>
           <path d={pathData} class="llm-sparkline-path" />
           {showDots &&
             points.map((p, i) => (
@@ -128,15 +131,24 @@ export function Sparkline({
                 cx={p.x}
                 cy={p.y}
                 r={3}
+                tabIndex={0}
+                role="button"
+                aria-label={`${p.point.label}: ${p.point.value.toFixed(1)} tok/s`}
                 onMouseEnter={(e) => handleDotEnter(e, p.point)}
                 onMouseMove={(e) => handleDotMove(e, p.point)}
                 onMouseLeave={handleDotLeave}
+                onFocus={(e) => {
+                  const rect = (e.target as SVGCircleElement).getBoundingClientRect();
+                  setTooltip({ x: rect.left + rect.width / 2, y: rect.top, point: p.point });
+                }}
+                onBlur={handleDotLeave}
               />
             ))}
         </svg>
         {tooltip && (
           <div
             class="llm-sparkline-tooltip"
+            role="tooltip"
             style={{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }}
           >
             <div class="llm-sparkline-tooltip-model">{tooltip.point.label}</div>

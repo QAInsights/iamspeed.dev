@@ -68,9 +68,9 @@ export function StreamOutput({ text, streaming }: StreamOutputProps) {
   return (
     <>
       <style>{style}</style>
-      <div class="llm-stream" ref={containerRef}>
+      <div class="llm-stream" ref={containerRef} role="log" aria-label="Streaming output" aria-live="polite">
         {cleanText}
-        {streaming && <span class="llm-stream-cursor" />}
+        {streaming && <span class="llm-stream-cursor" aria-hidden="true" />}
       </div>
     </>
   );
