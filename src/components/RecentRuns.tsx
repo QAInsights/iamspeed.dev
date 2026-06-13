@@ -20,7 +20,7 @@ const style = `
     justify-content: flex-end;
   }
   .llm-history {
-    width: 400px;
+    width: 450px;
     max-width: 100vw;
     height: 100vh;
     background: var(--surface);

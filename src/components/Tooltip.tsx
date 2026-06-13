@@ -25,7 +25,7 @@ const style = `
   border-radius: 8px;
   white-space: normal;
   width: max-content;
-  max-width: 220px;
+  max-width: 248px;
   pointer-events: none;
   z-index: 9999;
   box-shadow: 0 4px 16px rgba(0,0,0,0.15), 0 1px 4px rgba(0,0,0,0.1);
@@ -66,7 +66,7 @@ export function Tooltip({ label, children }: TooltipProps) {
     setVisible(true);
   };
 
-  const left = `max(8px, min(calc(100vw - 228px), ${pos.x - 110}px))`;
+  const left = `max(8px, min(calc(100vw - 256px), ${pos.x - 124}px))`;
 
   const bubble = visible
     ? createPortal(

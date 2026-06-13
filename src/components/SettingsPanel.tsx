@@ -28,7 +28,7 @@ const style = `
     justify-content: flex-end;
   }
   .llm-settings {
-    width: 400px;
+    width: 450px;
     max-width: 100vw;
     height: 100vh;
     background: var(--surface);
@@ -114,7 +114,7 @@ const style = `
   }
   .llm-textarea {
     width: 100%;
-    min-height: 80px;
+    min-height: 90px;
     padding: 0.75rem;
     font-size: 0.8125rem;
     font-family: var(--body);
@@ -137,15 +137,15 @@ const style = `
   }
   .llm-key-indicator {
     flex-shrink: 0;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
   .llm-key-indicator svg {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
   }
   .llm-key-clear {
     font-size: 0.75rem;

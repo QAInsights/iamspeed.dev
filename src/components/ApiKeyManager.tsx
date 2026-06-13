@@ -21,16 +21,16 @@ const style = `
     padding: 0.5rem 0.75rem;
   }
   .llm-apikey-indicator {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
   }
   .llm-apikey-indicator svg {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
   }
   .llm-apikey-clear {
     font-size: 0.75rem;

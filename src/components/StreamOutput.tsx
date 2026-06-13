@@ -21,7 +21,7 @@ function stripMarkdown(text: string): string {
 
 const style = `
   .llm-stream {
-    max-height: 280px;
+    max-height: 315px;
     overflow-y: auto;
     font-family: var(--mono);
     font-size: 0.8125rem;

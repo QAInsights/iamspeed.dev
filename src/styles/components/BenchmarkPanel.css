@@ -27,8 +27,8 @@
   cursor: pointer;
 }
 .llm-brand-logo img {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: block;
   transition: filter 0.3s ease;
 }
@@ -173,8 +173,8 @@
   gap: 0.5rem;
 }
 .llm-theme-toggle, .llm-history-btn, .llm-gear {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -194,8 +194,8 @@
   transform: scale(0.92);
 }
 .llm-theme-toggle svg, .llm-history-btn svg, .llm-gear svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   display: block;
 }
 
@@ -464,8 +464,8 @@
   margin-top: 1.5rem;
 }
 .llm-share-btn {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -485,8 +485,8 @@
   transform: scale(0.92);
 }
 .llm-share-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   display: block;
 }
 .llm-share-btn.copied {

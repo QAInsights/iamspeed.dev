@@ -31,7 +31,7 @@ const style = `
     padding: 0.75rem;
     font-size: 0.75rem;
     line-height: 1.5;
-    max-height: 400px;
+    max-height: 450px;
     overflow: auto;
     background: var(--surface);
     backdrop-filter: blur(12px);
