@@ -1,0 +1,25 @@
+{
+  "name": "I am speed. — LLM API Benchmark",
+  "short_name": "I am speed",
+  "description": "A network speed-test-style benchmarking tool for LLM APIs. Pick a provider and model, and see live streaming output with real-time throughput metrics.",
+  "categories": ["developer", "utilities"],
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F8F8F6",
+  "theme_color": "#0046cc",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -30,9 +30,19 @@ const style = `
   }
   .llm-brand {
     display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    line-height: 1.1;
+  }
+  .llm-brand-logo img {
+    width: 28px;
+    height: 28px;
+    display: block;
+  }
+  .llm-brand-text {
+    display: flex;
     flex-direction: column;
     gap: 0;
-    line-height: 1.1;
   }
   .llm-brand-name {
     font-family: var(--body);
@@ -377,12 +387,17 @@ export function BenchmarkPanel() {
   return (
     <>
       <style>{style}</style>
-      <div class="llm-app">
+      <main class="llm-app">
         {/* Top bar */}
         <div class="llm-topbar">
           <span class="llm-brand">
-            <span class="llm-brand-name">I am speed.</span>
-            <span class="llm-brand-tagline">measure what matters.</span>
+            <span class="llm-brand-logo">
+              <img src="/logo.svg" alt="I am speed" />
+            </span>
+            <span class="llm-brand-text">
+              <h1 class="llm-brand-name">I am speed.</h1>
+              <span class="llm-brand-tagline">measure what matters.</span>
+            </span>
           </span>
           <button class="llm-gear" onClick={() => setSettingsOpen(true)} aria-label="Settings">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -468,7 +483,7 @@ export function BenchmarkPanel() {
             {runState === "done" && <RawResponsePanel data={rawResponse} />}
           </div>
         )}
-      </div>
+      </main>
 
       <SettingsPanel
         open={settingsOpen}

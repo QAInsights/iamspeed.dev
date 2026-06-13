@@ -1,0 +1,22 @@
+# I am speed.  LLM Speed Test. Fast.com but for LLMs.
+
+> A network speed-test-style benchmarking tool for LLM APIs. Pick a provider and model, and see live streaming output with real-time throughput metrics.
+
+## Key Features
+- **Live Streaming & Real-Time Metrics**: Track throughput in tokens/second and Time-to-First-Token (TTFT) dynamically.
+- **Dynamic Model Discovery**: Fetches active models dynamically from models.dev with robust offline fallback.
+- **Secure Local Storage**: API keys are securely stored client-side using AES-GCM encryption via the Web Crypto API.
+- **Multi-Provider Support**: Supports major LLM API providers including OpenAI and Anthropic.
+- **Minimal, Static Architecture**: Fully client-side web application built with Astro and Preact.
+
+## Technical Details
+- **Architecture**: Fully static site generation (SSG) with interactive Preact components (islands).
+- **Security**: Zero API keys are sent to external servers other than direct requests to the respective AI providers' endpoints. Encryption uses Web Crypto API.
+- **Metrics Tracking**:
+  - **TTFT (Time-to-First-Token)**: Measured from request initiation to the first chunk received.
+  - **Throughput**: Calculated continuously as tokens per second.
+
+## Workspace Structure
+- `/src/components/`: Preact UI Islands (BenchmarkPanel, ApiKeyManager, SettingsPanel, MetricsDisplay, StreamOutput, RawResponsePanel).
+- `/src/lib/`: Core libraries (metrics tracker, cryptographic adapter, provider streams).
+- `/src/lib/providers/`: Endpoints and response parser adapters for Anthropic and OpenAI.
