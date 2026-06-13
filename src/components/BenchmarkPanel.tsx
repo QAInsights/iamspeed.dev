@@ -337,7 +337,7 @@ function BenchmarkPanelContent() {
           {/* Show more */}
           {(runState === "done" || runState === "running") && (
             <button class="llm-show-more" onClick={() => setShowMore((v) => !v)}>
-              {showMore ? "Hide response" : "Show response"}
+              {showMore ? "Less metrics" : "More metrics"}
             </button>
           )}
 

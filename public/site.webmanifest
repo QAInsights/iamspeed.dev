@@ -1,7 +1,7 @@
 {
-  "name": "I am speed. — LLM API Benchmark",
+  "name": "I am speed. Fast.com but for LLMs",
   "short_name": "I am speed",
-  "description": "A network speed-test-style benchmarking tool for LLM APIs. Pick a provider and model, and see live streaming output with real-time throughput metrics.",
+  "description": "A fast.com-style benchmarking tool for LLM APIs. Pick a provider and model, and see live streaming output with real-time throughput metrics.",
   "categories": ["developer", "utilities"],
   "start_url": "/",
   "display": "standalone",
