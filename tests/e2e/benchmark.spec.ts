@@ -1,4 +1,5 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 async function waitForHydration(page: Page) {
   // Wait for the Preact island to hydrate by checking for interactive elements

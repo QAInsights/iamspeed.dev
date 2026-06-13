@@ -28,11 +28,14 @@ const style = `
     line-height: 1.7;
     padding: 1rem 1.25rem;
     background: var(--surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-light);
     white-space: pre-wrap;
     word-break: break-word;
     margin-top: 0;
-    border-radius: 0;
+    border-radius: 6px;
+    transition: background 0.8s ease-in-out, border-color 0.3s ease-in-out;
   }
   .llm-stream-cursor {
     display: inline-block;

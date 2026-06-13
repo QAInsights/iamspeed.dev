@@ -6,6 +6,13 @@ import "../styles/global.css";
 <!doctype html>
 <html lang="en">
   <head>
+    <script is:inline>
+      (function() {
+        const stored = localStorage.getItem('iamspeed_theme');
+        const theme = stored || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
     <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; connect-src 'self' https://api.openai.com https://api.anthropic.com https://models.dev https://www.google-analytics.com https://analytics.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://www.google-analytics.com https://analytics.google.com; frame-src 'none'; object-src 'none';" />
     <!-- Google tag (gtag.js) -->

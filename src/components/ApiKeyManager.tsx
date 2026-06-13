@@ -73,7 +73,6 @@ export function ApiKeyManager({ provider, onKeyChange }: ApiKeyManagerProps) {
     clearKey(provider);
     setStored(false);
     setInputValue("");
-    setLoaded(false);
     onKeyChange(null);
   }, [provider, onKeyChange]);
 

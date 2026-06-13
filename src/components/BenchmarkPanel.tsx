@@ -8,6 +8,7 @@ import { RawResponsePanel } from "./RawResponsePanel";
 import { DEFAULT_PROMPT, PROVIDERS } from "../lib/config";
 import { loadModels } from "../lib/modelRegistry";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { WeatherBackground } from "./WeatherBackground";
 import "../styles/components/BenchmarkPanel.css";
 
 type RunState = "idle" | "running" | "done" | "error";
@@ -47,6 +48,25 @@ function BenchmarkPanelContent() {
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [runState, setRunState] = useState<RunState>("idle");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    const stored = localStorage.getItem("iamspeed_theme") as "light" | "dark" | null;
+    if (stored) {
+      setTheme(stored);
+      document.documentElement.setAttribute("data-theme", stored);
+    } else {
+      setTheme("light");
+      document.documentElement.setAttribute("data-theme", "light");
+    }
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    const nextTheme = theme === "light" ? "dark" : "light";
+    setTheme(nextTheme);
+    localStorage.setItem("iamspeed_theme", nextTheme);
+    document.documentElement.setAttribute("data-theme", nextTheme);
+  }, [theme]);
   const [streamText, setStreamText] = useState("");
   const [metrics, setMetrics] = useState<BenchmarkMetrics | null>(null);
   const [rawResponse, setRawResponse] = useState<object | null>(null);
@@ -151,6 +171,7 @@ function BenchmarkPanelContent() {
 
   return (
     <>
+      <WeatherBackground theme={theme} />
       <main class="llm-app">
         {/* Top bar */}
         <div class="llm-topbar">
@@ -163,12 +184,20 @@ function BenchmarkPanelContent() {
               <span class="llm-brand-tagline">measure what matters.</span>
             </span>
           </span>
-          <button class="llm-gear" onClick={() => setSettingsOpen(true)} aria-label="Settings">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-            </svg>
-          </button>
+          <div class="llm-topbar-actions">
+            <button class="llm-theme-toggle" onClick={toggleTheme} aria-label="Toggle Theme">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="theme-toggle-icon">
+                <path class="sun-icon" d="M12 12m-5 0a5 5 0 1 0 10 0a5 5 0 1 0-10 0 M12 1v2 M12 21v2 M4.22 4.22l1.42 1.42 M18.36 18.36l1.42 1.42 M1 12h2 M21 12h2 M4.22 19.78l1.42-1.42 M18.36 5.64l1.42-1.42" />
+                <path class="moon-icon" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+              </svg>
+            </button>
+            <button class="llm-gear" onClick={() => setSettingsOpen(true)} aria-label="Settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Hero */}

@@ -46,9 +46,14 @@
   color: var(--text-muted);
   margin-top: 2px;
 }
-.llm-gear {
-  width: 32px;
-  height: 32px;
+.llm-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.llm-theme-toggle, .llm-gear {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -57,10 +62,50 @@
   border: none;
   background: none;
   padding: 0;
-  border-radius: 0;
+  border-radius: 6px;
+  transition: color 0.3s ease-in-out, background-color 0.2s ease-in-out, transform 0.2s;
 }
-.llm-gear:hover { color: var(--text); }
-.llm-gear svg { width: 18px; height: 18px; }
+.llm-theme-toggle:hover, .llm-gear:hover {
+  color: var(--text);
+  background-color: var(--border-light);
+}
+.llm-theme-toggle:active, .llm-gear:active {
+  transform: scale(0.92);
+}
+.llm-theme-toggle svg, .llm-gear svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* Theme Morphing Icon Animations */
+.theme-toggle-icon {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+[data-theme="dark"] .theme-toggle-icon {
+  transform: rotate(40deg);
+}
+
+.sun-icon {
+  opacity: 1;
+  transform: scale(1);
+  transform-origin: center;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.moon-icon {
+  opacity: 0;
+  transform: scale(0.5) rotate(-45deg);
+  transform-origin: center;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+[data-theme="dark"] .sun-icon {
+  opacity: 0;
+  transform: scale(0.5) rotate(45deg);
+}
+[data-theme="dark"] .moon-icon {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
 
 /* Hero area */
 .llm-hero {
@@ -155,7 +200,7 @@
   align-items: center;
 }
 .llm-btn-run {
-  padding: 0.625rem 2rem;
+  padding: 0.625rem 2.25rem;
   background: var(--accent);
   color: #fff;
   font-weight: 600;
@@ -163,24 +208,42 @@
   letter-spacing: 0.02em;
   border: none;
   cursor: pointer;
-  border-radius: 0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
 }
-.llm-btn-run:hover { background: var(--accent-hover); }
+.llm-btn-run:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+}
+.llm-btn-run:active {
+  transform: scale(0.96);
+}
 .llm-btn-run:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+  box-shadow: none;
 }
 .llm-btn-stop {
-  padding: 0.625rem 2rem;
+  padding: 0.625rem 2.25rem;
   border: 1px solid var(--border);
   background: var(--surface);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   font-weight: 500;
   font-size: 0.8125rem;
   cursor: pointer;
   color: var(--text);
-  border-radius: 0;
+  border-radius: 6px;
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s, transform 0.1s;
 }
-.llm-btn-stop:hover { border-color: var(--text); }
+.llm-btn-stop:hover {
+  border-color: var(--text);
+  background: var(--border-light);
+}
+.llm-btn-stop:active {
+  transform: scale(0.96);
+}
 
 /* Show more toggle */
 .llm-show-more {
@@ -192,6 +255,7 @@
   border: none;
   letter-spacing: 0.02em;
   font-family: var(--body);
+  transition: color 0.2s ease-in-out;
 }
 .llm-show-more:hover { text-decoration: underline; }
 
@@ -231,4 +295,11 @@
 .llm-hint a {
   color: var(--accent);
   cursor: pointer;
+}
+
+/* Smooth color transitions for weather background switches */
+.llm-brand-name, .llm-brand-tagline, .llm-hero-number, .llm-hero-label, .llm-hero-unit,
+.llm-ttft-value, .llm-ttft-label, .llm-sec-value, .llm-sec-label, .llm-model-context,
+.llm-hint, .llm-error {
+  transition: color 0.3s ease-in-out;
 }

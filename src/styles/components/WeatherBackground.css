@@ -1,0 +1,20 @@
+.weather-container {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  transition: background 0.8s ease-in-out;
+}
+
+/* Day/Light Gradient Background */
+.weather-container.light {
+  background: var(--bg-gradient);
+}
+
+/* Night/Dark Gradient Background */
+.weather-container.dark {
+  background: var(--bg-gradient);
+}

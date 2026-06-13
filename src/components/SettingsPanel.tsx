@@ -31,13 +31,16 @@ const style = `
     width: 400px;
     max-width: 100vw;
     height: 100vh;
-    background: var(--bg);
+    background: var(--surface);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border-left: 1px solid var(--border);
     padding: 2rem 1.5rem;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    transition: background 0.8s ease-in-out, border-color 0.3s ease-in-out;
   }
   .llm-settings-header {
     display: flex;
@@ -77,6 +80,8 @@ const style = `
   .llm-provider-tabs {
     display: flex;
     border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
   }
   .llm-provider-tab {
     flex: 1;
