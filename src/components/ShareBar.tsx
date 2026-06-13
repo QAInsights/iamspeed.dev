@@ -56,6 +56,8 @@ const CheckIcon = () => (
 export function ShareBar({ provider, model, tps, ttft }: ShareBarProps) {
   const [copied, setCopied] = useState(false);
 
+  const [linkedinCopied, setLinkedinCopied] = useState(false);
+
   const shareText = buildShareText(provider, model, tps, ttft);
   const encodedText = encodeURIComponent(shareText);
   const encodedUrl = encodeURIComponent(SITE_URL);
@@ -69,6 +71,19 @@ export function ShareBar({ provider, model, tps, ttft }: ShareBarProps) {
     window.open(url, "share", `width=${popupWidth},height=${popupHeight},left=${left},top=${top}`);
   }, []);
 
+  const handleShare = useCallback(async (label: string, url: string) => {
+    if (label === "Share on LinkedIn") {
+      try {
+        await navigator.clipboard.writeText(shareText);
+        setLinkedinCopied(true);
+        setTimeout(() => setLinkedinCopied(false), 3000);
+      } catch {
+        // ignore clipboard errors
+      }
+    }
+    openPopup(url);
+  }, [shareText, openPopup]);
+
   const shareLinks = [
     {
       label: "Share on X",
@@ -79,6 +94,7 @@ export function ShareBar({ provider, model, tps, ttft }: ShareBarProps) {
       label: "Share on LinkedIn",
       Icon: LinkedInIcon,
       url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+      tooltip: linkedinCopied ? "Text copied! Paste on LinkedIn" : "Share on LinkedIn (Copies text)",
     },
     {
       label: "Share on Reddit",
@@ -104,15 +120,15 @@ export function ShareBar({ provider, model, tps, ttft }: ShareBarProps) {
 
   return (
     <div class="llm-share-bar">
-      {shareLinks.map(({ label, Icon, url }) => (
+      {shareLinks.map(({ label, Icon, url, tooltip }) => (
         <button
           key={label}
-          class="llm-share-btn"
-          onClick={() => openPopup(url)}
+          class={`llm-share-btn${label === "Share on LinkedIn" && linkedinCopied ? " copied" : ""}`}
+          onClick={() => handleShare(label, url)}
           aria-label={label}
-          title={label}
+          title={tooltip || label}
         >
-          <Icon />
+          {label === "Share on LinkedIn" && linkedinCopied ? <CheckIcon /> : <Icon />}
         </button>
       ))}
       <button
