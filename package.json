@@ -1,0 +1,27 @@
+{
+  "name": "iam-speed",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "astro": "^5.9.3",
+    "@astrojs/preact": "^4.1.0",
+    "preact": "^10.26.7"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.3",
+    "@playwright/test": "^1.52.0",
+    "preact-render-to-string": "^6.5.13"
+  }
+}

@@ -1,0 +1,76 @@
+:root {
+  --bg: #F8F8F6;
+  --text: #111;
+  --text-muted: #666;
+  --accent: #0057FF;
+  --accent-hover: #0046CC;
+  --border: #D4D4D0;
+  --border-light: #E8E8E4;
+  --surface: #FFF;
+  --mono: "Berkeley Mono", "JetBrains Mono", ui-monospace, monospace;
+  --body: "Inter", system-ui, sans-serif;
+  --max-w: 720px;
+  --rhythm: 1.5rem;
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+input, textarea, select, button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  border-radius: 0;
+}
+
+input, textarea, select {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 0.5rem 0.75rem;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+code, pre {
+  font-family: var(--mono);
+}
+
+pre {
+  overflow-x: auto;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
