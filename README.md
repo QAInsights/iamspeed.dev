@@ -45,8 +45,8 @@ Select **Local** in settings.
 - Common alternatives:
   - LM Studio: `http://localhost:1234/v1`
   - llama.cpp server: `http://localhost:8080/v1`
-- API key is optional for most local servers.
-- Model ID can be typed directly (e.g. `llama3.2`, `mistral`) or use the "Discover models" button.
+- Click **Discover models from endpoint** to fetch and auto-populate available models into a select dropdown (API key is optional).
+- Click **Enter model manually** if you need to override the dropdown and type a custom model ID directly.
 - Your local server **must allow browser CORS**:
   - Ollama: `OLLAMA_ORIGINS="*" ollama serve` (or export the variable)
 - The app runs entirely in the browser — no proxy.
