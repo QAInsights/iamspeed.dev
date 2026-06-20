@@ -40,6 +40,8 @@ const style = `
   .llm-settings-done { margin-top: auto; padding: 0.75rem; background: var(--accent); color: #fff; font-weight: 600; font-size: 0.8125rem; border: none; cursor: pointer; text-align: center; letter-spacing: 0.02em; }
   .llm-settings-done:hover { background: var(--accent-hover); }
   .llm-disclaimer { font-size: 0.6875rem; color: var(--text-muted); line-height: 1.5; padding-top: 0.75rem; border-top: 1px solid var(--border-light); }
+  .llm-warning { font-size: 0.75rem; color: var(--json-bool); line-height: 1.4; margin-top: 0.375rem; }
+  .llm-settings code { font-family: var(--mono); font-size: 0.6875rem; background: var(--border-light); padding: 0.125rem 0.25rem; border-radius: 2px; }
 `;
 
 export function SettingsPanel({ open, onClose, settings, onSettingsChange }: SettingsPanelProps) {
@@ -233,11 +235,11 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
                   }
                 }}
               />
-              <div class="llm-models-empty" style="margin-top: 0.25rem;">
-                Default for Ollama. Change for LM Studio (1234), llama.cpp, etc.
+              <div class="llm-models-empty" style="margin-top: 0.25rem; font-family: var(--body); font-style: normal;">
+                To query from HTTPS, run: <code>npx cloudflared tunnel --url http://localhost:11434 --http-host-header localhost</code>
               </div>
               {typeof window !== "undefined" && window.location.protocol === "https:" && settings.baseUrl?.startsWith("http://") && (
-                <div class="llm-error-message" style="margin-top: 0.5rem; color: #f87171; font-size: 0.75rem; line-height: 1.3;">
+                <div class="llm-warning">
                   ⚠️ <strong>Mixed Content Warning:</strong> Browsers block HTTPS websites from querying local HTTP endpoints. To fix this, run this app locally at <code>http://localhost:4321</code> or tunnel your local server via HTTPS (e.g., using Cloudflare Tunnels).
                 </div>
               )}
@@ -332,7 +334,7 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
                   )}
                 </div>
                 {discoveryError && (
-                  <div class="llm-error-message" style="margin-top: 0.5rem; color: #f87171; font-size: 0.8rem; line-height: 1.3;">
+                  <div class="llm-warning">
                     ⚠️ {discoveryError}
                   </div>
                 )}
