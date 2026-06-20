@@ -21,6 +21,7 @@ import { ShowMoreToggle } from "./ShowMoreToggle";
 import { TopBarActions } from "./TopBarActions";
 import { BenchmarkHint } from "./BenchmarkHint";
 import { HeroSparkline } from "./HeroSparkline";
+import { playTick } from "../lib/audio";
 import "../styles/components/BenchmarkPanel.css";
 
 type RunState = "idle" | "running" | "done" | "error";
@@ -41,6 +42,25 @@ function BenchmarkPanelContent() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [recentRuns, setRecentRuns] = useState<RunSummary[]>(() => loadHistory());
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("iamspeed_sound") !== "false";
+    }
+    return true;
+  });
+
+  const soundEnabledRef = useRef(soundEnabled);
+  useEffect(() => {
+    soundEnabledRef.current = soundEnabled;
+  }, [soundEnabled]);
+
+  const toggleSound = useCallback(() => {
+    setSoundEnabled((prev) => {
+      const next = !prev;
+      localStorage.setItem("iamspeed_sound", String(next));
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     const stored = localStorage.getItem("iamspeed_theme") as "light" | "dark" | null;
@@ -159,11 +179,19 @@ function BenchmarkPanelContent() {
         onChunk(text) {
           setStreamText((prev) => prev + text);
           tracker.recordChunk(text);
-          setMetrics(tracker.getMetrics());
+          const currentMetrics = tracker.getMetrics();
+          setMetrics(currentMetrics);
+          if (soundEnabledRef.current) {
+            playTick(currentMetrics.tokensPerSecond ?? undefined);
+          }
         },
         onFirstToken() {
           tracker.recordFirstToken();
-          setMetrics(tracker.getMetrics());
+          const currentMetrics = tracker.getMetrics();
+          setMetrics(currentMetrics);
+          if (soundEnabledRef.current) {
+            playTick(currentMetrics.tokensPerSecond ?? undefined);
+          }
         },
         onUsage(usage) {
           tracker.recordUsage(usage.inputTokens, usage.outputTokens);
@@ -284,6 +312,8 @@ function BenchmarkPanelContent() {
             historyOpen={historyOpen}
             onSettings={() => setSettingsOpen(true)}
             settingsOpen={settingsOpen}
+            soundEnabled={soundEnabled}
+            onToggleSound={toggleSound}
           />
         </div>
 

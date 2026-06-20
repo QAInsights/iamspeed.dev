@@ -172,7 +172,7 @@
   align-items: center;
   gap: 0.5rem;
 }
-.llm-theme-toggle, .llm-history-btn, .llm-gear {
+.llm-theme-toggle, .llm-history-btn, .llm-gear, .llm-sound-toggle {
   width: 40px;
   height: 40px;
   display: flex;
@@ -186,14 +186,14 @@
   border-radius: 6px;
   transition: color 0.3s ease-in-out, background-color 0.2s ease-in-out, transform 0.2s;
 }
-.llm-theme-toggle:hover, .llm-history-btn:hover, .llm-gear:hover {
+.llm-theme-toggle:hover, .llm-history-btn:hover, .llm-gear:hover, .llm-sound-toggle:hover {
   color: var(--text);
   background-color: var(--border-light);
 }
-.llm-theme-toggle:active, .llm-history-btn:active, .llm-gear:active {
+.llm-theme-toggle:active, .llm-history-btn:active, .llm-gear:active, .llm-sound-toggle:active {
   transform: scale(0.92);
 }
-.llm-theme-toggle svg, .llm-history-btn svg, .llm-gear svg {
+.llm-theme-toggle svg, .llm-history-btn svg, .llm-gear svg, .llm-sound-toggle svg {
   width: 20px;
   height: 20px;
   display: block;

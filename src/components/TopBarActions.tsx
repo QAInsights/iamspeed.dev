@@ -6,6 +6,8 @@ interface TopBarActionsProps {
   historyOpen: boolean;
   onSettings: () => void;
   settingsOpen: boolean;
+  soundEnabled: boolean;
+  onToggleSound: () => void;
 }
 
 const themeIconStyle = `
@@ -21,11 +23,28 @@ export function TopBarActions({
   historyOpen,
   onSettings,
   settingsOpen,
+  soundEnabled,
+  onToggleSound,
 }: TopBarActionsProps) {
   return (
     <>
       <style>{themeIconStyle}</style>
       <div class="llm-topbar-actions">
+        <button class="llm-sound-toggle" onClick={onToggleSound} aria-label={soundEnabled ? "Mute Sound" : "Enable Sound"}>
+          {soundEnabled ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <line x1="22" y1="9" x2="16" y2="15" />
+              <line x1="16" y1="9" x2="22" y2="15" />
+            </svg>
+          )}
+        </button>
         <button class="llm-theme-toggle" onClick={onToggleTheme} aria-label="Toggle Theme">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="theme-toggle-icon" aria-hidden="true">
             <path class="sun-icon" d="M12 12m-5 0a5 5 0 1 0 10 0a5 5 0 1 0-10 0 M12 1v2 M12 21v2 M4.22 4.22l1.42 1.42 M18.36 18.36l1.42 1.42 M1 12h2 M21 12h2 M4.22 19.78l1.42-1.42 M18.36 5.64l1.42-1.42" />
