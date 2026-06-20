@@ -93,16 +93,21 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
     loadForProvider();
   }, [open, settings.providerId, settings.baseUrl]);
 
+  // Focus close button when panel opens
+  useEffect(() => {
+    if (open) {
+      const panel = panelRef.current;
+      const closeButton = panel?.querySelector<HTMLButtonElement>(".llm-settings-close");
+      closeButton?.focus();
+    }
+  }, [open]);
+
   // Focus trap and Escape key
   useEffect(() => {
     if (!open) return;
 
     const panel = panelRef.current;
     if (!panel) return;
-
-    // Focus the close button when panel opens
-    const closeButton = panel.querySelector<HTMLButtonElement>(".llm-settings-close");
-    closeButton?.focus();
 
     const getFocusable = () =>
       panel.querySelectorAll<HTMLElement>(

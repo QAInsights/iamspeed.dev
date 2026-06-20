@@ -42,6 +42,22 @@ function BenchmarkPanelContent() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [recentRuns, setRecentRuns] = useState<RunSummary[]>(() => loadHistory());
   const [historyOpen, setHistoryOpen] = useState(false);
+
+  const handleOpenSettings = useCallback(() => {
+    setSettingsOpen(true);
+  }, []);
+
+  const handleCloseSettings = useCallback(() => {
+    setSettingsOpen(false);
+  }, []);
+
+  const handleOpenHistory = useCallback(() => {
+    setHistoryOpen(true);
+  }, []);
+
+  const handleCloseHistory = useCallback(() => {
+    setHistoryOpen(false);
+  }, []);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("iamspeed_sound") !== "false";
@@ -308,9 +324,9 @@ function BenchmarkPanelContent() {
           </span>
           <TopBarActions
             onToggleTheme={toggleTheme}
-            onHistory={() => setHistoryOpen(true)}
+            onHistory={handleOpenHistory}
             historyOpen={historyOpen}
-            onSettings={() => setSettingsOpen(true)}
+            onSettings={handleOpenSettings}
             settingsOpen={settingsOpen}
             soundEnabled={soundEnabled}
             onToggleSound={toggleSound}
@@ -349,7 +365,7 @@ function BenchmarkPanelContent() {
             <CurrentSelection
               providerName={PROVIDERS[settings.providerId]?.displayName || settings.providerId}
               modelId={settings.modelId || undefined}
-              onClick={() => setSettingsOpen(true)}
+              onClick={handleOpenSettings}
             />
           )}
 
@@ -366,7 +382,7 @@ function BenchmarkPanelContent() {
             hasConfig={hasConfig}
             runState={runState}
             error={error}
-            onOpenSettings={() => setSettingsOpen(true)}
+            onOpenSettings={handleOpenSettings}
           />
 
           {/* Show more */}
@@ -402,14 +418,14 @@ function BenchmarkPanelContent() {
 
       <RecentRuns
         open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
+        onClose={handleCloseHistory}
         runs={recentRuns}
         onClear={() => { clearHistory(); setRecentRuns([]); }}
       />
 
       <SettingsPanel
         open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
+        onClose={handleCloseSettings}
         settings={settings}
         onSettingsChange={setSettings}
       />
