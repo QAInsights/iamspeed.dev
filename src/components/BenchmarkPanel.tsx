@@ -165,7 +165,7 @@ function BenchmarkPanelContent() {
             loadModels(settings.providerId).then((models) => {
               if (models.length > 0) {
                 const newModel = models[0];
-                onSettingsChange({ ...settings, modelId: newModel.id });
+                setSettings({ ...settings, modelId: newModel.id });
                 // Friendly, non-scary message instead of raw provider text
                 setError(`Model unavailable. Switched to ${newModel.label}.`);
                 // Auto-clear the notice after a few seconds
@@ -203,7 +203,7 @@ function BenchmarkPanelContent() {
           loadModels(settings.providerId).then((models) => {
             if (models.length > 0) {
               const newModel = models[0];
-              onSettingsChange({ ...settings, modelId: newModel.id });
+              setSettings({ ...settings, modelId: newModel.id });
               setError(`Model unavailable. Switched to ${newModel.label}.`);
               setTimeout(() => setError(null), 3500);
             } else {
@@ -268,7 +268,6 @@ function BenchmarkPanelContent() {
             </span>
           </span>
           <TopBarActions
-            theme={theme}
             onToggleTheme={toggleTheme}
             onHistory={() => setHistoryOpen(true)}
             historyOpen={historyOpen}

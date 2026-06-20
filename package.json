@@ -5,6 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
+    "predev": "npm run lint",
+    "prebuild": "npm run lint",
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
