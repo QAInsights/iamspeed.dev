@@ -81,7 +81,9 @@ export function createMetricsTracker(provider: string, model: string, promptLeng
       }
       
       const outputForTps = outputTokens ?? estimateTokenCount(totalText);
-      const tokensPerSecond = generationTime && generationTime > 0 ? (outputForTps / generationTime) * 1000 : null;
+      const tokensPerSecond = generationTime && generationTime > 0 && outputForTps > 0
+        ? (outputForTps / generationTime) * 1000
+        : null;
 
       return {
         ttft: firstTokenTime,
