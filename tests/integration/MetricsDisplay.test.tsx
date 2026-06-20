@@ -15,6 +15,7 @@ vi.mock('slot-text', () => ({
       destroy: vi.fn(),
     };
   }),
+  chromatic: vi.fn(() => vi.fn(() => '#000000')),
 }));
 
 

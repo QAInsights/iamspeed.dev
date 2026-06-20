@@ -40,7 +40,7 @@ const style = `
     r: 5;
   }
   .llm-sparkline-tooltip {
-    position: fixed;
+    position: absolute;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 6px;
@@ -96,12 +96,8 @@ export function Sparkline({
     .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
     .join(" ");
 
-  const handleDotEnter = (e: MouseEvent, point: DataPoint) => {
-    setTooltip({ x: e.clientX, y: e.clientY, point });
-  };
-
-  const handleDotMove = (e: MouseEvent, point: DataPoint) => {
-    setTooltip({ x: e.clientX, y: e.clientY, point });
+  const handleDotEnter = (point: DataPoint, x: number, y: number) => {
+    setTooltip({ x, y, point });
   };
 
   const handleDotLeave = () => {
@@ -134,13 +130,9 @@ export function Sparkline({
                 tabIndex={0}
                 role="button"
                 aria-label={`${p.point.label}: ${p.point.value.toFixed(1)} tok/s`}
-                onMouseEnter={(e) => handleDotEnter(e, p.point)}
-                onMouseMove={(e) => handleDotMove(e, p.point)}
+                onMouseEnter={() => handleDotEnter(p.point, p.x, p.y)}
                 onMouseLeave={handleDotLeave}
-                onFocus={(e) => {
-                  const rect = (e.target as SVGCircleElement).getBoundingClientRect();
-                  setTooltip({ x: rect.left + rect.width / 2, y: rect.top, point: p.point });
-                }}
+                onFocus={() => handleDotEnter(p.point, p.x, p.y)}
                 onBlur={handleDotLeave}
               />
             ))}

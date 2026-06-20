@@ -12,6 +12,7 @@ const style = `
     gap: 0.75rem;
     margin-top: 2.5rem;
     align-items: center;
+    cursor: pointer;
   }
   .llm-btn-run {
     padding: 0.625rem 2.25rem;

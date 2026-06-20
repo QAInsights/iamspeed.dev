@@ -92,6 +92,7 @@ const style = `
     border: 1px solid var(--border);
     border-radius: 0;
     background: var(--surface);
+    cursor: pointer;
   }
   .llm-action-btn {
     font-size: 0.75rem;

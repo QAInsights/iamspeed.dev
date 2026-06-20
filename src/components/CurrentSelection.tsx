@@ -13,7 +13,7 @@ const style = `
     color: var(--text-muted);
     margin-top: 0.75rem;
     text-align: center;
-    cursor: pointer;
+    cursor: default;
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     transition: background-color 0.15s ease, color 0.15s ease;
@@ -27,9 +27,17 @@ const style = `
     font-weight: 500;
   }
   .llm-current-selection .change {
+    display: inline-block;
     opacity: 0.6;
     font-size: 0.6875rem;
     margin-left: 0.375rem;
+    cursor: pointer;
+    transition: opacity 0.15s ease, color 0.15s ease;
+  }
+  .llm-current-selection .change:hover {
+    opacity: 1;
+    color: var(--accent);
+    text-decoration: underline;
   }
 `;
 

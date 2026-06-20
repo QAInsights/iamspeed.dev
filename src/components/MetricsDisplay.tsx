@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "preact/hooks";
 import type { BenchmarkMetrics } from "../lib/metrics";
 import { Tooltip } from "./Tooltip";
-import { slotText, type SlotTextController } from "slot-text";
+import { slotText, chromatic, type SlotTextController } from "slot-text";
 import "slot-text/style.css";
 
 interface MetricsDisplayProps {
@@ -75,6 +75,7 @@ function OdometerMetric({ value, accent }: OdometerMetricProps) {
   const elRef = useRef<HTMLSpanElement>(null);
   const controllerRef = useRef<SlotTextController | null>(null);
   const text = value === null || value === undefined ? "--" : String(value);
+  const prevTextRef = useRef<string>(text);
 
   useEffect(() => {
     const el = elRef.current;
@@ -90,7 +91,12 @@ function OdometerMetric({ value, accent }: OdometerMetricProps) {
 
   useEffect(() => {
     if (controllerRef.current) {
-      controllerRef.current.set(text);
+      const isNewUpdate = text !== "--" && text !== prevTextRef.current;
+      prevTextRef.current = text;
+      controllerRef.current.set(text, {
+        ...odometerOptions,
+        ...(isNewUpdate ? { color: chromatic() } : {}),
+      });
     }
   }, [text]);
 
