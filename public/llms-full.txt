@@ -1,0 +1,79 @@
+# I am speed. (iamspeed.dev) — Full Documentation
+
+> A network-speed-test-style benchmarking tool for LLM APIs (Fast.com for LLMs). Pick a provider and model, and see live streaming output with real-time throughput metrics.
+
+## Table of Contents
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Settings & Endpoints](#settings--endpoints)
+- [Local Models Setup](#local-models-setup)
+- [Technical Architecture](#technical-architecture)
+- [Credits & Sponsors](#credits--sponsors)
+
+---
+
+## Features
+- **Live Streaming & Real-Time Metrics**: Track throughput in tokens/second, Time-to-First-Token (TTFT), and Time-to-Last-Token (TTLT) dynamically.
+- **Dynamic Model Discovery**: Fetches active models dynamically from models.dev with robust offline fallback.
+- **Local & Cloud Provider Support**: Native support for cloud APIs (OpenAI, Anthropic) and local developer endpoints (Ollama, LM Studio).
+- **Sci-Fi Sound Synthesis**: Dynamic additive audio synthesis (Web Audio API) playing metallic "calculation chimes" as numbers roll, with a top-bar mute toggle.
+- **Secure Local Storage**: API keys are securely stored client-side using AES-GCM encryption via the Web Crypto API.
+- **Run History**: Persistent local history of recent runs with sparkline visualizations.
+- **Minimal, Static Architecture**: Fully client-side web application built with Astro and Preact.
+
+---
+
+## Quick Start
+```bash
+cd iamspeed.dev
+npm install
+npm run dev
+```
+Open `http://localhost:4321`, click the gear icon to configure your API key or local endpoint, then hit Run.
+
+### Available Commands
+- `npm run dev`: Start the dev server
+- `npm run build`: Build for production
+- `npm run preview`: Preview the production build
+- `npm test`: Run unit tests (Vitest)
+- `npm run test:e2e`: Run E2E tests (Playwright)
+
+---
+
+## Settings & Endpoints
+The benchmarking tool relies on configuring providers via the Settings panel (gear icon):
+- **Cloud Providers**: OpenAI, Anthropic, and Groq require valid API keys. These keys are encrypted using Web Crypto AES-GCM and stored only in the browser's localStorage.
+- **Local Endpoints**: Ollama, LM Studio, etc., do not require API keys. Click "Discover models from endpoint" to dynamically retrieve active models from the endpoint.
+
+---
+
+## Local Models Setup
+- **Base URL defaults** to Ollama's standard: `http://localhost:11434/v1`
+- **Common alternatives**:
+  - LM Studio: `http://localhost:1234/v1`
+  - llama.cpp server: `http://localhost:8080/v1`
+- **CORS Configuration**: Your local server must allow browser CORS:
+  - Ollama: `OLLAMA_ORIGINS="*" ollama serve` (or export the variable)
+- **HTTPS/Mixed Content**: Browsers block insecure HTTP requests to local endpoints when accessing the app over HTTPS. To work around this:
+  - Run the app locally on `http://localhost:4321` (recommended), or
+  - Configure a secure tunnel like **Cloudflare Tunnels**: `npx cloudflared tunnel --url http://localhost:11434 --http-host-header localhost`.
+  - *Note: Free ngrok tunnels are blocked because their browser warning interstitial violates browser CORS policies.*
+
+---
+
+## Technical Architecture
+- **Static Site Generation (SSG)**: Built using Astro with Preact components (islands) for user-interactive panels.
+- **Audio Synthesizer**: Custom Web Audio API synthesizer that plays metallic computational chirps (decaying in 15ms) blended with a high-pitched ring (decaying in 80ms) for high-tech telemetry audio feedback.
+- **Workspace Layout**:
+  - `/src/components/`: Preact islands for panels (BenchmarkPanel, SettingsPanel, TopBarActions, RecentRuns, MetricsDisplay, StreamOutput, RawResponsePanel).
+  - `/src/lib/`: Core libraries (metrics tracker, cryptographic key manager, sound synthesizer).
+  - `/src/lib/providers/`: Provider streaming adapters.
+
+---
+
+## Credits & Sponsors
+- **Author**: NaveenKumar Namachivayam ([QAInsights.com](https://qainsights.com))
+- **Projects**:
+  - [JMeter.ai](https://jmeter.ai)
+  - [Dosa](https://dosa.dev) ([ai.dosa.dev](https://ai.dosa.dev))
+  - [Achu](https://achu.app)

@@ -1,12 +1,14 @@
-# I am speed.  LLM Speed Test. Fast.com but for LLMs.
+# I am speed. (iamspeed.dev)
 
-> A network speed-test-style benchmarking tool for LLM APIs. Pick a provider and model, and see live streaming output with real-time throughput metrics.
+> A network-speed-test-style benchmarking tool for LLM APIs (Fast.com for LLMs). Pick a provider and model, and see live streaming output with real-time throughput metrics.
 
 ## Key Features
-- **Live Streaming & Real-Time Metrics**: Track throughput in tokens/second and Time-to-First-Token (TTFT) dynamically.
+- **Live Streaming & Real-Time Metrics**: Track throughput in tokens/second, Time-to-First-Token (TTFT), and Time-to-Last-Token (TTLT) dynamically.
 - **Dynamic Model Discovery**: Fetches active models dynamically from models.dev with robust offline fallback.
+- **Local & Cloud Provider Support**: Native support for cloud APIs (OpenAI, Anthropic) and local developer endpoints (Ollama, LM Studio).
+- **Sci-Fi Sound Synthesis**: Dynamic additive audio synthesis (Web Audio API) playing metallic "calculation chimes" as numbers roll, with a top-bar mute toggle.
 - **Secure Local Storage**: API keys are securely stored client-side using AES-GCM encryption via the Web Crypto API.
-- **Multi-Provider Support**: Supports major LLM API providers including OpenAI and Anthropic.
+- **Run History**: Persistent local history of recent runs with sparkline visualizations.
 - **Minimal, Static Architecture**: Fully client-side web application built with Astro and Preact.
 
 ## Technical Details
@@ -15,8 +17,22 @@
 - **Metrics Tracking**:
   - **TTFT (Time-to-First-Token)**: Measured from request initiation to the first chunk received.
   - **Throughput**: Calculated continuously as tokens per second.
+  - **TTLT (Time-to-Last-Token)**: Total time elapsed.
 
 ## Workspace Structure
-- `/src/components/`: Preact UI Islands (BenchmarkPanel, ApiKeyManager, SettingsPanel, MetricsDisplay, StreamOutput, RawResponsePanel).
-- `/src/lib/`: Core libraries (metrics tracker, cryptographic adapter, provider streams).
-- `/src/lib/providers/`: Endpoints and response parser adapters for Anthropic and OpenAI.
+- `/src/components/`: Preact UI Islands (BenchmarkPanel, SettingsPanel, TopBarActions, RecentRuns, MetricsDisplay, StreamOutput, RawResponsePanel).
+- `/src/lib/`: Core libraries (metrics tracker, cryptographic adapter, local model discovery, sound synthesizer).
+- `/src/lib/providers/`: Endpoints and response parser adapters for Anthropic, OpenAI, and local endpoints.
+
+## Author 
+
+- **Name**: NaveenKumar Namachivayam
+- **Website**: [QAInsights.com](https://qainsights.com)
+- **Projects**:
+  - [JMeter.ai](https://jmeter.ai)
+  - [Dosa](https://dosa.dev) 
+  - [Awesome AI Tools](https://ai.dosa.dev)
+  - [Achu](https://achu.app)
+  - [YouTube](https://www.youtube.com/@qainsights)
+  - [X](https://x.com/qainsights)
+
