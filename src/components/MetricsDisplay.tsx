@@ -1,7 +1,9 @@
 /** @jsxImportSource preact */
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 import type { BenchmarkMetrics } from "../lib/metrics";
 import { Tooltip } from "./Tooltip";
+import { slotText, type SlotTextController } from "slot-text";
+import "slot-text/style.css";
 
 interface MetricsDisplayProps {
   metrics: BenchmarkMetrics | null;
@@ -29,6 +31,7 @@ const style = `
     font-size: 1.5rem;
     font-weight: 600;
     line-height: 1.2;
+    display: inline-block;
   }
   .llm-metric-value.accent {
     color: var(--accent);
@@ -55,43 +58,50 @@ function formatNumber(n: number | null): string {
   return n.toFixed(1);
 }
 
-function AnimatedNumber({ value, accent }: { value: number | null; accent?: boolean }) {
-  const [display, setDisplay] = useState<number | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const startRef = useRef<number | null>(null);
-  const duration = 600;
+const odometerOptions = {
+  direction: "up" as const,
+  stagger: 30,
+  duration: 250,
+  bounce: 0.4,
+  skipUnchanged: true,
+};
+
+interface OdometerMetricProps {
+  value: string | number | null;
+  accent?: boolean;
+}
+
+function OdometerMetric({ value, accent }: OdometerMetricProps) {
+  const elRef = useRef<HTMLSpanElement>(null);
+  const controllerRef = useRef<SlotTextController | null>(null);
+  const text = value === null || value === undefined ? "--" : String(value);
 
   useEffect(() => {
-    if (value === null) {
-      setDisplay(null);
-      return;
-    }
-
-    const target = value;
-    startRef.current = performance.now();
-
-    const animate = (now: number) => {
-      const elapsed = now - (startRef.current ?? now);
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplay(Math.round(target * eased * 10) / 10);
-
-      if (progress < 1) {
-        rafRef.current = requestAnimationFrame(animate);
+    const el = elRef.current;
+    if (!el) return;
+    controllerRef.current = slotText(el, text, odometerOptions);
+    return () => {
+      if (controllerRef.current) {
+        controllerRef.current.destroy();
+        controllerRef.current = null;
       }
     };
+  }, []);
 
-    rafRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    };
-  }, [value]);
-
-  const text = display === null ? "--" : formatNumber(display);
+  useEffect(() => {
+    if (controllerRef.current) {
+      controllerRef.current.set(text);
+    }
+  }, [text]);
 
   return (
-    <span class={`llm-metric-value${accent ? " accent" : ""}`}>{text}</span>
+    <span
+      ref={elRef}
+      class={`llm-metric-value${accent ? " accent" : ""}`}
+      aria-label={text}
+    >
+      {text}
+    </span>
   );
 }
 
@@ -106,25 +116,25 @@ export function MetricsDisplay({ metrics }: MetricsDisplayProps) {
       <style>{style}</style>
       <div class="llm-metrics" role="group" aria-label="Benchmark metrics">
         <div class="llm-metric">
-          <AnimatedNumber value={ttft} accent />
+          <OdometerMetric value={ttft !== null ? formatNumber(ttft) : null} accent />
           <span class="llm-metric-unit">ms</span>
           <Tooltip label="How long before the model starts responding.">
             <div class="llm-metric-label">First Token</div>
           </Tooltip>
         </div>
         <div class="llm-metric">
-          <span class="llm-metric-value">{formatNumber(tps)}</span>
+          <OdometerMetric value={tps !== null ? formatNumber(tps) : null} />
           <span class="llm-metric-unit"> tok/s</span>
           <Tooltip label="Tokens Per Second. Output generation speed.">
             <div class="llm-metric-label">Throughput</div>
           </Tooltip>
         </div>
         <div class="llm-metric">
-          <span class="llm-metric-value">{tokens > 0 ? tokens : "--"}</span>
+          <OdometerMetric value={tokens > 0 ? tokens : null} />
           <div class="llm-metric-label">Tokens</div>
         </div>
         <div class="llm-metric">
-          <span class="llm-metric-value">{formatNumber(total)}</span>
+          <OdometerMetric value={total !== null ? formatNumber(total) : null} />
           <span class="llm-metric-unit">ms</span>
           <Tooltip label="Time to Last Token. Total duration from request to complete response.">
             <div class="llm-metric-label">Total Time</div>
