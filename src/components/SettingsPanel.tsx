@@ -22,137 +22,24 @@ interface SettingsPanelProps {
 }
 
 const style = `
-  .llm-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.3);
-    z-index: 100;
-    display: flex;
-    justify-content: flex-end;
-  }
-  .llm-settings {
-    width: 450px;
-    max-width: 100vw;
-    height: 100vh;
-    background: var(--surface);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border-left: 1px solid var(--border);
-    padding: 2rem 1.5rem;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    transition: background 0.8s ease-in-out, border-color 0.3s ease-in-out;
-  }
-  .llm-settings-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .llm-settings-title {
-    font-family: var(--mono);
-    font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-  .llm-settings-close {
-    font-size: 1.25rem;
-    color: var(--text-muted);
-    padding: 0.25rem;
-    cursor: pointer;
-    background: none;
-    border: none;
-    line-height: 1;
-  }
-  .llm-settings-close:hover {
-    color: var(--text);
-  }
-  .llm-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-    border: none;
-    padding: 0;
-    margin: 0;
-  }
-  .llm-field legend {
-    padding: 0;
-  }
-  .llm-field-label {
-    font-size: 0.6875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-muted);
-  }
-  .llm-select {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.8125rem;
-    border: 1px solid var(--border);
-    border-radius: 0;
-    background: var(--surface);
-    cursor: pointer;
-  }
-  .llm-action-btn {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    padding: 0.25rem 0.5rem;
-    border: 1px solid var(--border-light);
-    background: var(--surface);
-    cursor: pointer;
-    border-radius: 0;
-    font-family: var(--mono);
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-  }
-  .llm-action-btn:hover {
-    color: var(--text);
-    border-color: var(--text);
-  }
-  .llm-textarea {
-    width: 100%;
-    min-height: 90px;
-    padding: 0.75rem;
-    font-size: 0.8125rem;
-    font-family: var(--body);
-    resize: vertical;
-    border: 1px solid var(--border);
-    border-radius: 0;
-  }
-  .llm-models-loading {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    padding: 0.5rem 0;
-  }
-  .llm-models-empty {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    padding: 0.5rem 0;
-    font-style: italic;
-  }
-  .llm-settings-done {
-    margin-top: auto;
-    padding: 0.75rem;
-    background: var(--accent);
-    color: #fff;
-    font-weight: 600;
-    font-size: 0.8125rem;
-    border: none;
-    cursor: pointer;
-    text-align: center;
-    letter-spacing: 0.02em;
-  }
-  .llm-settings-done:hover {
-    background: var(--accent-hover);
-  }
-  .llm-disclaimer {
-    font-size: 0.6875rem;
-    color: var(--text-muted);
-    line-height: 1.5;
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--border-light);
-  }
+  .llm-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); z-index: 100; display: flex; justify-content: flex-end; }
+  .llm-settings { width: 450px; max-width: 100vw; height: 100vh; background: var(--surface); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-left: 1px solid var(--border); padding: 2rem 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; transition: background 0.8s ease-in-out, border-color 0.3s ease-in-out; }
+  .llm-settings-header { display: flex; justify-content: space-between; align-items: center; }
+  .llm-settings-title { font-family: var(--mono); font-size: 0.875rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+  .llm-settings-close { font-size: 1.25rem; color: var(--text-muted); padding: 0.25rem; cursor: pointer; background: none; border: none; line-height: 1; }
+  .llm-settings-close:hover { color: var(--text); }
+  .llm-field { display: flex; flex-direction: column; gap: 0.375rem; border: none; padding: 0; margin: 0; }
+  .llm-field legend { padding: 0; }
+  .llm-field-label { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+  .llm-select { padding: 0.5rem 0.75rem; font-size: 0.8125rem; border: 1px solid var(--border); border-radius: 0; background: var(--surface); cursor: pointer; }
+  .llm-action-btn { font-size: 0.75rem; color: var(--text-muted); padding: 0.25rem 0.5rem; border: 1px solid var(--border-light); background: var(--surface); cursor: pointer; border-radius: 0; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.02em; }
+  .llm-action-btn:hover { color: var(--text); border-color: var(--text); }
+  .llm-textarea { width: 100%; min-height: 90px; padding: 0.75rem; font-size: 0.8125rem; font-family: var(--body); resize: vertical; border: 1px solid var(--border); border-radius: 0; }
+  .llm-models-loading { font-size: 0.75rem; color: var(--text-muted); padding: 0.5rem 0; }
+  .llm-models-empty { font-size: 0.75rem; color: var(--text-muted); padding: 0.5rem 0; font-style: italic; }
+  .llm-settings-done { margin-top: auto; padding: 0.75rem; background: var(--accent); color: #fff; font-weight: 600; font-size: 0.8125rem; border: none; cursor: pointer; text-align: center; letter-spacing: 0.02em; }
+  .llm-settings-done:hover { background: var(--accent-hover); }
+  .llm-disclaimer { font-size: 0.6875rem; color: var(--text-muted); line-height: 1.5; padding-top: 0.75rem; border-top: 1px solid var(--border-light); }
 `;
 
 export function SettingsPanel({ open, onClose, settings, onSettingsChange }: SettingsPanelProps) {
@@ -161,6 +48,7 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
   const [models, setModels] = useState<ModelEntry[]>([]);
   const [modelsLoading, setModelsLoading] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
+  const [discoveryError, setDiscoveryError] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -168,6 +56,7 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
     setStored(hasStoredKey(settings.providerId));
     setInputValue("");
     setShowManualInput(false);
+    setDiscoveryError(null);
 
     loadKey(settings.providerId).then((key) => {
       if (key) {
@@ -183,6 +72,11 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
       let loaded: ModelEntry[] = [];
       if (isLocal && settings.baseUrl) {
         loaded = await discoverLocalModels(settings.baseUrl);
+        if (loaded.length === 0) {
+          if (typeof window !== "undefined" && window.location.protocol === "https:" && settings.baseUrl.startsWith("http://")) {
+            setDiscoveryError("Mixed Content Blocked: HTTPS websites cannot query local HTTP endpoints. Run this app locally (http://localhost:4321) or tunnel your local server via HTTPS (e.g., Cloudflare Tunnels).");
+          }
+        }
       } else if (!isLocal) {
         loaded = await loadModels(settings.providerId);
       }
@@ -321,14 +215,20 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
                   onSettingsChange({ ...settings, baseUrl: val });
                 }}
                 onBlur={async () => {
-                  // Attempt auto-discover on blur for convenience
                   if (settings.baseUrl) {
                     setModelsLoading(true);
+                    setDiscoveryError(null);
                     const discovered = await discoverLocalModels(settings.baseUrl);
                     setModels(discovered);
                     setModelsLoading(false);
                     if (discovered.length > 0 && !discovered.some((m) => m.id === settings.modelId)) {
                       onSettingsChange({ ...settings, modelId: discovered[0].id });
+                    } else if (discovered.length === 0) {
+                      if (typeof window !== "undefined" && window.location.protocol === "https:" && settings.baseUrl.startsWith("http://")) {
+                        setDiscoveryError("Mixed Content Blocked: HTTPS websites cannot query local HTTP endpoints. Run this app locally (http://localhost:4321) or tunnel your local server via HTTPS (e.g., Cloudflare Tunnels).");
+                      } else {
+                        setDiscoveryError("No models found. Make sure Ollama/LM Studio is running and CORS is configured.");
+                      }
                     }
                   }
                 }}
@@ -336,6 +236,11 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
               <div class="llm-models-empty" style="margin-top: 0.25rem;">
                 Default for Ollama. Change for LM Studio (1234), llama.cpp, etc.
               </div>
+              {typeof window !== "undefined" && window.location.protocol === "https:" && settings.baseUrl?.startsWith("http://") && (
+                <div class="llm-error-message" style="margin-top: 0.5rem; color: #f87171; font-size: 0.75rem; line-height: 1.3;">
+                  ⚠️ <strong>Mixed Content Warning:</strong> Browsers block HTTPS websites from querying local HTTP endpoints. To fix this, run this app locally at <code>http://localhost:4321</code> or tunnel your local server via HTTPS (e.g., using Cloudflare Tunnels).
+                </div>
+              )}
             </div>
           )}
 
@@ -397,12 +302,19 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
                     onClick={async () => {
                       if (!settings.baseUrl) return;
                       setModelsLoading(true);
+                      setDiscoveryError(null);
                       const discovered = await discoverLocalModels(settings.baseUrl);
                       setModels(discovered);
                       setModelsLoading(false);
                       if (discovered.length > 0) {
                         onSettingsChange({ ...settings, modelId: discovered[0].id });
                         setShowManualInput(false);
+                      } else {
+                        if (typeof window !== "undefined" && window.location.protocol === "https:" && settings.baseUrl.startsWith("http://")) {
+                          setDiscoveryError("Mixed Content Blocked: HTTPS websites cannot query local HTTP endpoints. Run this app locally (http://localhost:4321) or tunnel your local server via HTTPS (e.g., Cloudflare Tunnels).");
+                        } else {
+                          setDiscoveryError("No models found. Make sure Ollama/LM Studio is running and CORS is configured.");
+                        }
                       }
                     }}
                   >
@@ -419,6 +331,11 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
                     </button>
                   )}
                 </div>
+                {discoveryError && (
+                  <div class="llm-error-message" style="margin-top: 0.5rem; color: #f87171; font-size: 0.8rem; line-height: 1.3;">
+                    ⚠️ {discoveryError}
+                  </div>
+                )}
                 {models.length > 0 && showManualInput && (
                   <div class="llm-models-empty" style="margin-top: 0.25rem;">
                     Discovered: {models.map((m) => m.id).join(", ")}

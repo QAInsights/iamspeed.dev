@@ -49,6 +49,7 @@ Select **Local** in settings.
 - Click **Enter model manually** if you need to override the dropdown and type a custom model ID directly.
 - Your local server **must allow browser CORS**:
   - Ollama: `OLLAMA_ORIGINS="*" ollama serve` (or export the variable)
+- **HTTPS/Mixed Content Note**: If you access this app via HTTPS (e.g., `https://iamspeed.dev`), modern browsers block insecure HTTP requests to local endpoints (Mixed Content). To work around this, either run the app locally on `http://localhost:4321` (recommended), or configure a secure tunnel like **Cloudflare Tunnels** (`cloudflared tunnel --url http://localhost:11434`). *Note: Free ngrok tunnels display a browser warning page that violates CORS policies and blocks browser-initiated fetches.*
 - The app runs entirely in the browser — no proxy.
 
 ## License
