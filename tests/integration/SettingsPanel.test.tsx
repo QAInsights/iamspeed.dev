@@ -341,5 +341,90 @@ describe('SettingsPanel', () => {
       await fireEvent.click(discoverButton!);
       expect(mockedDiscover).toHaveBeenCalledWith('http://localhost:11434/v1');
     });
+
+    it('populates local models in a dropdown after clicking discover', async () => {
+      const mockedDiscover = vi.mocked(discoverLocalModels);
+      mockedDiscover.mockResolvedValue([
+        { id: 'llama3.2', label: 'llama3.2', contextWindow: 0 },
+        { id: 'mistral', label: 'mistral', contextWindow: 0 },
+      ]);
+
+      const onSettingsChange = vi.fn();
+      const { container } = render(
+        <SettingsPanel
+          open={true}
+          onClose={vi.fn()}
+          settings={{ ...localSettings, baseUrl: 'http://localhost:11434/v1' }}
+          onSettingsChange={onSettingsChange}
+        />
+      );
+
+      // Initially should render text input because discover hasn't resolved yet
+      let modelEl = container.querySelector('#settings-model')!;
+      expect(modelEl.tagName).toBe('INPUT');
+
+      const buttons = Array.from(container.querySelectorAll('button'));
+      const discoverButton = buttons.find((b) => /Discover/i.test(b.textContent || ''));
+      expect(discoverButton).toBeTruthy();
+
+      await fireEvent.click(discoverButton!);
+      // Allow microtasks to execute so state update triggers
+      await new Promise((r) => setTimeout(r, 0));
+
+      // Now it should be a select element
+      modelEl = container.querySelector('#settings-model')!;
+      expect(modelEl.tagName).toBe('SELECT');
+      const selectEl = modelEl as HTMLSelectElement;
+      expect(selectEl.options).toHaveLength(2);
+      expect(selectEl.options[0].value).toBe('llama3.2');
+      expect(selectEl.options[1].value).toBe('mistral');
+    });
+
+    it('allows toggling between dropdown and manual text input when models are discovered', async () => {
+      const mockedDiscover = vi.mocked(discoverLocalModels);
+      mockedDiscover.mockResolvedValue([
+        { id: 'llama3.2', label: 'llama3.2', contextWindow: 0 },
+      ]);
+
+      const { container } = render(
+        <SettingsPanel
+          open={true}
+          onClose={vi.fn()}
+          settings={{ ...localSettings, baseUrl: 'http://localhost:11434/v1' }}
+          onSettingsChange={vi.fn()}
+        />
+      );
+
+      const buttons = Array.from(container.querySelectorAll('button'));
+      const discoverButton = buttons.find((b) => /Discover/i.test(b.textContent || ''));
+      await fireEvent.click(discoverButton!);
+      await new Promise((r) => setTimeout(r, 0));
+
+      // Discovered -> Select dropdown should be shown
+      let modelEl = container.querySelector('#settings-model')!;
+      expect(modelEl.tagName).toBe('SELECT');
+
+      // Click "Enter model manually" button
+      const manualButton = Array.from(container.querySelectorAll('button'))
+        .find((b) => /Enter model manually/i.test(b.textContent || ''));
+      expect(manualButton).toBeTruthy();
+      await fireEvent.click(manualButton!);
+      await new Promise((r) => setTimeout(r, 0));
+
+      // Now it should be an input text box
+      modelEl = container.querySelector('#settings-model')!;
+      expect(modelEl.tagName).toBe('INPUT');
+
+      // Click "Choose from discovered models" button
+      const chooseButton = Array.from(container.querySelectorAll('button'))
+        .find((b) => /Choose from discovered models/i.test(b.textContent || ''));
+      expect(chooseButton).toBeTruthy();
+      await fireEvent.click(chooseButton!);
+      await new Promise((r) => setTimeout(r, 0));
+
+      // Should be select dropdown again
+      modelEl = container.querySelector('#settings-model')!;
+      expect(modelEl.tagName).toBe('SELECT');
+    });
   });
 });

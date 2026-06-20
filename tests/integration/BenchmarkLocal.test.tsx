@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, cleanup, fireEvent } from '@testing-library/preact';
+import { render, cleanup } from '@testing-library/preact';
 import { BenchmarkPanel } from '../../src/components/BenchmarkPanel';
 import { discoverLocalModels } from '../../src/lib/modelRegistry';
 
@@ -52,7 +52,7 @@ describe('BenchmarkPanel - Local support (integration)', () => {
     let errored = false;
     try {
       render(<BenchmarkPanel />);
-    } catch (e) {
+    } catch {
       errored = true;
     }
     // If we reached here the initial render + effects for local didn't hard crash the test

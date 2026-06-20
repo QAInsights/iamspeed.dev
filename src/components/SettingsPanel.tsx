@@ -93,6 +93,22 @@ const style = `
     border-radius: 0;
     background: var(--surface);
   }
+  .llm-action-btn {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--border-light);
+    background: var(--surface);
+    cursor: pointer;
+    border-radius: 0;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .llm-action-btn:hover {
+    color: var(--text);
+    border-color: var(--text);
+  }
   .llm-textarea {
     width: 100%;
     min-height: 90px;
@@ -143,12 +159,14 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
   const [stored, setStored] = useState(false);
   const [models, setModels] = useState<ModelEntry[]>([]);
   const [modelsLoading, setModelsLoading] = useState(false);
+  const [showManualInput, setShowManualInput] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
     setStored(hasStoredKey(settings.providerId));
     setInputValue("");
+    setShowManualInput(false);
 
     loadKey(settings.providerId).then((key) => {
       if (key) {
@@ -245,6 +263,7 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
 
     setModels(loadedModels);
     setModelsLoading(false);
+    setShowManualInput(false);
 
     onSettingsChange({
       ...settings,
@@ -340,34 +359,66 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
             <label class="llm-field-label" for="settings-model">Model</label>
             {settings.providerId === LOCAL_PROVIDER_ID ? (
               <>
-                <input
-                  id="settings-model"
-                  type="text"
-                  class="llm-select"
-                  placeholder="e.g. llama3.2 or mistral"
-                  value={settings.modelId}
-                  onInput={(e) =>
-                    onSettingsChange({ ...settings, modelId: (e.target as HTMLInputElement).value })
-                  }
-                />
-                <button
-                  type="button"
-                  class="llm-key-clear"
-                  style="margin-top: 0.5rem;"
-                  onClick={async () => {
-                    if (!settings.baseUrl) return;
-                    setModelsLoading(true);
-                    const discovered = await discoverLocalModels(settings.baseUrl);
-                    setModels(discovered);
-                    setModelsLoading(false);
-                    if (discovered.length > 0) {
-                      onSettingsChange({ ...settings, modelId: discovered[0].id });
+                {models.length > 0 && !showManualInput ? (
+                  <select
+                    id="settings-model"
+                    class="llm-select"
+                    value={settings.modelId}
+                    disabled={modelsLoading}
+                    onInput={(e) =>
+                      onSettingsChange({ ...settings, modelId: (e.target as HTMLSelectElement).value })
                     }
-                  }}
-                >
-                  Discover models from endpoint
-                </button>
-                {models.length > 0 && (
+                  >
+                    {models.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    id="settings-model"
+                    type="text"
+                    class="llm-select"
+                    placeholder="e.g. llama3.2 or mistral"
+                    value={settings.modelId}
+                    disabled={modelsLoading}
+                    onInput={(e) =>
+                      onSettingsChange({ ...settings, modelId: (e.target as HTMLInputElement).value })
+                    }
+                  />
+                )}
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                  <button
+                    type="button"
+                    class="llm-action-btn"
+                    disabled={modelsLoading}
+                    onClick={async () => {
+                      if (!settings.baseUrl) return;
+                      setModelsLoading(true);
+                      const discovered = await discoverLocalModels(settings.baseUrl);
+                      setModels(discovered);
+                      setModelsLoading(false);
+                      if (discovered.length > 0) {
+                        onSettingsChange({ ...settings, modelId: discovered[0].id });
+                        setShowManualInput(false);
+                      }
+                    }}
+                  >
+                    {modelsLoading ? "Discovering..." : "Discover models from endpoint"}
+                  </button>
+                  {models.length > 0 && (
+                    <button
+                      type="button"
+                      class="llm-action-btn"
+                      disabled={modelsLoading}
+                      onClick={() => setShowManualInput(!showManualInput)}
+                    >
+                      {showManualInput ? "Choose from discovered models" : "Enter model manually"}
+                    </button>
+                  )}
+                </div>
+                {models.length > 0 && showManualInput && (
                   <div class="llm-models-empty" style="margin-top: 0.25rem;">
                     Discovered: {models.map((m) => m.id).join(", ")}
                   </div>
