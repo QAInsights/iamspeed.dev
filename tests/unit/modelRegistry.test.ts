@@ -73,7 +73,7 @@ describe("modelRegistry", () => {
       },
       timestamp: Date.now(),
     };
-    store.set("iamspeed_models_cache", JSON.stringify(cacheEntry));
+    store.set("iamspeed_models_cache_v2", JSON.stringify(cacheEntry));
 
     const fetchSpy = vi.fn();
     globalThis.fetch = fetchSpy;
@@ -96,7 +96,7 @@ describe("modelRegistry", () => {
       },
       timestamp: staleTimestamp,
     };
-    store.set("iamspeed_models_cache", JSON.stringify(cacheEntry));
+    store.set("iamspeed_models_cache_v2", JSON.stringify(cacheEntry));
 
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -117,9 +117,9 @@ describe("modelRegistry", () => {
   });
 
   it("clearModelCache removes cached data", () => {
-    store.set("iamspeed_models_cache", "some data");
+    store.set("iamspeed_models_cache_v2", "some data");
     clearModelCache();
-    expect(localStorageMock.removeItem).toHaveBeenCalledWith("iamspeed_models_cache");
+    expect(localStorageMock.removeItem).toHaveBeenCalledWith("iamspeed_models_cache_v2");
   });
 
   it("returns empty array for unknown provider", async () => {

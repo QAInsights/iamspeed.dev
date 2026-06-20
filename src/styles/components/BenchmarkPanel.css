@@ -297,104 +297,15 @@
 }
 
 /* Secondary metrics row */
-.llm-secondary {
-  display: flex;
-  gap: 2rem;
-  margin-top: 2rem;
-  justify-content: center;
-}
-.llm-sec-item {
-  text-align: center;
-}
-.llm-sec-value {
-  font-family: var(--mono);
-  font-size: 1rem;
-  font-weight: 500;
-}
-.llm-sec-label {
-  font-size: 0.625rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 0.125rem;
-}
+/* (secondary metrics styles moved to SecondaryMetrics component) */
 
-/* Actions row */
-.llm-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 2.5rem;
-  align-items: center;
-}
-.llm-btn-run {
-  padding: 0.625rem 2.25rem;
-  background: var(--accent);
-  color: #fff;
-  font-weight: 600;
-  font-size: 0.8125rem;
-  letter-spacing: 0.02em;
-  border: none;
-  cursor: pointer;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
-  transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
-}
-.llm-btn-run:hover {
-  background: var(--accent-hover);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
-}
-.llm-btn-run:active {
-  transform: scale(0.96);
-}
-.llm-btn-run:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-.llm-btn-stop {
-  padding: 0.625rem 2.25rem;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  font-weight: 500;
-  font-size: 0.8125rem;
-  cursor: pointer;
-  color: var(--text);
-  border-radius: 6px;
-  transition: border-color 0.2s, background-color 0.2s, color 0.2s, transform 0.1s;
-}
-.llm-btn-stop:hover {
-  border-color: var(--text);
-  background: var(--border-light);
-}
-.llm-btn-stop:active {
-  transform: scale(0.96);
-}
+/* (action button styles moved to RunControls component) */
 
-/* Show more toggle */
-.llm-show-more {
-  margin-top: 2rem;
-  font-size: 0.75rem;
-  color: var(--accent);
-  cursor: pointer;
-  background: none;
-  border: none;
-  letter-spacing: 0.02em;
-  font-family: var(--body);
-  transition: color 0.2s ease-in-out;
-}
-.llm-show-more:hover { text-decoration: underline; }
+/* (show more styles moved to ShowMoreToggle component) */
 
-/* Model context line */
-.llm-model-context {
-  font-family: var(--mono);
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-top: 1rem;
-  text-align: center;
-  letter-spacing: 0.01em;
-}
+/* (model context styles consolidated into CurrentSelection) */
+
+/* (styles moved into CurrentSelection component for modularity) */
 
 /* Stream section */
 .llm-stream-section {
@@ -403,14 +314,7 @@
   padding: 0 0 2rem;
 }
 
-/* Sparkline section (hero) */
-.llm-hero-sparkline {
-  width: 100%;
-  max-width: var(--max-w);
-  margin-top: 1rem;
-  display: flex;
-  justify-content: center;
-}
+/* (sparkline wrapper moved to HeroSparkline) */
 
 /* Error */
 .llm-error {
@@ -421,23 +325,7 @@
   max-width: var(--max-w);
 }
 
-/* No-key hint */
-.llm-hint {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-top: 1rem;
-  text-align: center;
-}
-.llm-hint-link {
-  color: var(--accent);
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  text-decoration: underline;
-  display: inline;
-}
+/* (hint styles moved to BenchmarkHint component) */
 
 /* Footer */
 .llm-footer {

@@ -54,7 +54,7 @@ describe('SettingsPanel', () => {
     expect(container.querySelector('.llm-settings-title')!.textContent).toBe('Settings');
   });
 
-  it('shows provider tabs', () => {
+  it('shows provider selector', () => {
     const { container } = render(
       <SettingsPanel
         open={true}
@@ -63,13 +63,14 @@ describe('SettingsPanel', () => {
         onSettingsChange={vi.fn()}
       />
     );
-    const tabs = container.querySelectorAll('.llm-provider-tab');
-    const tabTexts = Array.from(tabs).map((t) => t.textContent);
-    expect(tabTexts).toContain('OpenAI');
-    expect(tabTexts).toContain('Anthropic');
+    const select = container.querySelector('.llm-provider-select') as HTMLSelectElement;
+    expect(select).toBeInTheDocument();
+    const options = Array.from(select.options).map((o) => o.textContent);
+    expect(options).toContain('OpenAI');
+    expect(options).toContain('Anthropic');
   });
 
-  it('marks the active provider tab', () => {
+  it('selects the active provider', () => {
     const { container } = render(
       <SettingsPanel
         open={true}
@@ -78,8 +79,8 @@ describe('SettingsPanel', () => {
         onSettingsChange={vi.fn()}
       />
     );
-    const activeTab = container.querySelector('.llm-provider-tab.active');
-    expect(activeTab!.textContent).toContain('OpenAI');
+    const select = container.querySelector('.llm-provider-select') as HTMLSelectElement;
+    expect(select.value).toBe('openai');
   });
 
   it('calls onClose when close button is clicked', async () => {
@@ -167,7 +168,7 @@ describe('SettingsPanel', () => {
     expect(disclaimer!.textContent).toContain('encrypted locally');
   });
 
-  it('calls onSettingsChange when Anthropic tab is clicked', async () => {
+  it('calls onSettingsChange when provider is changed via select', async () => {
     const onSettingsChange = vi.fn();
     const { container } = render(
       <SettingsPanel
@@ -177,9 +178,10 @@ describe('SettingsPanel', () => {
         onSettingsChange={onSettingsChange}
       />
     );
-    const tabs = container.querySelectorAll('.llm-provider-tab');
-    const anthropicTab = Array.from(tabs).find((t) => t.textContent!.includes('Anthropic'))!;
-    await fireEvent.click(anthropicTab);
+    const select = container.querySelector('.llm-provider-select') as HTMLSelectElement;
+    // Simulate changing to anthropic
+    select.value = 'anthropic';
+    await fireEvent.change(select);
     expect(onSettingsChange).toHaveBeenCalledWith(
       expect.objectContaining({ providerId: 'anthropic' })
     );

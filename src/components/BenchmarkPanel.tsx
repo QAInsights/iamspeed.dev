@@ -10,38 +10,22 @@ import { loadModels } from "../lib/modelRegistry";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { WeatherBackground } from "./WeatherBackground";
 import { RecentRuns } from "./RecentRuns";
-import { Sparkline } from "./Sparkline";
 import { ShareBar } from "./ShareBar";
-import { Tooltip } from "./Tooltip";
 import { loadHistory, saveRun, clearHistory, type RunSummary } from "../lib/history";
+import { loadPrefs, savePrefs } from "../lib/prefs";
+import { CurrentSelection } from "./CurrentSelection";
+import { RunControls } from "./RunControls";
+import { SecondaryMetrics } from "./SecondaryMetrics";
+import { HeroResult } from "./HeroResult";
+import { ShowMoreToggle } from "./ShowMoreToggle";
+import { TopBarActions } from "./TopBarActions";
+import { BenchmarkHint } from "./BenchmarkHint";
+import { HeroSparkline } from "./HeroSparkline";
 import "../styles/components/BenchmarkPanel.css";
 
 type RunState = "idle" | "running" | "done" | "error";
 
-const PREFS_KEY = "iamspeed_prefs";
 
-interface Prefs {
-  providerId?: string;
-  modelId?: string;
-  prompt?: string;
-}
-
-function loadPrefs(): Prefs {
-  try {
-    const raw = localStorage.getItem(PREFS_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-}
-
-function savePrefs(prefs: Prefs): void {
-  try {
-    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
-  } catch {
-    // ignore
-  }
-}
 
 function BenchmarkPanelContent() {
   const prefs = loadPrefs();
@@ -92,14 +76,17 @@ function BenchmarkPanelContent() {
     });
   }, [settings.providerId, settings.modelId, settings.prompt]);
 
-  // Load models on mount, only overriding modelId if nothing persisted
+  // Load models on mount and ensure selected model is still valid for the provider
   useEffect(() => {
     loadModels(settings.providerId).then((models) => {
-      if (models.length > 0 && !settings.modelId) {
-        setSettings((prev) => ({ ...prev, modelId: models[0].id }));
+      if (models.length > 0) {
+        const isValid = settings.modelId && models.some((m) => m.id === settings.modelId);
+        if (!isValid) {
+          setSettings((prev) => ({ ...prev, modelId: models[0].id }));
+        }
       }
     });
-  }, []);
+  }, [settings.providerId]);
 
   const displayTps = metrics?.tokensPerSecond ?? null;
   const ttft = metrics?.ttft ?? null;
@@ -170,8 +157,29 @@ function BenchmarkPanelContent() {
           tracker.finish();
           const finalMetrics = tracker.getMetrics();
           setMetrics(finalMetrics);
-          setError(err.message);
+
+          const message = err.message || String(err);
+
+          // Subtle handling for decommissioned / invalid models: auto-recover
+          if (/decommissioned|no longer supported|model .* (not found|invalid)/i.test(message)) {
+            loadModels(settings.providerId).then((models) => {
+              if (models.length > 0) {
+                const newModel = models[0];
+                onSettingsChange({ ...settings, modelId: newModel.id });
+                // Friendly, non-scary message instead of raw provider text
+                setError(`Model unavailable. Switched to ${newModel.label}.`);
+                // Auto-clear the notice after a few seconds
+                setTimeout(() => setError(null), 3500);
+              } else {
+                setError("Selected model is no longer available.");
+              }
+            });
+          } else {
+            setError(message);
+          }
+
           setRunState("error");
+
           if (finalMetrics.tokenCount > 0) {
             const updated = saveRun({
               model: settings.modelId,
@@ -189,7 +197,22 @@ function BenchmarkPanelContent() {
       });
     } catch (err) {
       if (!abort.signal.aborted) {
-        setError(err instanceof Error ? err.message : String(err));
+        const message = err instanceof Error ? err.message : String(err);
+        // Same subtle recovery for model errors from the outer catch
+        if (/decommissioned|no longer supported|model .* (not found|invalid)/i.test(message)) {
+          loadModels(settings.providerId).then((models) => {
+            if (models.length > 0) {
+              const newModel = models[0];
+              onSettingsChange({ ...settings, modelId: newModel.id });
+              setError(`Model unavailable. Switched to ${newModel.label}.`);
+              setTimeout(() => setError(null), 3500);
+            } else {
+              setError("Selected model is no longer available.");
+            }
+          });
+        } else {
+          setError(message);
+        }
         setRunState("error");
       }
     }
@@ -244,75 +267,31 @@ function BenchmarkPanelContent() {
               <span class="llm-brand-tagline">measure what matters.</span>
             </span>
           </span>
-          <div class="llm-topbar-actions">
-            <button class="llm-theme-toggle" onClick={toggleTheme} aria-label="Toggle Theme">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="theme-toggle-icon" aria-hidden="true">
-                <path class="sun-icon" d="M12 12m-5 0a5 5 0 1 0 10 0a5 5 0 1 0-10 0 M12 1v2 M12 21v2 M4.22 4.22l1.42 1.42 M18.36 18.36l1.42 1.42 M1 12h2 M21 12h2 M4.22 19.78l1.42-1.42 M18.36 5.64l1.42-1.42" />
-                <path class="moon-icon" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-              </svg>
-            </button>
-            <button class="llm-history-btn" onClick={() => setHistoryOpen(true)} aria-label="History" aria-expanded={historyOpen}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" />
-                <polyline points="12 7 12 12 15 14" />
-              </svg>
-            </button>
-            <button class="llm-gear" onClick={() => setSettingsOpen(true)} aria-label="Settings" aria-expanded={settingsOpen}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-              </svg>
-            </button>
-          </div>
+          <TopBarActions
+            theme={theme}
+            onToggleTheme={toggleTheme}
+            onHistory={() => setHistoryOpen(true)}
+            historyOpen={historyOpen}
+            onSettings={() => setSettingsOpen(true)}
+            settingsOpen={settingsOpen}
+          />
         </div>
 
         {/* Hero */}
         <div class="llm-hero">
-          <span class="llm-hero-label" id="hero-label">Your LLM speed is</span>
-          <div class="llm-hero-result" aria-live="polite" aria-atomic="true" aria-describedby="hero-label">
-            <span class={`llm-hero-number${isActive ? " active" : ""}`}>{heroText}</span>
-            <span class="llm-hero-unit">tokens / sec</span>
-          </div>
-
-          {/* TTFT */}
-          {ttft !== null && (
-            <div class="llm-ttft">
-              <div class="llm-ttft-value">{Math.round(ttft)}ms</div>
-              <Tooltip label="How long before the model starts responding.">
-                <div class="llm-ttft-label">First Token</div>
-              </Tooltip>
-            </div>
-          )}
+          <HeroResult heroText={heroText} isActive={isActive} ttft={ttft} />
 
           {/* Compact sparkline for recent runs */}
-          {sparklineData.length > 1 && (
-            <div class="llm-hero-sparkline">
-              <Sparkline data={sparklineData} width={240} height={48} strokeWidth={1.5} />
-            </div>
-          )}
+          <HeroSparkline data={sparklineData} />
 
           {/* Secondary metrics */}
           {(runState === "done" || runState === "running") && showMore && (
-            <div class="llm-secondary" role="group" aria-label="Additional metrics">
-              <div class="llm-sec-item">
-                <div class="llm-sec-value">{inputTokens !== null ? inputTokens : "--"}</div>
-                <div class="llm-sec-label">Input</div>
-              </div>
-              <div class="llm-sec-item">
-                <div class="llm-sec-value">{outputTokens !== null ? outputTokens : "--"}</div>
-                <div class="llm-sec-label">Output</div>
-              </div>
-              <div class="llm-sec-item">
-                <div class="llm-sec-value">{totalTime !== null ? `${Math.round(totalTime)}ms` : "--"}</div>
-                <Tooltip label="Total duration from request to complete response.">
-                  <div class="llm-sec-label">TTLT</div>
-                </Tooltip>
-              </div>
-              <div class="llm-sec-item">
-                <div class="llm-sec-value">{settings.modelId}</div>
-                <div class="llm-sec-label">Model</div>
-              </div>
-            </div>
+            <SecondaryMetrics
+              inputTokens={inputTokens}
+              outputTokens={outputTokens}
+              totalTime={totalTime}
+              modelId={settings.modelId}
+            />
           )}
 
           {/* Share bar — only when results are available */}
@@ -325,41 +304,39 @@ function BenchmarkPanelContent() {
             />
           )}
 
+          {/* Current selection - always visible + clickable (Option B scalable UX) */}
+          {settings.providerId && (
+            <CurrentSelection
+              providerName={PROVIDERS[settings.providerId]?.displayName || settings.providerId}
+              modelId={settings.modelId || undefined}
+              onClick={() => setSettingsOpen(true)}
+            />
+          )}
+
           {/* Actions */}
-          <div class="llm-actions">
-            {runState !== "running" ? (
-              <button
-                class="llm-btn-run"
-                onClick={handleRun}
-              >
-                {runState === "idle" ? "Run" : "Run Again"}
-              </button>
-            ) : (
-              <button class="llm-btn-stop" onClick={handleStop}>Stop</button>
-            )}
-          </div>
+          <RunControls
+            runState={runState}
+            onRun={handleRun}
+            onStop={handleStop}
+          />
 
-          {/* Model context */}
-          {(runState === "done" || runState === "running") && settings.modelId && (
-            <div class="llm-model-context">
-              {settings.modelId} · {PROVIDERS[settings.providerId]?.displayName || settings.providerId}
-            </div>
-          )}
 
-          {!hasConfig && runState === "idle" && (
-            <p class="llm-hint">
-              Click <button class="llm-hint-link" onClick={() => setSettingsOpen(true)}>Settings</button> to configure your API key
-            </p>
-          )}
+
+          <BenchmarkHint
+            hasConfig={hasConfig}
+            runState={runState}
+            error={error}
+            onOpenSettings={() => setSettingsOpen(true)}
+          />
 
           {/* Show more */}
           {(runState === "done" || runState === "running") && (
-            <button class="llm-show-more" onClick={() => setShowMore((v) => !v)} aria-expanded={showMore}>
-              {showMore ? "Less metrics" : "More metrics"}
-            </button>
+            <ShowMoreToggle
+              showMore={showMore}
+              onToggle={() => setShowMore((v) => !v)}
+            />
           )}
 
-          {error && <div class="llm-error" role="alert">{error}</div>}
         </div>
 
         {/* Stream output section */}

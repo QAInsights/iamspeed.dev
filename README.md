@@ -8,7 +8,7 @@ Fast.com but for LLMs.
 - Time-to-first-token (TTFT) measurement
 - Throughput tracking in tokens/sec
 - AES-GCM encrypted API key storage (local only)
-- OpenAI and Anthropic provider support
+- OpenAI, Anthropic, and Groq provider support
 - Responsive, minimal UI inspired by [fast.com](https://fast.com)
 
 ## Quick Start
@@ -33,7 +33,7 @@ Open `http://localhost:4321`, click the gear icon to configure your API key, the
 
 ## Adding a Provider
 
-1. Create a new adapter in `src/lib/providers/` that implements the `ProviderAdapter` interface
+1. Create a new adapter in `src/lib/providers/` (many providers can reuse the OpenAI-compatible adapter)
 2. Register it in `src/lib/providers/index.ts`
 3. Add provider metadata to `src/lib/config.ts`
 
