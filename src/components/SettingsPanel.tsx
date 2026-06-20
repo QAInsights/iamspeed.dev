@@ -1,7 +1,8 @@
 /** @jsxImportSource preact */
 import { useState, useEffect, useRef } from "preact/hooks";
 import { saveKey, loadKey, clearKey, hasStoredKey } from "../lib/crypto";
-import { loadModels, type ModelEntry } from "../lib/modelRegistry";
+import { loadModels, discoverLocalModels, type ModelEntry } from "../lib/modelRegistry";
+import { LOCAL_PROVIDER_ID, DEFAULT_LOCAL_BASE_URL } from "../lib/config";
 import { ProviderSelect } from "./ProviderSelect";
 import { ApiKeyField } from "./ApiKeyField";
 
@@ -10,6 +11,7 @@ export interface SettingsState {
   modelId: string;
   prompt: string;
   apiKey: string | null;
+  baseUrl?: string;
 }
 
 interface SettingsPanelProps {
@@ -155,18 +157,26 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
       }
     });
 
-    // Load models for the current provider
+    const isLocal = settings.providerId === LOCAL_PROVIDER_ID;
     setModelsLoading(true);
-    loadModels(settings.providerId).then((loadedModels) => {
-      setModels(loadedModels);
+
+    const loadForProvider = async () => {
+      let loaded: ModelEntry[] = [];
+      if (isLocal && settings.baseUrl) {
+        loaded = await discoverLocalModels(settings.baseUrl);
+      } else if (!isLocal) {
+        loaded = await loadModels(settings.providerId);
+      }
+      setModels(loaded);
       setModelsLoading(false);
 
-      // If current model is not in the list, select the first one
-      if (loadedModels.length > 0 && !loadedModels.some((m) => m.id === settings.modelId)) {
-        onSettingsChange({ ...settings, modelId: loadedModels[0].id });
+      if (loaded.length > 0 && !loaded.some((m) => m.id === settings.modelId)) {
+        onSettingsChange({ ...settings, modelId: loaded[0].id });
       }
-    });
-  }, [open, settings.providerId]);
+    };
+
+    loadForProvider();
+  }, [open, settings.providerId, settings.baseUrl]);
 
   // Focus trap and Escape key
   useEffect(() => {
@@ -219,7 +229,20 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
 
   const handleProviderChange = async (id: string) => {
     setModelsLoading(true);
-    const loadedModels = await loadModels(id);
+    const isLocal = id === LOCAL_PROVIDER_ID;
+    let loadedModels: ModelEntry[] = [];
+
+    let nextBase = settings.baseUrl;
+    if (isLocal && !nextBase) {
+      nextBase = DEFAULT_LOCAL_BASE_URL;
+    }
+
+    if (isLocal && nextBase) {
+      loadedModels = await discoverLocalModels(nextBase);
+    } else if (!isLocal) {
+      loadedModels = await loadModels(id);
+    }
+
     setModels(loadedModels);
     setModelsLoading(false);
 
@@ -227,6 +250,7 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
       ...settings,
       providerId: id,
       modelId: loadedModels[0]?.id || "",
+      baseUrl: isLocal ? nextBase : settings.baseUrl,
     });
   };
 
@@ -263,8 +287,42 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
             />
           </fieldset>
 
+          {settings.providerId === LOCAL_PROVIDER_ID && (
+            <div class="llm-field">
+              <label class="llm-field-label" for="settings-baseurl">Base URL</label>
+              <input
+                id="settings-baseurl"
+                type="text"
+                class="llm-select"
+                placeholder={DEFAULT_LOCAL_BASE_URL}
+                value={settings.baseUrl || ""}
+                onInput={(e) => {
+                  const val = (e.target as HTMLInputElement).value;
+                  onSettingsChange({ ...settings, baseUrl: val });
+                }}
+                onBlur={async () => {
+                  // Attempt auto-discover on blur for convenience
+                  if (settings.baseUrl) {
+                    setModelsLoading(true);
+                    const discovered = await discoverLocalModels(settings.baseUrl);
+                    setModels(discovered);
+                    setModelsLoading(false);
+                    if (discovered.length > 0 && !discovered.some((m) => m.id === settings.modelId)) {
+                      onSettingsChange({ ...settings, modelId: discovered[0].id });
+                    }
+                  }
+                }}
+              />
+              <div class="llm-models-empty" style="margin-top: 0.25rem;">
+                Default for Ollama. Change for LM Studio (1234), llama.cpp, etc.
+              </div>
+            </div>
+          )}
+
           <div class="llm-field">
-            <label class="llm-field-label" for="settings-apikey">API Key</label>
+            <label class="llm-field-label" for="settings-apikey">
+              {settings.providerId === LOCAL_PROVIDER_ID ? "API Key (optional)" : "API Key"}
+            </label>
             <ApiKeyField
               providerId={settings.providerId}
               value={inputValue}
@@ -280,7 +338,42 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
 
           <div class="llm-field">
             <label class="llm-field-label" for="settings-model">Model</label>
-            {modelsLoading ? (
+            {settings.providerId === LOCAL_PROVIDER_ID ? (
+              <>
+                <input
+                  id="settings-model"
+                  type="text"
+                  class="llm-select"
+                  placeholder="e.g. llama3.2 or mistral"
+                  value={settings.modelId}
+                  onInput={(e) =>
+                    onSettingsChange({ ...settings, modelId: (e.target as HTMLInputElement).value })
+                  }
+                />
+                <button
+                  type="button"
+                  class="llm-key-clear"
+                  style="margin-top: 0.5rem;"
+                  onClick={async () => {
+                    if (!settings.baseUrl) return;
+                    setModelsLoading(true);
+                    const discovered = await discoverLocalModels(settings.baseUrl);
+                    setModels(discovered);
+                    setModelsLoading(false);
+                    if (discovered.length > 0) {
+                      onSettingsChange({ ...settings, modelId: discovered[0].id });
+                    }
+                  }}
+                >
+                  Discover models from endpoint
+                </button>
+                {models.length > 0 && (
+                  <div class="llm-models-empty" style="margin-top: 0.25rem;">
+                    Discovered: {models.map((m) => m.id).join(", ")}
+                  </div>
+                )}
+              </>
+            ) : modelsLoading ? (
               <span class="llm-models-loading" role="status">Loading models...</span>
             ) : models.length === 0 ? (
               <span class="llm-models-empty" role="status">No models returned for this provider</span>
@@ -311,9 +404,19 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
           </div>
 
           <p class="llm-disclaimer" id="settings-disclaimer">
-            I am speed. sends requests directly from your browser to the provider API using your API key.
-            You will be charged based on the model's published pricing. Keys are encrypted locally
-            and never leave your device.
+            {settings.providerId === LOCAL_PROVIDER_ID ? (
+              <>
+                Requests go directly from your browser to your local server. Most local servers (Ollama, LM Studio)
+                do not require an API key. Make sure the server allows browser connections (CORS). For Ollama run
+                with OLLAMA_ORIGINS="*" or set the env var.
+              </>
+            ) : (
+              <>
+                I am speed. sends requests directly from your browser to the provider API using your API key.
+                You will be charged based on the model's published pricing. Keys are encrypted locally
+                and never leave your device.
+              </>
+            )}
           </p>
 
           <button class="llm-settings-done" onClick={onClose}>Done</button>

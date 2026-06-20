@@ -1,5 +1,14 @@
 import type { ProviderAdapter, StreamParams } from "./types";
 
+export function normalizeBaseURL(input: string): string {
+  if (!input) return "";
+  let url = input.trim().replace(/\/+$/, "");
+  if (!/\/v1$|\/openai\/v1$/.test(url)) {
+    url = url + "/v1";
+  }
+  return url;
+}
+
 export function createOpenAICompatibleAdapter(
   baseURL: string,
   providerName: string,

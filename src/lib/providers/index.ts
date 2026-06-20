@@ -10,3 +10,4 @@ export const providers: Record<string, ProviderAdapter> = {
 };
 
 export type { ProviderAdapter, StreamParams } from "./types";
+export { createOpenAICompatibleAdapter, normalizeBaseURL } from "./openaiCompatible";

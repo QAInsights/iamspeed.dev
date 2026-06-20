@@ -1,3 +1,5 @@
+import { normalizeBaseURL } from "./providers";
+
 export interface ModelEntry {
   id: string;
   label: string;
@@ -149,4 +151,38 @@ export async function loadModels(providerId: string): Promise<ModelEntry[]> {
 
 export function clearModelCache(): void {
   localStorage.removeItem(CACHE_KEY);
+}
+
+export async function discoverLocalModels(baseURL: string): Promise<ModelEntry[]> {
+  if (!baseURL) return [];
+  try {
+    const normalized = normalizeBaseURL(baseURL);
+    const url = normalized + "/models";
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!response.ok) {
+      return [];
+    }
+    const data = await response.json();
+    const list = Array.isArray(data?.data) ? data.data : [];
+    const models: ModelEntry[] = list
+      .map((m: { id?: unknown }) => ({
+        id: String(m?.id || ""),
+        label: String(m?.id || ""),
+        contextWindow: 0,
+      }))
+      .filter((m: ModelEntry) => m.id);
+
+    // Dedup + sort alphabetically (context unknown for local)
+    const seen = new Set<string>();
+    const unique = models.filter((m) => {
+      if (seen.has(m.id)) return false;
+      seen.add(m.id);
+      return true;
+    });
+    return unique.sort((a, b) => a.label.localeCompare(b.label));
+  } catch {
+    return [];
+  }
 }

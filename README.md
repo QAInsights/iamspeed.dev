@@ -8,7 +8,7 @@ Fast.com but for LLMs.
 - Time-to-first-token (TTFT) measurement
 - Throughput tracking in tokens/sec
 - AES-GCM encrypted API key storage (local only)
-- OpenAI, Anthropic, and Groq provider support
+- OpenAI, Anthropic, Groq, and Local (Ollama, LM Studio, etc.) provider support
 - Responsive, minimal UI inspired by [fast.com](https://fast.com)
 
 ## Quick Start
@@ -36,6 +36,20 @@ Open `http://localhost:4321`, click the gear icon to configure your API key, the
 1. Create a new adapter in `src/lib/providers/` (many providers can reuse the OpenAI-compatible adapter)
 2. Register it in `src/lib/providers/index.ts`
 3. Add provider metadata to `src/lib/config.ts`
+
+## Local Models
+
+Select **Local** in settings.
+
+- Base URL defaults to Ollama's standard: `http://localhost:11434/v1`
+- Common alternatives:
+  - LM Studio: `http://localhost:1234/v1`
+  - llama.cpp server: `http://localhost:8080/v1`
+- API key is optional for most local servers.
+- Model ID can be typed directly (e.g. `llama3.2`, `mistral`) or use the "Discover models" button.
+- Your local server **must allow browser CORS**:
+  - Ollama: `OLLAMA_ORIGINS="*" ollama serve` (or export the variable)
+- The app runs entirely in the browser — no proxy.
 
 ## License
 

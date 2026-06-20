@@ -159,3 +159,109 @@ describe("modelRegistry", () => {
     expect(models[2].id).toBe("openai/small");
   });
 });
+
+describe("discoverLocalModels", () => {
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it("returns empty array when no baseURL", async () => {
+    const { discoverLocalModels } = await import("../../src/lib/modelRegistry");
+    const models = await discoverLocalModels("");
+    expect(models).toEqual([]);
+  });
+
+  it("fetches /models and returns entries from data array", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({
+        data: [
+          { id: "llama3.2", object: "model" },
+          { id: "mistral", object: "model" },
+        ],
+      }),
+    });
+
+    const { discoverLocalModels } = await import("../../src/lib/modelRegistry");
+    const models = await discoverLocalModels("http://localhost:11434");
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/v1/models"),
+      expect.anything()
+    );
+    expect(models).toHaveLength(2);
+    expect(models[0].id).toBe("llama3.2");
+    expect(models[0].contextWindow).toBe(0);
+  });
+
+  it("returns empty on fetch failure (graceful)", async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error("CORS or down"));
+
+    const { discoverLocalModels } = await import("../../src/lib/modelRegistry");
+    const models = await discoverLocalModels("http://localhost:11434/v1");
+    expect(models).toEqual([]);
+  });
+
+  it("normalizes base URL by appending /v1 if missing", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: [{ id: "test-model" }] }),
+    });
+
+    const { discoverLocalModels } = await import("../../src/lib/modelRegistry");
+    await discoverLocalModels("http://localhost:11434");
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "http://localhost:11434/v1/models",
+      expect.anything()
+    );
+  });
+
+  it("uses already normalized URL with /v1", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: [{ id: "test-model" }] }),
+    });
+
+    const { discoverLocalModels } = await import("../../src/lib/modelRegistry");
+    await discoverLocalModels("http://localhost:1234/v1");
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "http://localhost:1234/v1/models",
+      expect.anything()
+    );
+  });
+
+  it("deduplicates and sorts discovered models alphabetically", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({
+        data: [
+          { id: "zebra-model" },
+          { id: "alpha-model" },
+          { id: "alpha-model" },
+          { id: "beta-model" },
+        ],
+      }),
+    });
+
+    const { discoverLocalModels } = await import("../../src/lib/modelRegistry");
+    const models = await discoverLocalModels("http://localhost:11434/v1");
+
+    expect(models).toHaveLength(3);
+    expect(models.map((m) => m.id)).toEqual(["alpha-model", "beta-model", "zebra-model"]);
+  });
+
+  it("returns empty array for non-ok response", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+    });
+
+    const { discoverLocalModels } = await import("../../src/lib/modelRegistry");
+    const models = await discoverLocalModels("http://localhost:11434/v1");
+    expect(models).toEqual([]);
+  });
+});

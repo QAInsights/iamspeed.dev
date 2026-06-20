@@ -1,12 +1,29 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/preact';
 import { SettingsPanel, type SettingsState } from '../../src/components/SettingsPanel';
+import { discoverLocalModels } from '../../src/lib/modelRegistry';
+
+vi.mock('../../src/lib/modelRegistry', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../src/lib/modelRegistry')>();
+  return {
+    ...actual,
+    discoverLocalModels: vi.fn().mockResolvedValue([]),
+  };
+});
 
 const defaultSettings: SettingsState = {
   providerId: 'openai',
   modelId: 'gpt-4o',
   prompt: 'Say hello',
   apiKey: null,
+};
+
+const localSettings: SettingsState = {
+  providerId: 'local',
+  modelId: '',
+  prompt: 'Say hello',
+  apiKey: null,
+  baseUrl: undefined,
 };
 
 describe('SettingsPanel', () => {
@@ -68,6 +85,7 @@ describe('SettingsPanel', () => {
     const options = Array.from(select.options).map((o) => o.textContent);
     expect(options).toContain('OpenAI');
     expect(options).toContain('Anthropic');
+    expect(options).toContain('Local');
   });
 
   it('selects the active provider', () => {
@@ -202,5 +220,126 @@ describe('SettingsPanel', () => {
     expect(onSettingsChange).toHaveBeenCalledWith(
       expect.objectContaining({ prompt: 'New prompt' })
     );
+  });
+
+  describe('Local provider', () => {
+    it('shows Base URL input when local provider is selected', () => {
+      const { container } = render(
+        <SettingsPanel
+          open={true}
+          onClose={vi.fn()}
+          settings={{ ...localSettings, baseUrl: 'http://localhost:11434/v1' }}
+          onSettingsChange={vi.fn()}
+        />
+      );
+      const baseInput = container.querySelector('#settings-baseurl') as HTMLInputElement;
+      expect(baseInput).toBeInTheDocument();
+      expect(baseInput.value).toBe('http://localhost:11434/v1');
+    });
+
+    it('shows default base URL placeholder for local', () => {
+      const { container } = render(
+        <SettingsPanel
+          open={true}
+          onClose={vi.fn()}
+          settings={localSettings}
+          onSettingsChange={vi.fn()}
+        />
+      );
+      const baseInput = container.querySelector('#settings-baseurl') as HTMLInputElement;
+      expect(baseInput).toBeInTheDocument();
+      expect(baseInput.placeholder).toBe('http://localhost:11434/v1');
+    });
+
+    it('renders model as text input for local (not select)', () => {
+      const { container } = render(
+        <SettingsPanel
+          open={true}
+          onClose={vi.fn()}
+          settings={localSettings}
+          onSettingsChange={vi.fn()}
+        />
+      );
+      const modelInput = container.querySelector('#settings-model') as HTMLInputElement;
+      expect(modelInput).toBeInTheDocument();
+      expect(modelInput.tagName).toBe('INPUT');
+      expect(modelInput.type).toBe('text');
+    });
+
+    it('shows "API Key (optional)" label for local', () => {
+      const { container } = render(
+        <SettingsPanel
+          open={true}
+          onClose={vi.fn()}
+          settings={localSettings}
+          onSettingsChange={vi.fn()}
+        />
+      );
+      const label = container.querySelector('label[for="settings-apikey"]');
+      expect(label!.textContent).toContain('API Key (optional)');
+    });
+
+    it('shows local-specific disclaimer', () => {
+      const { container } = render(
+        <SettingsPanel
+          open={true}
+          onClose={vi.fn()}
+          settings={localSettings}
+          onSettingsChange={vi.fn()}
+        />
+      );
+      const disclaimer = container.querySelector('.llm-disclaimer');
+      expect(disclaimer!.textContent).toContain('local server');
+      expect(disclaimer!.textContent).toContain('CORS');
+    });
+
+    it('calls onSettingsChange with default baseUrl when switching to local', async () => {
+      const mockedDiscover = vi.mocked(discoverLocalModels);
+      mockedDiscover.mockResolvedValue([{ id: 'llama3', label: 'llama3', contextWindow: 0 }]);
+
+      const onSettingsChange = vi.fn();
+      const { container } = render(
+        <SettingsPanel
+          open={true}
+          onClose={vi.fn()}
+          settings={defaultSettings}
+          onSettingsChange={onSettingsChange}
+        />
+      );
+      const select = container.querySelector('.llm-provider-select') as HTMLSelectElement;
+      select.value = 'local';
+      await fireEvent.change(select);
+      expect(onSettingsChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          providerId: 'local',
+          baseUrl: 'http://localhost:11434/v1',
+        })
+      );
+    });
+
+    it('shows Discover models button and calls discover for local', async () => {
+      const mockedDiscover = vi.mocked(discoverLocalModels);
+      mockedDiscover.mockResolvedValue([
+        { id: 'llama3.2', label: 'llama3.2', contextWindow: 0 },
+      ]);
+
+      const onSettingsChange = vi.fn();
+      const { container } = render(
+        <SettingsPanel
+          open={true}
+          onClose={vi.fn()}
+          settings={{ ...localSettings, baseUrl: 'http://localhost:11434/v1' }}
+          onSettingsChange={onSettingsChange}
+        />
+      );
+
+      // The discover button is rendered for local with baseUrl
+      const buttons = Array.from(container.querySelectorAll('button'));
+      const discoverButton = buttons.find((b) => /Discover/i.test(b.textContent || ''));
+      expect(discoverButton).toBeTruthy();
+
+      await fireEvent.click(discoverButton!);
+      expect(mockedDiscover).toHaveBeenCalledWith('http://localhost:11434/v1');
+    });
   });
 });

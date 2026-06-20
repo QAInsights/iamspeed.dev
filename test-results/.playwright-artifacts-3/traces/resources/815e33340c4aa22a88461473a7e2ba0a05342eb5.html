@@ -1,0 +1,675 @@
+<!DOCTYPE html><html lang="en"> <head><script>
+      (function() {
+        const stored = localStorage.getItem('iamspeed_theme');
+        const theme = stored || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script><!-- Content Security Policy --><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; connect-src 'self' https://api.openai.com https://api.anthropic.com https://api.groq.com https://models.dev https://www.google-analytics.com https://analytics.google.com http://localhost:* http://127.0.0.1:* http://[::1]:*; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://www.google-analytics.com https://analytics.google.com; frame-src 'none'; object-src 'none';"><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-GV6SZ030N3"></script><script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-GV6SZ030N3');
+    </script><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>I am speed. A fast.com-style benchmarking tool for LLM APIs.</title><meta name="description" content="A fast.com style benchmarking tool for LLM APIs. Pick a provider and model, and see live streaming output with real-time throughput metrics."><!-- Browsers & SEO --><link rel="icon" type="image/png" href="/favicon.png"><link rel="icon" type="image/svg+xml" href="/logo.svg"><link rel="manifest" href="/site.webmanifest"><meta name="theme-color" content="#0046cc"><link rel="canonical" href="https://iamspeed.dev/"><meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"><meta name="googlebot" content="index, follow"><!-- Apple Mobile Web App --><link rel="apple-touch-icon" href="/logo.svg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="I am speed."><!-- Open Graph --><meta property="og:title" content="I am speed. LLM API Benchmark"><meta property="og:description" content="A fast.com style benchmarking tool for LLM APIs. Pick a provider and model, and see live streaming output with real-time throughput metrics."><meta property="og:type" content="website"><meta property="og:url" content="https://iamspeed.dev/"><meta property="og:image" content="https://iamspeed.dev/iamspeed-og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:site_name" content="I am speed."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="I am speed. LLM API Benchmark"><meta name="twitter:description" content="A fast.com style benchmarking tool for LLM APIs. Pick a provider and model, and see live streaming output with real-time throughput metrics."><meta name="twitter:image" content="https://iamspeed.dev/iamspeed-og.png"><meta name="twitter:image:alt" content="I am speed - fast.com style but for LLMs"><!-- Schema.org JSON-LD Structured Data for AEO --><script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "I am speed. A fast.com-style benchmarking tool for LLM APIs",
+        "url": "https://iamspeed.dev/",
+        "description": "A fast.com style benchmarking tool for LLM APIs. Pick a provider and model, and see live streaming output with real-time throughput metrics.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "All",
+        "browserRequirements": "Requires JavaScript. Requires HTML5.",
+        "softwareVersion": "0.1.0",
+        "offers": {
+          "@type": "Offer",
+          "price": "0.00",
+          "priceCurrency": "USD"
+        }
+      }
+    </script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet"><style data-vite-dev-id="C:/Users/Navee/gits/llm-perf/llmmark/src/styles/components/WeatherBackground.css">.weather-container {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  transition: background 0.8s ease-in-out;
+}
+
+/* Day/Light Gradient Background */
+.weather-container.light {
+  background: var(--bg-gradient);
+}
+
+/* Night/Dark Gradient Background */
+.weather-container.dark {
+  background: var(--bg-gradient);
+}
+</style>
+<style data-vite-dev-id="C:/Users/Navee/gits/llm-perf/llmmark/src/styles/components/BenchmarkPanel.css">.llm-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* Top bar */
+.llm-topbar {
+  width: 100%;
+  max-width: var(--max-w);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 0 0;
+}
+.llm-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  line-height: 1.1;
+}
+.llm-brand-logo {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+.llm-brand-logo img {
+  width: 32px;
+  height: 32px;
+  display: block;
+  transition: filter 0.3s ease;
+}
+
+/* === Thunderstorm lightning hover === */
+
+/* Theme colors */
+:root {
+  --zap-aura: rgba(250, 204, 21, 0.5);
+}
+[data-theme="dark"] {
+  --zap-aura: rgba(165, 180, 252, 0.5);
+}
+
+/* The logo shakes violently and glows like it's being struck */
+.llm-brand-logo:hover img {
+  animation: zap-strike 0.65s ease-in-out;
+}
+
+/* Radial flash — the bright burst of light around the strike point */
+.llm-brand-logo::before {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.3) 30%, transparent 68%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.llm-brand-logo:hover::before {
+  animation: zap-double-flash 0.65s ease-out;
+}
+
+/* Jagged lightning bolt crack overlay */
+.llm-brand-logo::after {
+  content: "";
+  position: absolute;
+  top: -18px;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  background: var(--zap-bolt-color, rgba(255,255,255,0.95));
+  clip-path: polygon(
+    46% 0%, 32% 30%, 50% 27%,
+    22% 60%, 48% 54%,
+    14% 100%, 58% 58%, 36% 63%, 72% 20%
+  );
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+[data-theme="dark"] .llm-brand-logo::after {
+  --zap-bolt-color: rgba(224, 231, 255, 0.97);
+}
+.llm-brand-logo:hover::after {
+  animation: zap-bolt-flash 0.65s ease-out;
+}
+
+/* Thunder-shake + pulsing electric aura */
+@keyframes zap-strike {
+  0%, 100% {
+    transform: translate(0,0) scale(1);
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  8% {
+    transform: translate(-2px,-1px) scale(1.12);
+    filter:
+      drop-shadow(0 0 8px var(--zap-aura))
+      drop-shadow(0 0 18px var(--zap-aura));
+  }
+  18% {
+    transform: translate(2px,0) scale(1.12);
+    filter:
+      drop-shadow(0 0 4px var(--zap-aura))
+      drop-shadow(0 0 10px var(--zap-aura));
+  }
+  34% {
+    transform: translate(-1px,1px) scale(1.08);
+    filter:
+      drop-shadow(0 0 10px var(--zap-aura))
+      drop-shadow(0 0 22px var(--zap-aura));
+  }
+  50% {
+    transform: translate(1px,-1px) scale(1.05);
+    filter:
+      drop-shadow(0 0 3px var(--zap-aura))
+      drop-shadow(0 0 8px var(--zap-aura));
+  }
+  66% {
+    transform: translate(-1px,0) scale(1.02);
+    filter: drop-shadow(0 0 5px var(--zap-aura));
+  }
+  82% {
+    transform: translate(0,0) scale(1);
+    filter: drop-shadow(0 0 2px var(--zap-aura));
+  }
+}
+
+/* Double flash — real lightning has a bright initial stroke then a dimmer return stroke */
+@keyframes zap-double-flash {
+  0%    { opacity: 0;   transform: scale(0.2); }
+  10%   { opacity: 1;   transform: scale(1.3); }
+  24%   { opacity: 0.05; transform: scale(1.1); }
+  38%   { opacity: 0.8; transform: scale(1.25); }
+  100%  { opacity: 0;   transform: scale(1.7); }
+}
+
+/* Bolt crack: bright flash then afterglow */
+@keyframes zap-bolt-flash {
+  0%   { opacity: 0; }
+  8%   { opacity: 1; }
+  26%  { opacity: 0; }
+  36%  { opacity: 0.65; }
+  60%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+.llm-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.llm-brand-name {
+  font-family: var(--body);
+  font-size: 1.5rem;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+.llm-brand-tagline {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.llm-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.llm-theme-toggle, .llm-history-btn, .llm-gear {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  border: none;
+  background: none;
+  padding: 0;
+  border-radius: 6px;
+  transition: color 0.3s ease-in-out, background-color 0.2s ease-in-out, transform 0.2s;
+}
+.llm-theme-toggle:hover, .llm-history-btn:hover, .llm-gear:hover {
+  color: var(--text);
+  background-color: var(--border-light);
+}
+.llm-theme-toggle:active, .llm-history-btn:active, .llm-gear:active {
+  transform: scale(0.92);
+}
+.llm-theme-toggle svg, .llm-history-btn svg, .llm-gear svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+/* Theme Morphing Icon Animations */
+.theme-toggle-icon {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+[data-theme="dark"] .theme-toggle-icon {
+  transform: rotate(40deg);
+}
+
+.sun-icon {
+  opacity: 1;
+  transform: scale(1);
+  transform-origin: center;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.moon-icon {
+  opacity: 0;
+  transform: scale(0.5) rotate(-45deg);
+  transform-origin: center;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+[data-theme="dark"] .sun-icon {
+  opacity: 0;
+  transform: scale(0.5) rotate(45deg);
+}
+[data-theme="dark"] .moon-icon {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+/* Hero area */
+.llm-hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+  width: 100%;
+  max-width: var(--max-w);
+}
+
+.llm-hero-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.llm-hero-label {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+.llm-hero-number {
+  font-family: var(--mono);
+  font-size: 7rem;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  transition: color 0.2s;
+}
+.llm-hero-number.active {
+  color: var(--accent);
+}
+@media (max-width: 500px) {
+  .llm-hero-number { font-size: 4.5rem; }
+}
+
+.llm-hero-unit {
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-top: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+/* TTFT callout */
+.llm-ttft {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+.llm-ttft-value {
+  font-family: var(--mono);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+.llm-ttft-label {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.125rem;
+}
+
+/* Secondary metrics row */
+/* (secondary metrics styles moved to SecondaryMetrics component) */
+
+/* (action button styles moved to RunControls component) */
+
+/* (show more styles moved to ShowMoreToggle component) */
+
+/* (model context styles consolidated into CurrentSelection) */
+
+/* (styles moved into CurrentSelection component for modularity) */
+
+/* Stream section */
+.llm-stream-section {
+  width: 100%;
+  max-width: var(--max-w);
+  padding: 0 0 2rem;
+}
+
+/* (sparkline wrapper moved to HeroSparkline) */
+
+/* Error */
+.llm-error {
+  color: #cf222e;
+  font-size: 0.8125rem;
+  margin-top: 1rem;
+  text-align: center;
+  max-width: var(--max-w);
+}
+
+/* (hint styles moved to BenchmarkHint component) */
+
+/* Footer */
+.llm-footer {
+  width: 100%;
+  max-width: var(--max-w);
+  padding: 2rem 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.625rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+.llm-footer a {
+  color: var(--text-muted);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: color 0.2s ease-in-out;
+}
+.llm-footer a:hover {
+  color: var(--accent);
+}
+.llm-footer-dot {
+  color: var(--border);
+  user-select: none;
+}
+
+/* Share bar */
+.llm-share-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  margin-top: 1.5rem;
+}
+.llm-share-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  border: none;
+  background: none;
+  padding: 0;
+  border-radius: 6px;
+  transition: color 0.3s ease-in-out, background-color 0.2s ease-in-out, transform 0.2s;
+}
+.llm-share-btn:hover {
+  color: var(--text);
+  background-color: var(--border-light);
+}
+.llm-share-btn:active {
+  transform: scale(0.92);
+}
+.llm-share-btn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+.llm-share-btn.copied {
+  color: var(--accent);
+}
+
+/* Smooth color transitions for weather background switches */
+.llm-brand-name, .llm-brand-tagline, .llm-hero-number, .llm-hero-label, .llm-hero-unit,
+.llm-ttft-value, .llm-ttft-label, .llm-sec-value, .llm-sec-label, .llm-model-context,
+.llm-hint, .llm-error, .llm-share-bar {
+  transition: color 0.3s ease-in-out;
+}
+</style>
+<style data-vite-dev-id="C:/Users/Navee/gits/llm-perf/llmmark/src/styles/global.css">:root {
+  /* Default light theme (warm soft sky theme, not typical white) */
+  --bg-gradient: linear-gradient(180deg, #dbeffe 0%, #eff6ff 40%, #f8fafc 100%);
+  --bg: #f1f5f9;
+  --text: #0f172a;
+  --text-muted: #475569;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --border: rgba(15, 23, 42, 0.12);
+  --border-light: rgba(15, 23, 42, 0.06);
+  --surface: rgba(255, 255, 255, 0.65);
+  --mono: "Berkeley Mono", "JetBrains Mono", ui-monospace, monospace;
+  --body: "Inter", system-ui, sans-serif;
+  --max-w: 720px;
+  --rhythm: 1.5rem;
+
+  /* Syntax Highlighting Light */
+  --json-key: #881391;
+  --json-string: #1a7f37;
+  --json-number: #0550ae;
+  --json-bool: #cf222e;
+  --json-null: #6e7781;
+}
+
+[data-theme="dark"] {
+  /* Dark theme (midnight storm theme) */
+  --bg-gradient: linear-gradient(180deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%);
+  --bg: #090d16;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent: #818cf8; /* indigo-400 */
+  --accent-hover: #6366f1; /* indigo-500 */
+  --border: rgba(255, 255, 255, 0.12);
+  --border-light: rgba(255, 255, 255, 0.06);
+  --surface: rgba(15, 23, 42, 0.65);
+
+  /* Syntax Highlighting Dark */
+  --json-key: #c084fc;
+  --json-string: #4ade80;
+  --json-number: #60a5fa;
+  --json-bool: #f87171;
+  --json-null: #94a3b8;
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 18px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--body);
+  background: var(--bg-gradient);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background 0.8s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+  overflow-x: hidden;
+}
+
+input, textarea, select, button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  border-radius: 6px;
+}
+
+input, textarea, select {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: 0.5rem 0.75rem;
+  transition: background-color 0.8s ease-in-out, border-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+code, pre {
+  font-family: var(--mono);
+}
+
+pre {
+  overflow-x: auto;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+</style><script type="module" src="/@vite/client"></script>
+<script type="module" src="/@fs/C:/Users/Navee/gits/llm-perf/llmmark/node_modules/astro/dist/runtime/client/dev-toolbar/entrypoint.js?v=cf3e4fe6"></script>
+<script>window.__astro_dev_toolbar__ = {"root":"C:\\Users\\Navee\\gits\\llm-perf\\llmmark\\","version":"5.18.2","debugInfo":"Astro                    v5.18.2\nNode                     v25.0.0\nSystem                   Windows (x64)\nPackage Manager          npm\nOutput                   static\nAdapter                  none\nIntegrations             @astrojs/preact\n                         @astrojs/sitemap"}</script>
+<script type="module" src="/src/styles/components/WeatherBackground.css"></script>
+<script type="module" src="/src/styles/components/BenchmarkPanel.css"></script>
+<script type="module" src="/src/styles/global.css"></script></head> <body data-astro-source-file="C:/Users/Navee/gits/llm-perf/llmmark/src/pages/index.astro" data-astro-source-loc="89:9"> <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var l=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>y(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[h,e]=t;return h in i?i[h](e):void 0},a=t=>t.map(o),y=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([h,e])=>[h,o(e)]));class f extends HTMLElement{constructor(){super(...arguments);l(this,"Component");l(this,"hydrator");l(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},p=this.querySelectorAll("template[data-astro-template]");for(let r of p){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let u;try{u=this.hasAttribute("props")?y(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let d,m=this.hydrator(this);d=performance.now(),await m(this.Component,u,n,{client:this.getAttribute("client")}),d&&this.setAttribute("client-render-time",(performance.now()-d).toString()),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});l(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[p,{default:u}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),d=this.getAttribute("component-export")||"default";if(!d.includes("."))this.Component=p[d];else{this.Component=p;for(let m of d.split("."))this.Component=this.Component[m]}return this.hydrator=u,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}l(f,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",f)}})();</script><astro-island uid="Z232DtV" component-url="/src/components/BenchmarkPanel.tsx" component-export="BenchmarkPanel" renderer-url="/node_modules/.vite/deps/@astrojs_preact_client-dev__js.js?v=f80c5838" props="{}" ssr client="load" before-hydration-url="/@id/astro:scripts/before-hydration.js" opts="{&quot;name&quot;:&quot;BenchmarkPanel&quot;,&quot;value&quot;:true}" server-render-time="0.40379999577999115" await-children><div aria-hidden="true" class="weather-container light"></div><main class="llm-app"><div class="llm-topbar"><span class="llm-brand"><span class="llm-brand-logo"><img src="/logo.svg" alt="I am speed"/></span><span class="llm-brand-text"><h1 class="llm-brand-name">I am speed.</h1><span class="llm-brand-tagline">measure what matters.</span></span></span><style>
+  .theme-toggle-icon .sun-icon { display: block; }
+  .theme-toggle-icon .moon-icon { display: none; }
+  [data-theme=&quot;dark&quot;] .theme-toggle-icon .sun-icon { display: none; }
+  [data-theme=&quot;dark&quot;] .theme-toggle-icon .moon-icon { display: block; }
+</style><div class="llm-topbar-actions"><button aria-label="Toggle Theme" class="llm-theme-toggle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="theme-toggle-icon"><path d="M12 12m-5 0a5 5 0 1 0 10 0a5 5 0 1 0-10 0 M12 1v2 M12 21v2 M4.22 4.22l1.42 1.42 M18.36 18.36l1.42 1.42 M1 12h2 M21 12h2 M4.22 19.78l1.42-1.42 M18.36 5.64l1.42-1.42" class="sun-icon"></path><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" class="moon-icon"></path></svg></button><button aria-label="History" aria-expanded="false" class="llm-history-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg></button><button aria-label="Settings" aria-expanded="false" class="llm-gear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button></div></div><div class="llm-hero"><span id="hero-label" class="llm-hero-label">Your LLM speed is</span><div aria-live="polite" aria-atomic="true" aria-describedby="hero-label" class="llm-hero-result"><span class="llm-hero-number">--</span><span class="llm-hero-unit">tokens / sec</span></div><style>
+  .llm-current-selection {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.75rem;
+    text-align: center;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .llm-current-selection:hover {
+    background: var(--border-light);
+    color: var(--text);
+  }
+  .llm-current-selection .provider {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .llm-current-selection .change {
+    opacity: 0.6;
+    font-size: 0.6875rem;
+    margin-left: 0.375rem;
+  }
+</style><div role="button" tabindex="0" aria-label="Current selection: OpenAI. Click or press Enter to change." class="llm-current-selection"><span class="provider">OpenAI</span><span class="change">change</span></div><style>
+  .llm-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 2.5rem;
+    align-items: center;
+  }
+  .llm-btn-run {
+    padding: 0.625rem 2.25rem;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+  }
+  .llm-btn-run:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+  }
+  .llm-btn-run:active {
+    transform: scale(0.96);
+  }
+  .llm-btn-run:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .llm-btn-stop {
+    padding: 0.625rem 2.25rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font-weight: 500;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    color: var(--text);
+    border-radius: 6px;
+    transition: border-color 0.2s, background-color 0.2s, color 0.2s, transform 0.1s;
+  }
+  .llm-btn-stop:hover {
+    border-color: var(--text);
+    background: var(--border-light);
+  }
+  .llm-btn-stop:active {
+    transform: scale(0.96);
+  }
+</style><div class="llm-actions"><button class="llm-btn-run">Run</button></div><style>
+  .llm-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    text-align: center;
+  }
+  .llm-hint-link {
+    color: var(--accent);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    text-decoration: underline;
+    display: inline;
+  }
+  .llm-error {
+    color: #f59e0b; /* softer amber for model/provider notices */
+    font-size: 0.75rem;
+    margin-top: 0.75rem;
+    text-align: center;
+    max-width: var(--max-w);
+    opacity: 0.9;
+  }
+</style><p class="llm-hint">Click <button class="llm-hint-link">Settings</button> to choose a provider and API key</p></div><footer role="contentinfo" class="llm-footer"><a href="https://qainsights.com" target="_blank" rel="noopener noreferrer" aria-label="QAInsights (opens in new tab)">QAInsights</a><span aria-hidden="true" class="llm-footer-dot">·</span><a href="https://dosa.dev" target="_blank" rel="noopener noreferrer" aria-label="Dosa (opens in new tab)">Dosa</a><span aria-hidden="true" class="llm-footer-dot">·</span><a href="https://jmeter.ai" target="_blank" rel="noopener noreferrer" aria-label="JMeter.ai (opens in new tab)">JMeter.ai</a><span aria-hidden="true" class="llm-footer-dot">·</span><a href="https://achu.app" target="_blank" rel="noopener noreferrer" aria-label="Achu (opens in new tab)">Achu</a><span aria-hidden="true" class="llm-footer-dot">·</span><a href="https://github.com/qainsights/iamspeed.dev" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository (opens in new tab)">GitHub</a></footer></main><!--astro:end--></astro-island> </body></html>

@@ -1,12 +1,12 @@
 /** @jsxImportSource preact */
 import { useState, useCallback, useRef, useEffect } from "preact/hooks";
-import { providers } from "../lib/providers";
+import { providers, createOpenAICompatibleAdapter, normalizeBaseURL } from "../lib/providers";
 import { createMetricsTracker, type BenchmarkMetrics } from "../lib/metrics";
 import { SettingsPanel, type SettingsState } from "./SettingsPanel";
 import { StreamOutput } from "./StreamOutput";
 import { RawResponsePanel } from "./RawResponsePanel";
-import { DEFAULT_PROMPT, PROVIDERS } from "../lib/config";
-import { loadModels } from "../lib/modelRegistry";
+import { DEFAULT_PROMPT, PROVIDERS, LOCAL_PROVIDER_ID } from "../lib/config";
+import { loadModels, discoverLocalModels } from "../lib/modelRegistry";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { WeatherBackground } from "./WeatherBackground";
 import { RecentRuns } from "./RecentRuns";
@@ -34,6 +34,7 @@ function BenchmarkPanelContent() {
     modelId: prefs.modelId || "",
     prompt: prefs.prompt || DEFAULT_PROMPT,
     apiKey: null,
+    baseUrl: prefs.baseUrl,
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [runState, setRunState] = useState<RunState>("idle");
@@ -73,12 +74,18 @@ function BenchmarkPanelContent() {
       providerId: settings.providerId,
       modelId: settings.modelId,
       prompt: settings.prompt,
+      baseUrl: settings.baseUrl,
     });
-  }, [settings.providerId, settings.modelId, settings.prompt]);
+  }, [settings.providerId, settings.modelId, settings.prompt, settings.baseUrl]);
 
   // Load models on mount and ensure selected model is still valid for the provider
   useEffect(() => {
-    loadModels(settings.providerId).then((models) => {
+    const isLocal = settings.providerId === LOCAL_PROVIDER_ID;
+    const loader = isLocal && settings.baseUrl
+      ? discoverLocalModels(settings.baseUrl)
+      : loadModels(settings.providerId);
+
+    loader.then((models) => {
       if (models.length > 0) {
         const isValid = settings.modelId && models.some((m) => m.id === settings.modelId);
         if (!isValid) {
@@ -86,7 +93,7 @@ function BenchmarkPanelContent() {
         }
       }
     });
-  }, [settings.providerId]);
+  }, [settings.providerId, settings.baseUrl]);
 
   const displayTps = metrics?.tokensPerSecond ?? null;
   const ttft = metrics?.ttft ?? null;
@@ -96,7 +103,12 @@ function BenchmarkPanelContent() {
   const isActive = runState === "running";
 
   const handleRun = useCallback(async () => {
-    if (!settings.apiKey || !settings.modelId) {
+    const isLocal = settings.providerId === LOCAL_PROVIDER_ID;
+    const hasRequired = isLocal
+      ? !!settings.baseUrl && !!settings.modelId
+      : !!settings.apiKey && !!settings.modelId;
+
+    if (!hasRequired) {
       setSettingsOpen(true);
       return;
     }
@@ -114,11 +126,33 @@ function BenchmarkPanelContent() {
     trackerRef.current = tracker;
     tracker.start();
 
-    const adapter = providers[settings.providerId];
+    const adapter = isLocal && settings.baseUrl
+      ? createOpenAICompatibleAdapter(normalizeBaseURL(settings.baseUrl), LOCAL_PROVIDER_ID, "Local")
+      : providers[settings.providerId];
+
+    const recoverModelSelection = (message: string) => {
+      if (/decommissioned|no longer supported|model .* (not found|invalid)/i.test(message)) {
+        const recover = isLocal && settings.baseUrl
+          ? discoverLocalModels(settings.baseUrl)
+          : loadModels(settings.providerId);
+        recover.then((models) => {
+          if (models.length > 0) {
+            const newModel = models[0];
+            setSettings({ ...settings, modelId: newModel.id });
+            setError(`Model unavailable. Switched to ${newModel.label}.`);
+            setTimeout(() => setError(null), 3500);
+          } else {
+            setError("Selected model is no longer available.");
+          }
+        });
+      } else {
+        setError(message);
+      }
+    };
 
     try {
       await adapter.stream({
-        apiKey: settings.apiKey,
+        apiKey: settings.apiKey || "",
         model: settings.modelId,
         prompt: settings.prompt,
         signal: abort.signal,
@@ -161,22 +195,7 @@ function BenchmarkPanelContent() {
           const message = err.message || String(err);
 
           // Subtle handling for decommissioned / invalid models: auto-recover
-          if (/decommissioned|no longer supported|model .* (not found|invalid)/i.test(message)) {
-            loadModels(settings.providerId).then((models) => {
-              if (models.length > 0) {
-                const newModel = models[0];
-                setSettings({ ...settings, modelId: newModel.id });
-                // Friendly, non-scary message instead of raw provider text
-                setError(`Model unavailable. Switched to ${newModel.label}.`);
-                // Auto-clear the notice after a few seconds
-                setTimeout(() => setError(null), 3500);
-              } else {
-                setError("Selected model is no longer available.");
-              }
-            });
-          } else {
-            setError(message);
-          }
+          recoverModelSelection(message);
 
           setRunState("error");
 
@@ -199,20 +218,7 @@ function BenchmarkPanelContent() {
       if (!abort.signal.aborted) {
         const message = err instanceof Error ? err.message : String(err);
         // Same subtle recovery for model errors from the outer catch
-        if (/decommissioned|no longer supported|model .* (not found|invalid)/i.test(message)) {
-          loadModels(settings.providerId).then((models) => {
-            if (models.length > 0) {
-              const newModel = models[0];
-              setSettings({ ...settings, modelId: newModel.id });
-              setError(`Model unavailable. Switched to ${newModel.label}.`);
-              setTimeout(() => setError(null), 3500);
-            } else {
-              setError("Selected model is no longer available.");
-            }
-          });
-        } else {
-          setError(message);
-        }
+        recoverModelSelection(message);
         setRunState("error");
       }
     }

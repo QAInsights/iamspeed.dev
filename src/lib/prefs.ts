@@ -4,6 +4,7 @@ export interface Prefs {
   providerId?: string;
   modelId?: string;
   prompt?: string;
+  baseUrl?: string;
 }
 
 export function loadPrefs(): Prefs {
