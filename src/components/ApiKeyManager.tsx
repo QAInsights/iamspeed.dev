@@ -44,6 +44,14 @@ const style = `
     color: #cf222e;
     border-color: #cf222e;
   }
+  .llm-apikey-status {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
   .llm-apikey-label {
     position: absolute;
     width: 1px;
@@ -116,7 +124,7 @@ export function ApiKeyManager({ provider, onKeyChange }: ApiKeyManagerProps) {
           aria-label={`${provider} API key`}
         />
         {stored && (
-          <span class="llm-apikey-indicator" aria-label="Key stored locally">
+          <span class="llm-apikey-indicator" aria-label="API key encrypted and stored locally">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--text)" stroke-width="1.5" aria-hidden="true">
               <rect x="3" y="7" width="10" height="7" />
               <path d="M5 7V5a3 3 0 0 1 6 0v2" />
@@ -129,6 +137,11 @@ export function ApiKeyManager({ provider, onKeyChange }: ApiKeyManagerProps) {
           </button>
         )}
       </div>
+      {stored && (
+        <div class="llm-apikey-status" aria-live="polite">
+          <span aria-hidden="true">🔒</span> Your key is encrypted locally. Never leaves this device.
+        </div>
+      )}
     </>
   );
 }

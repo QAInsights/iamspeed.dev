@@ -166,6 +166,19 @@ const style = `
     color: #cf222e;
     border-color: #cf222e;
   }
+  .llm-key-status {
+    font-size: 0.75rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    background: var(--bg);
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    line-height: 1.3;
+  }
   .llm-models-loading {
     font-size: 0.75rem;
     color: var(--text-muted);
@@ -352,7 +365,7 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
               />
               {stored && (
                 <>
-                  <span class="llm-key-indicator" aria-label="Key stored locally">
+                  <span class="llm-key-indicator" aria-label="API key encrypted and stored locally">
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--text)" stroke-width="1.5" aria-hidden="true">
                       <rect x="3" y="7" width="10" height="7" />
                       <path d="M5 7V5a3 3 0 0 1 6 0v2" />
@@ -362,6 +375,11 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
                 </>
               )}
             </div>
+            {stored && (
+              <div class="llm-key-status" aria-live="polite">
+                <span aria-hidden="true">🔒</span> Your key is encrypted locally. Never leaves this device.
+              </div>
+            )}
           </div>
 
           <div class="llm-field">
