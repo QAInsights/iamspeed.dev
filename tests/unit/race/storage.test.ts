@@ -5,6 +5,7 @@ import {
   clearRaceConfigs,
   loadMode,
   saveMode,
+  initialLaneIds,
   type StoredRaceConfig,
 } from "../../../src/lib/race/storage";
 
@@ -86,7 +87,7 @@ describe("race storage", () => {
       expect(loadRaceConfigs()).toEqual([]);
     });
 
-    it("caps stored configs to RACE_LANE_COUNT (3)", () => {
+    it("caps stored configs to MAX_RACE_LANES", () => {
       const configs: StoredRaceConfig[] = [
         { laneId: "lane-1", providerId: "openai", modelId: "a" },
         { laneId: "lane-2", providerId: "openai", modelId: "b" },
@@ -119,6 +120,39 @@ describe("race storage", () => {
       saveRaceConfigs([{ laneId: "lane-1", providerId: "openai", modelId: "gpt-4o" }]);
       clearRaceConfigs();
       expect(loadRaceConfigs()).toEqual([]);
+    });
+  });
+
+  describe("initialLaneIds", () => {
+    it("returns the min (2) lane ids when nothing stored", () => {
+      expect(initialLaneIds([])).toEqual(["lane-1", "lane-2"]);
+    });
+
+    it("restores saved lane count up to MAX", () => {
+      const stored: StoredRaceConfig[] = [
+        { laneId: "lane-1", providerId: "openai", modelId: "a" },
+        { laneId: "lane-2", providerId: "openai", modelId: "b" },
+        { laneId: "lane-3", providerId: "openai", modelId: "c" },
+      ];
+      expect(initialLaneIds(stored)).toEqual(["lane-1", "lane-2", "lane-3"]);
+    });
+
+    it("caps to MAX_RACE_LANES when too many stored", () => {
+      const stored: StoredRaceConfig[] = [
+        { laneId: "lane-1", providerId: "openai", modelId: "a" },
+        { laneId: "lane-2", providerId: "openai", modelId: "b" },
+        { laneId: "lane-3", providerId: "openai", modelId: "c" },
+        { laneId: "lane-4", providerId: "openai", modelId: "d" },
+      ];
+      // MAX_RACE_LANES is LANE_COLORS.length (3), so only 3 are kept.
+      expect(initialLaneIds(stored)).toEqual(["lane-1", "lane-2", "lane-3"]);
+    });
+
+    it("never goes below MIN_RACE_LANES", () => {
+      const stored: StoredRaceConfig[] = [
+        { laneId: "lane-1", providerId: "openai", modelId: "a" },
+      ];
+      expect(initialLaneIds(stored)).toEqual(["lane-1", "lane-2"]);
     });
   });
 

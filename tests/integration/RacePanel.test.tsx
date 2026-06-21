@@ -83,7 +83,7 @@ describe("RacePanel", () => {
     expect(container.querySelector(".race-prompt-input")).toBeTruthy();
   });
 
-  it("renders 3 lane config rows in idle state", () => {
+  it("renders 2 lane config rows in idle state (min)", () => {
     const { container } = render(<RacePanel soundEnabled={true} />);
     // Wait for models to load
     expect(container.querySelectorAll(".race-config-row").length).toBeGreaterThanOrEqual(0);
@@ -369,7 +369,7 @@ describe("RacePanel", () => {
 
     await waitFor(() => {
       const providerSelects = container.querySelectorAll(".race-config-provider");
-      expect(providerSelects.length).toBe(3);
+      expect(providerSelects.length).toBe(2);
     });
   });
 
@@ -378,10 +378,9 @@ describe("RacePanel", () => {
 
     await waitFor(() => {
       const badges = container.querySelectorAll(".race-config-badge");
-      expect(badges.length).toBe(3);
+      expect(badges.length).toBe(2);
       expect(badges[0].textContent).toBe("McQueen");
       expect(badges[1].textContent).toBe("Sally");
-      expect(badges[2].textContent).toBe("Chick");
     });
   });
 
@@ -390,7 +389,46 @@ describe("RacePanel", () => {
 
     await waitFor(() => {
       const keyStatuses = container.querySelectorAll(".race-key-status");
-      expect(keyStatuses.length).toBe(3);
+      expect(keyStatuses.length).toBe(2);
+    });
+  });
+
+  it("shows Add racer button when below MAX_RACE_LANES", () => {
+    const { container } = render(<RacePanel soundEnabled={true} />);
+    const addBtn = container.querySelector(".race-config-add");
+    expect(addBtn).toBeTruthy();
+  });
+
+  it("does not show remove button at MIN_RACE_LANES", () => {
+    const { container } = render(<RacePanel soundEnabled={true} />);
+    expect(container.querySelectorAll(".race-config-remove").length).toBe(0);
+  });
+
+  it("adds a third lane when Add racer clicked", async () => {
+    const { container } = render(<RacePanel soundEnabled={true} />);
+    const addBtn = container.querySelector(".race-config-add") as HTMLButtonElement;
+    fireEvent.click(addBtn);
+    await waitFor(() => {
+      expect(container.querySelectorAll(".race-config-row").length).toBe(3);
+      expect(container.querySelectorAll(".race-config-badge").length).toBe(3);
+      expect(container.querySelector(".race-config-add")).toBeNull();
+      expect(container.querySelectorAll(".race-config-remove").length).toBe(3);
+    });
+  });
+
+  it("removes a lane when remove clicked (down to MIN)", async () => {
+    const { container } = render(<RacePanel soundEnabled={true} />);
+    // Add a third lane first
+    fireEvent.click(container.querySelector(".race-config-add") as HTMLButtonElement);
+    await waitFor(() => {
+      expect(container.querySelectorAll(".race-config-row").length).toBe(3);
+    });
+    // Remove the third lane
+    const removeBtns = container.querySelectorAll(".race-config-remove");
+    fireEvent.click(removeBtns[removeBtns.length - 1]);
+    await waitFor(() => {
+      expect(container.querySelectorAll(".race-config-row").length).toBe(2);
+      expect(container.querySelectorAll(".race-config-remove").length).toBe(0);
     });
   });
 });

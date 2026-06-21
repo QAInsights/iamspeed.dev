@@ -156,6 +156,53 @@
 .race-config-hint-keys {
   color: var(--accent);
 }
+.race-config-remove {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.race-config-remove:hover {
+  border-color: #cf222e;
+  color: #cf222e;
+  background: rgba(207, 34, 46, 0.06);
+}
+.race-config-remove:active {
+  transform: scale(0.92);
+}
+.race-config-add {
+  align-self: center;
+  padding: 0.4rem 0.875rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.race-config-add:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(37, 99, 235, 0.04);
+}
+.race-config-add:active {
+  transform: scale(0.97);
+}
 
 /* Lanes */
 .race-lanes {

@@ -10,11 +10,12 @@ import { loadKey, hasStoredKey } from "../../lib/crypto";
 import {
   loadRaceConfigs,
   saveRaceConfigs,
-  DEFAULT_LANE_IDS,
+  initialLaneIds,
   type StoredRaceConfig,
 } from "../../lib/race/storage";
 import { playTick } from "../../lib/audio";
 import { playRev, playFinish } from "../../lib/race/sound";
+import { MIN_RACE_LANES, MAX_RACE_LANES } from "../../lib/race/types";
 import { RaceSetupBar } from "./RaceSetupBar";
 import { RaceLanes } from "./RaceLanes";
 import { RacePodium } from "./RacePodium";
@@ -42,6 +43,24 @@ function makeInitialLane(laneId: string, stored?: StoredRaceConfig): LaneConfig 
   };
 }
 
+function makeIdleLaneState(laneId: string): LaneState {
+  return {
+    laneId,
+    providerId: "",
+    modelId: "",
+    status: "idle" as const,
+    tps: null,
+    ttft: null,
+    ttlt: null,
+    tokenCount: 0,
+    inputTokens: null,
+    outputTokens: null,
+    text: "",
+    providerQueued: false,
+    finishRank: null,
+  };
+}
+
 interface RacePanelProps {
   soundEnabled: boolean;
 }
@@ -49,29 +68,16 @@ interface RacePanelProps {
 export function RacePanel({ soundEnabled }: RacePanelProps) {
   const [prompt, setPrompt] = useState<string>(() => DEFAULT_PROMPT);
   const [raceState, setRaceState] = useState<RaceState>("idle");
-  const [lanes, setLanes] = useState<LaneState[]>(() =>
-    DEFAULT_LANE_IDS.map((id) => ({
-      laneId: id,
-      providerId: "",
-      modelId: "",
-      status: "idle" as const,
-      tps: null,
-      ttft: null,
-      ttlt: null,
-      tokenCount: 0,
-      inputTokens: null,
-      outputTokens: null,
-      text: "",
-      providerQueued: false,
-      finishRank: null,
-    })),
-  );
-  const [results, setResults] = useState<RaceResult[] | null>(null);
 
   const storedConfigs = loadRaceConfigs();
+  const [startLaneIds] = useState<string[]>(() => initialLaneIds(storedConfigs));
   const [configs, setConfigs] = useState<LaneConfig[]>(() =>
-    DEFAULT_LANE_IDS.map((id, i) => makeInitialLane(id, storedConfigs[i])),
+    startLaneIds.map((id, i) => makeInitialLane(id, storedConfigs[i])),
   );
+  const [lanes, setLanes] = useState<LaneState[]>(() =>
+    startLaneIds.map((id) => makeIdleLaneState(id)),
+  );
+  const [results, setResults] = useState<RaceResult[] | null>(null);
 
   const soundRef = useRef(soundEnabled);
   useEffect(() => {
@@ -126,6 +132,29 @@ export function RacePanel({ soundEnabled }: RacePanelProps) {
     [],
   );
 
+  const addLane = useCallback(() => {
+    setConfigs((prev) => {
+      if (prev.length >= MAX_RACE_LANES) return prev;
+      // Pick the next stable lane-N id that isn't already in use.
+      let n = prev.length + 1;
+      const used = new Set(prev.map((c) => c.laneId));
+      while (used.has(`lane-${n}`)) n++;
+      const laneId = `lane-${n}`;
+      const next = [...prev, makeInitialLane(laneId)];
+      setLanes(next.map((c) => makeIdleLaneState(c.laneId)));
+      return next;
+    });
+  }, []);
+
+  const removeLane = useCallback((laneId: string) => {
+    setConfigs((prev) => {
+      if (prev.length <= MIN_RACE_LANES) return prev;
+      const next = prev.filter((c) => c.laneId !== laneId);
+      setLanes(next.map((c) => makeIdleLaneState(c.laneId)));
+      return next;
+    });
+  }, []);
+
   const providerNames: Record<string, string> = {};
   const laneIndexById: Record<string, number> = {};
   for (let i = 0; i < configs.length; i++) {
@@ -157,24 +186,8 @@ export function RacePanel({ soundEnabled }: RacePanelProps) {
     firstFinishPlayedRef.current = false;
     if (soundRef.current) playRev();
 
-    // Reset lane states.
-    setLanes(
-      DEFAULT_LANE_IDS.map((id) => ({
-        laneId: id,
-        providerId: "",
-        modelId: "",
-        status: "idle" as const,
-        tps: null,
-        ttft: null,
-        ttlt: null,
-        tokenCount: 0,
-        inputTokens: null,
-        outputTokens: null,
-        text: "",
-        providerQueued: false,
-        finishRank: null,
-      })),
-    );
+    // Reset lane states to match the current config set.
+    setLanes(configs.map((c) => makeIdleLaneState(c.laneId)));
 
     const handle = runRace(
       raceConfigs,
@@ -279,9 +292,31 @@ export function RacePanel({ soundEnabled }: RacePanelProps) {
                     aria-label={`Lane ${i + 1} base URL`}
                   />
                 )}
+                {configs.length > MIN_RACE_LANES && (
+                  <button
+                    class="race-config-remove"
+                    onClick={() => removeLane(c.laneId)}
+                    aria-label={`Remove lane ${i + 1}`}
+                    title="Remove lane"
+                    type="button"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             );
           })}
+          {configs.length < MAX_RACE_LANES && (
+            <button
+              class="race-config-add"
+              onClick={addLane}
+              aria-label="Add a lane"
+              title="Add another racer"
+              type="button"
+            >
+              + Add a racer
+            </button>
+          )}
           {!allConfigured && (
             <div class="race-config-hint">
               Pick your racers. Same prompt. Same track. Different engines.

@@ -80,7 +80,7 @@ export interface RaceHandle {
 }
 
 /**
- * Classic race palette, colorblind-aware. Lane index 0..2 maps to these.
+ * Classic race palette, colorblind-aware. Lane index 0..N maps to these.
  * McQueen red, Sally blue, Chick Hicks green.
  */
 export const LANE_COLORS: ReadonlyArray<{ id: string; hex: string; label: string }> = [
@@ -89,8 +89,10 @@ export const LANE_COLORS: ReadonlyArray<{ id: string; hex: string; label: string
   { id: "chick", hex: "#43A047", label: "Chick" },
 ];
 
-/** MVP lane count. The abstraction supports more; the UI pins to 3. */
-export const RACE_LANE_COUNT = 3;
+/** Minimum lanes a race can have — the starting count for new users. */
+export const MIN_RACE_LANES = 2;
+/** Maximum lanes a race can have — capped by the palette and UI width. */
+export const MAX_RACE_LANES = LANE_COLORS.length;
 
 /** Cap streamed text stored in LaneState to avoid unbounded memory in long races. */
 export const MAX_LANE_TEXT_CHARS = 2000;

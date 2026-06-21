@@ -1,4 +1,4 @@
-import { RACE_LANE_COUNT } from "./types";
+import { MIN_RACE_LANES, MAX_RACE_LANES } from "./types";
 
 /**
  * Persistence for Race Mode configs. Mirrors the prefs.ts pattern: thin
@@ -14,8 +14,18 @@ const RACE_MODE_KEY = "iamspeed_mode";
 
 export type AppMode = "simple" | "race";
 
-/** Default lane ids, stable across reloads. */
-export const DEFAULT_LANE_IDS = ["lane-1", "lane-2", "lane-3"] as const;
+/** Default lane ids for a fresh (min-lane) setup. Stable across reloads. */
+export const DEFAULT_LANE_IDS = ["lane-1", "lane-2"] as const;
+
+/**
+ * Determine the initial set of lane ids given whatever was persisted. Restores
+ * saved lanes (capped to MAX_RACE_LANES), but never goes below MIN_RACE_LANES.
+ * Lane ids are stable `lane-N` strings so saved configs rehydrate by index.
+ */
+export function initialLaneIds(stored: StoredRaceConfig[]): string[] {
+  const count = Math.min(MAX_RACE_LANES, Math.max(MIN_RACE_LANES, stored.length));
+  return Array.from({ length: count }, (_, i) => `lane-${i + 1}`);
+}
 
 /**
  * Stored race config — same as RaceConfig but without the apiKey, which is
@@ -42,7 +52,7 @@ export function loadRaceConfigs(): StoredRaceConfig[] {
         typeof c.providerId === "string" &&
         typeof c.modelId === "string",
       )
-      .slice(0, RACE_LANE_COUNT);
+      .slice(0, MAX_RACE_LANES);
   } catch {
     return [];
   }
@@ -52,7 +62,7 @@ export function saveRaceConfigs(configs: StoredRaceConfig[]): void {
   try {
     const sanitized = configs
       .filter((c) => c && c.laneId && c.providerId && c.modelId)
-      .slice(0, RACE_LANE_COUNT);
+      .slice(0, MAX_RACE_LANES);
     localStorage.setItem(RACE_CONFIGS_KEY, JSON.stringify(sanitized));
   } catch {
     // ignore quota errors
