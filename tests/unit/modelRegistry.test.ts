@@ -53,6 +53,40 @@ describe("modelRegistry", () => {
     expect(models.some((m) => m.id.includes("/"))).toBe(true);
   });
 
+  it("returns google models from models.dev catalog", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({
+        google: {
+          models: {
+            "gemini-2.5-flash": {
+              id: "gemini-2.5-flash",
+              name: "Gemini 2.5 Flash",
+              limit: { context: 1048576 },
+            },
+            "gemini-2.5-pro": {
+              id: "gemini-2.5-pro",
+              name: "Gemini 2.5 Pro",
+              limit: { context: 2097152 },
+            },
+          },
+        },
+      }),
+    });
+
+    const models = await loadModels("google");
+    expect(models.length).toBe(2);
+    expect(models.some((m) => m.id === "gemini-2.5-flash")).toBe(true);
+    expect(models.some((m) => m.id === "gemini-2.5-pro")).toBe(true);
+  });
+
+  it("returns empty array for google when fetch fails (no hardcoded fallback)", async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
+
+    const models = await loadModels("google");
+    expect(models).toEqual([]);
+  });
+
   it("caches models after successful fetch", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,

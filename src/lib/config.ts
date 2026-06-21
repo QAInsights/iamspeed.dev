@@ -34,6 +34,12 @@ export const PROVIDERS: Record<string, ProviderMetadata> = {
     category: "frontier",
     description: "Unified access to many providers and open models",
   },
+  google: {
+    name: "google",
+    displayName: "Google",
+    category: "frontier",
+    description: "Gemini models via Google's OpenAI-compatible endpoint",
+  },
   local: {
     name: LOCAL_PROVIDER_ID,
     displayName: "Local",
