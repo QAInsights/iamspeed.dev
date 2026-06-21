@@ -18,10 +18,12 @@ import { RunControls } from "./RunControls";
 import { SecondaryMetrics } from "./SecondaryMetrics";
 import { HeroResult } from "./HeroResult";
 import { ShowMoreToggle } from "./ShowMoreToggle";
-import { TopBarActions } from "./TopBarActions";
+import { TopBar } from "./TopBar";
 import { BenchmarkHint } from "./BenchmarkHint";
 import { HeroSparkline } from "./HeroSparkline";
 import { playTick } from "../lib/audio";
+import { loadMode, saveMode, type AppMode } from "../lib/race/storage";
+import { RacePanel } from "./race/RacePanel";
 import "../styles/components/BenchmarkPanel.css";
 
 type RunState = "idle" | "running" | "done" | "error";
@@ -42,6 +44,7 @@ function BenchmarkPanelContent() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [recentRuns, setRecentRuns] = useState<RunSummary[]>(() => loadHistory());
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [mode, setMode] = useState<AppMode>(() => loadMode());
 
   const handleOpenSettings = useCallback(() => {
     setSettingsOpen(true);
@@ -57,6 +60,14 @@ function BenchmarkPanelContent() {
 
   const handleCloseHistory = useCallback(() => {
     setHistoryOpen(false);
+  }, []);
+
+  const toggleMode = useCallback(() => {
+    setMode((prev) => {
+      const next = prev === "race" ? "simple" : "race";
+      saveMode(next);
+      return next;
+    });
   }, []);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
@@ -317,96 +328,93 @@ function BenchmarkPanelContent() {
     <>
       <WeatherBackground theme={theme} />
       <main class="llm-app">
-        {/* Top bar */}
-        <div class="llm-topbar">
-          <span class="llm-brand">
-            <span class="llm-brand-logo">
-              <img src="/logo.svg" alt="I am speed" />
-            </span>
-            <span class="llm-brand-text">
-              <h1 class="llm-brand-name">I am speed.</h1>
-              <span class="llm-brand-tagline">measure what matters.</span>
-            </span>
-          </span>
-          <TopBarActions
-            onToggleTheme={toggleTheme}
-            onHistory={handleOpenHistory}
-            historyOpen={historyOpen}
-            onSettings={handleOpenSettings}
-            settingsOpen={settingsOpen}
-            soundEnabled={soundEnabled}
-            onToggleSound={toggleSound}
-          />
-        </div>
+        <TopBar
+          onToggleTheme={toggleTheme}
+          onHistory={handleOpenHistory}
+          historyOpen={historyOpen}
+          onSettings={handleOpenSettings}
+          settingsOpen={settingsOpen}
+          soundEnabled={soundEnabled}
+          onToggleSound={toggleSound}
+          mode={mode}
+          onToggleMode={toggleMode}
+          showHistory={mode === "simple"}
+        />
 
-        {/* Hero */}
-        <div class="llm-hero">
-          <HeroResult heroText={heroText} isActive={isActive} ttft={ttft} providerQueued={providerQueued} />
+        {mode === "race" ? (
+          <RacePanel soundEnabled={soundEnabled} />
+        ) : (
+          <>
+            {/* Hero */}
+            <div class="llm-hero">
+              <HeroResult heroText={heroText} isActive={isActive} ttft={ttft} providerQueued={providerQueued} />
 
-          {/* Compact sparkline for recent runs */}
-          <HeroSparkline data={sparklineData} />
+              {/* Compact sparkline for recent runs */}
+              <HeroSparkline data={sparklineData} />
 
-          {/* Secondary metrics */}
-          {(runState === "done" || runState === "running") && showMore && (
-            <SecondaryMetrics
-              inputTokens={inputTokens}
-              outputTokens={outputTokens}
-              totalTime={totalTime}
-              modelId={settings.modelId}
-            />
-          )}
+              {/* Secondary metrics */}
+              {(runState === "done" || runState === "running") && showMore && (
+                <SecondaryMetrics
+                  inputTokens={inputTokens}
+                  outputTokens={outputTokens}
+                  totalTime={totalTime}
+                  modelId={settings.modelId}
+                />
+              )}
 
-          {/* Share bar — only when results are available */}
-          {runState === "done" && metrics && (
-            <ShareBar
-              provider={PROVIDERS[settings.providerId]?.displayName || settings.providerId}
-              model={settings.modelId}
-              tps={displayTps}
-              ttft={ttft}
-            />
-          )}
+              {/* Share bar — only when results are available */}
+              {runState === "done" && metrics && (
+                <ShareBar
+                  provider={PROVIDERS[settings.providerId]?.displayName || settings.providerId}
+                  model={settings.modelId}
+                  tps={displayTps}
+                  ttft={ttft}
+                />
+              )}
 
-          {/* Current selection - always visible + clickable (Option B scalable UX) */}
-          {settings.providerId && (
-            <CurrentSelection
-              providerName={PROVIDERS[settings.providerId]?.displayName || settings.providerId}
-              modelId={settings.modelId || undefined}
-              onClick={handleOpenSettings}
-            />
-          )}
+              {/* Current selection - always visible + clickable (Option B scalable UX) */}
+              {settings.providerId && (
+                <CurrentSelection
+                  providerName={PROVIDERS[settings.providerId]?.displayName || settings.providerId}
+                  modelId={settings.modelId || undefined}
+                  onClick={handleOpenSettings}
+                />
+              )}
 
-          {/* Actions */}
-          <RunControls
-            runState={runState}
-            onRun={handleRun}
-            onStop={handleStop}
-          />
+              {/* Actions */}
+              <RunControls
+                runState={runState}
+                onRun={handleRun}
+                onStop={handleStop}
+              />
 
 
 
-          <BenchmarkHint
-            hasConfig={hasConfig}
-            runState={runState}
-            error={error}
-            onOpenSettings={handleOpenSettings}
-          />
+              <BenchmarkHint
+                hasConfig={hasConfig}
+                runState={runState}
+                error={error}
+                onOpenSettings={handleOpenSettings}
+              />
 
-          {/* Show more */}
-          {(runState === "done" || runState === "running") && (
-            <ShowMoreToggle
-              showMore={showMore}
-              onToggle={() => setShowMore((v) => !v)}
-            />
-          )}
+              {/* Show more */}
+              {(runState === "done" || runState === "running") && (
+                <ShowMoreToggle
+                  showMore={showMore}
+                  onToggle={() => setShowMore((v) => !v)}
+                />
+              )}
 
-        </div>
+            </div>
 
-        {/* Stream output section */}
-        {(streamText || isActive) && showMore && (
-          <div class="llm-stream-section">
-            <StreamOutput text={streamText} streaming={isActive} />
-            {runState === "done" && <RawResponsePanel data={rawResponse} />}
-          </div>
+            {/* Stream output section */}
+            {(streamText || isActive) && showMore && (
+              <div class="llm-stream-section">
+                <StreamOutput text={streamText} streaming={isActive} />
+                {runState === "done" && <RawResponsePanel data={rawResponse} />}
+              </div>
+            )}
+          </>
         )}
 
         <footer class="llm-footer" role="contentinfo">
@@ -422,19 +430,23 @@ function BenchmarkPanelContent() {
         </footer>
       </main>
 
-      <RecentRuns
-        open={historyOpen}
-        onClose={handleCloseHistory}
-        runs={recentRuns}
-        onClear={() => { clearHistory(); setRecentRuns([]); }}
-      />
+      {mode === "simple" && (
+        <>
+          <RecentRuns
+            open={historyOpen}
+            onClose={handleCloseHistory}
+            runs={recentRuns}
+            onClear={() => { clearHistory(); setRecentRuns([]); }}
+          />
 
-      <SettingsPanel
-        open={settingsOpen}
-        onClose={handleCloseSettings}
-        settings={settings}
-        onSettingsChange={setSettings}
-      />
+          <SettingsPanel
+            open={settingsOpen}
+            onClose={handleCloseSettings}
+            settings={settings}
+            onSettingsChange={setSettings}
+          />
+        </>
+      )}
     </>
   );
 }

@@ -1,4 +1,5 @@
 /** @jsxImportSource preact */
+import type { AppMode } from "../lib/race/storage";
 
 interface TopBarActionsProps {
   onToggleTheme: () => void;
@@ -8,6 +9,9 @@ interface TopBarActionsProps {
   settingsOpen: boolean;
   soundEnabled: boolean;
   onToggleSound: () => void;
+  mode: AppMode;
+  onToggleMode: () => void;
+  showHistory?: boolean;
 }
 
 const themeIconStyle = `
@@ -25,11 +29,34 @@ export function TopBarActions({
   settingsOpen,
   soundEnabled,
   onToggleSound,
+  mode,
+  onToggleMode,
+  showHistory = true,
 }: TopBarActionsProps) {
   return (
     <>
       <style>{themeIconStyle}</style>
       <div class="llm-topbar-actions">
+        <button
+          class="llm-mode-toggle"
+          onClick={onToggleMode}
+          aria-label={mode === "race" ? "Switch to Simple mode" : "Switch to Race mode"}
+          title={mode === "race" ? "Simple mode" : "Race mode"}
+          aria-pressed={mode === "race"}
+        >
+          {mode === "race" ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 18h6V6H4z" />
+              <path d="M14 18h6V9h-6z" />
+              <path d="M2 22h20" />
+            </svg>
+          )}
+        </button>
         <button class="llm-sound-toggle" onClick={onToggleSound} aria-label={soundEnabled ? "Mute Sound" : "Enable Sound"}>
           {soundEnabled ? (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -51,12 +78,14 @@ export function TopBarActions({
             <path class="moon-icon" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
           </svg>
         </button>
-        <button class="llm-history-btn" onClick={onHistory} aria-label="History" aria-expanded={historyOpen}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" />
-            <polyline points="12 7 12 12 15 14" />
-          </svg>
-        </button>
+        {showHistory && (
+          <button class="llm-history-btn" onClick={onHistory} aria-label="History" aria-expanded={historyOpen}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <polyline points="12 7 12 12 15 14" />
+            </svg>
+          </button>
+        )}
         <button class="llm-gear" onClick={onSettings} aria-label="Settings" aria-expanded={settingsOpen}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="3" />

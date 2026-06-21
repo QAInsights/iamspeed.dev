@@ -1,0 +1,129 @@
+/** @jsxImportSource preact */
+import { describe, it, expect, afterEach } from "vitest";
+import { render, cleanup } from "@testing-library/preact";
+import { RacePodium } from "../../src/components/race/RacePodium";
+import type { RaceResult } from "../../src/lib/race/types";
+
+function result(overrides: Partial<RaceResult> & { laneId: string }): RaceResult {
+  return {
+    laneId: overrides.laneId,
+    providerId: overrides.providerId ?? "openai",
+    modelId: overrides.modelId ?? "gpt-4o",
+    finishRank: overrides.finishRank ?? 1,
+    tps: overrides.tps ?? null,
+    ttft: overrides.ttft ?? null,
+    ttlt: overrides.ttlt ?? null,
+    tokenCount: overrides.tokenCount ?? 10,
+    inputTokens: overrides.inputTokens ?? null,
+    outputTokens: overrides.outputTokens ?? null,
+    error: overrides.error,
+  };
+}
+
+describe("RacePodium", () => {
+  afterEach(() => cleanup());
+
+  it("renders title", () => {
+    const { container } = render(
+      <RacePodium results={[]} providerNames={{}} laneIndexById={{}} />,
+    );
+    expect(container.querySelector(".race-podium-title")!.textContent).toBe("Piston Cup Results");
+  });
+
+  it("renders all 3 results in finish-rank order", () => {
+    const results = [
+      result({ laneId: "lane-1", finishRank: 3, tps: 50 }),
+      result({ laneId: "lane-2", finishRank: 1, tps: 120 }),
+      result({ laneId: "lane-3", finishRank: 2, tps: 80 }),
+    ];
+    const { container } = render(
+      <RacePodium
+        results={results}
+        providerNames={{ "lane-1": "OpenAI", "lane-2": "Anthropic", "lane-3": "Groq" }}
+        laneIndexById={{ "lane-1": 0, "lane-2": 1, "lane-3": 2 }}
+      />,
+    );
+    const rows = container.querySelectorAll(".race-podium-row");
+    expect(rows).toHaveLength(3);
+    // Ordered by finish rank: lane-2 (1st), lane-3 (2nd), lane-1 (3rd)
+    expect(rows[0].querySelector(".race-podium-name")!.textContent).toBe("Sally");
+    expect(rows[1].querySelector(".race-podium-name")!.textContent).toBe("Chick");
+    expect(rows[2].querySelector(".race-podium-name")!.textContent).toBe("McQueen");
+  });
+
+  it("shows medals in order", () => {
+    const results = [
+      result({ laneId: "lane-1", finishRank: 1 }),
+      result({ laneId: "lane-2", finishRank: 2 }),
+      result({ laneId: "lane-3", finishRank: 3 }),
+    ];
+    const { container } = render(
+      <RacePodium
+        results={results}
+        providerNames={{ "lane-1": "OpenAI", "lane-2": "Anthropic", "lane-3": "Groq" }}
+        laneIndexById={{ "lane-1": 0, "lane-2": 1, "lane-3": 2 }}
+      />,
+    );
+    const medals = container.querySelectorAll(".race-podium-medal");
+    expect(medals[0].textContent).toBe("🏆");
+    expect(medals[1].textContent).toBe("🥈");
+    expect(medals[2].textContent).toBe("🥉");
+  });
+
+  it("shows tps and ttft values", () => {
+    const results = [
+      result({ laneId: "lane-1", finishRank: 1, tps: 120, ttft: 450 }),
+    ];
+    const { container } = render(
+      <RacePodium results={results} providerNames={{ "lane-1": "OpenAI" }} laneIndexById={{ "lane-1": 0 }} />,
+    );
+    expect(container.querySelector(".race-podium-tps")!.textContent).toBe("120 tok/s");
+    expect(container.querySelector(".race-podium-ttft")!.textContent).toBe("450ms TTFT");
+  });
+
+  it("shows -- for null tps/ttft", () => {
+    const results = [result({ laneId: "lane-1", finishRank: 1, tps: null, ttft: null })];
+    const { container } = render(
+      <RacePodium results={results} providerNames={{ "lane-1": "OpenAI" }} laneIndexById={{ "lane-1": 0 }} />,
+    );
+    expect(container.querySelector(".race-podium-tps")!.textContent).toBe("--");
+    expect(container.querySelector(".race-podium-ttft")!.textContent).toBe("--");
+  });
+
+  it("shows error for DNF (zero-token) lanes", () => {
+    const results = [
+      result({ laneId: "lane-1", finishRank: 1, tps: 120, tokenCount: 50 }),
+      result({ laneId: "lane-2", finishRank: 2, tps: null, tokenCount: 0, error: "Invalid key" }),
+    ];
+    const { container } = render(
+      <RacePodium
+        results={results}
+        providerNames={{ "lane-1": "OpenAI", "lane-2": "Anthropic" }}
+        laneIndexById={{ "lane-1": 0, "lane-2": 1 }}
+      />,
+    );
+    const rows = container.querySelectorAll(".race-podium-row");
+    // DNF lane should have the dnf class and show error
+    expect(rows[1].classList.contains("race-podium-row--dnf")).toBe(true);
+    expect(rows[1].querySelector(".race-podium-error")!.textContent).toBe("Invalid key");
+  });
+
+  it("applies lane colors via CSS variable", () => {
+    const results = [result({ laneId: "lane-1", finishRank: 1 })];
+    const { container } = render(
+      <RacePodium results={results} providerNames={{ "lane-1": "OpenAI" }} laneIndexById={{ "lane-1": 0 }} />,
+    );
+    const row = container.querySelector(".race-podium-row") as HTMLElement;
+    expect(row.style.getPropertyValue("--lane-color")).toBe("#E10600");
+  });
+
+  it("renders provider and model name", () => {
+    const results = [result({ laneId: "lane-1", finishRank: 1, modelId: "claude-3-5-sonnet" })];
+    const { container } = render(
+      <RacePodium results={results} providerNames={{ "lane-1": "Anthropic" }} laneIndexById={{ "lane-1": 1 }} />,
+    );
+    const model = container.querySelector(".race-podium-model")!;
+    expect(model.textContent).toContain("Anthropic");
+    expect(model.textContent).toContain("claude-3-5-sonnet");
+  });
+});

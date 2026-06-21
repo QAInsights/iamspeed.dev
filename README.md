@@ -9,6 +9,7 @@ Fast.com but for LLMs.
 - Throughput tracking in tokens/sec
 - AES-GCM encrypted API key storage (local only)
 - OpenAI, Anthropic, Groq, OpenRouter, Google (Gemini), and Local (Ollama, LM Studio, etc.) provider support
+- **Race Mode** — run 3 providers in parallel on the same prompt and watch them race side-by-side with live TPS, finish ranking, and a Piston Cup podium
 - Responsive, minimal UI inspired by [fast.com](https://fast.com)
 
 ## Quick Start
