@@ -11,7 +11,11 @@ function getCtx(): AudioContext | null {
     window.AudioContext ||
     (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!AudioContextClass) return null;
-  if (!audioCtx) audioCtx = new AudioContextClass();
+  try {
+    if (!audioCtx) audioCtx = new AudioContextClass();
+  } catch {
+    return null;
+  }
   if (audioCtx.state === "suspended") audioCtx.resume();
   return audioCtx;
 }

@@ -399,37 +399,6 @@
   font-style: italic;
 }
 
-/* Mode toggle button — shares sizing with other topbar buttons */
-.llm-mode-toggle {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--text-muted);
-  border: none;
-  background: none;
-  padding: 0;
-  border-radius: 6px;
-  transition: color 0.3s ease-in-out, background-color 0.2s ease-in-out, transform 0.2s;
-}
-.llm-mode-toggle:hover {
-  color: var(--text);
-  background-color: var(--border-light);
-}
-.llm-mode-toggle:active {
-  transform: scale(0.92);
-}
-.llm-mode-toggle svg {
-  width: 20px;
-  height: 20px;
-  display: block;
-}
-.llm-mode-toggle[aria-pressed="true"] {
-  color: var(--accent);
-}
-
 @media (max-width: 640px) {
   .race-setup {
     flex-direction: column;

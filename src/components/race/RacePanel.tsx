@@ -192,8 +192,8 @@ export function RacePanel({ soundEnabled }: RacePanelProps) {
             playTick(lane.tps);
           }
         },
-        onLaneFinish: (lane) => {
-          if (!firstFinishPlayedRef.current && lane.finishRank === 1) {
+        onLaneFinish: (lane, rank) => {
+          if (!firstFinishPlayedRef.current && rank === 1) {
             firstFinishPlayedRef.current = true;
             if (soundRef.current) playFinish();
           }
