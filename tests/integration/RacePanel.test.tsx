@@ -462,4 +462,72 @@ describe("RacePanel", () => {
       expect(container.querySelectorAll(".race-config-remove").length).toBe(0);
     });
   });
+
+  it("shows gear button instead of inline input when provider is local", async () => {
+    const { container } = render(<RacePanel soundEnabled={true} />);
+    // Default providers are not local, so no gear button initially
+    expect(container.querySelectorAll(".race-config-baseurl-btn").length).toBe(0);
+
+    // Switch first lane to local
+    const providerSelect = container.querySelector(".race-config-provider") as HTMLSelectElement;
+    providerSelect.value = "local";
+    providerSelect.dispatchEvent(new Event("change", { bubbles: true }));
+
+    await waitFor(() => {
+      // Gear button should appear for the local lane
+      const gearBtns = container.querySelectorAll(".race-config-baseurl-btn");
+      expect(gearBtns.length).toBe(1);
+      // No inline base URL input
+      expect(container.querySelectorAll(".race-config-baseurl").length).toBe(0);
+    });
+  });
+
+  it("opens base URL dialog when gear button is clicked", async () => {
+    const { container } = render(<RacePanel soundEnabled={true} />);
+    // Switch first lane to local
+    const providerSelect = container.querySelector(".race-config-provider") as HTMLSelectElement;
+    providerSelect.value = "local";
+    providerSelect.dispatchEvent(new Event("change", { bubbles: true }));
+
+    await waitFor(() => {
+      expect(container.querySelectorAll(".race-config-baseurl-btn").length).toBe(1);
+    });
+
+    // No dialog initially
+    expect(container.querySelector(".race-baseurl-dialog")).toBeNull();
+
+    // Click the gear button
+    fireEvent.click(container.querySelector(".race-config-baseurl-btn") as HTMLButtonElement);
+
+    // Dialog should appear
+    await waitFor(() => {
+      const dialog = container.querySelector(".race-baseurl-dialog");
+      expect(dialog).not.toBeNull();
+      const input = container.querySelector(".race-baseurl-input") as HTMLInputElement;
+      expect(input).not.toBeNull();
+      expect(input.placeholder).toBe("http://localhost:11434/v1");
+    });
+  });
+
+  it("closes base URL dialog when Done button is clicked", async () => {
+    const { container } = render(<RacePanel soundEnabled={true} />);
+    // Switch to local and open dialog
+    const providerSelect = container.querySelector(".race-config-provider") as HTMLSelectElement;
+    providerSelect.value = "local";
+    providerSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    await waitFor(() => {
+      expect(container.querySelectorAll(".race-config-baseurl-btn").length).toBe(1);
+    });
+    fireEvent.click(container.querySelector(".race-config-baseurl-btn") as HTMLButtonElement);
+    await waitFor(() => {
+      expect(container.querySelector(".race-baseurl-dialog")).not.toBeNull();
+    });
+
+    // Click Done
+    fireEvent.click(container.querySelector(".race-baseurl-done") as HTMLButtonElement);
+
+    await waitFor(() => {
+      expect(container.querySelector(".race-baseurl-dialog")).toBeNull();
+    });
+  });
 });

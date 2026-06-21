@@ -79,6 +79,7 @@ export function RacePanel({ soundEnabled }: RacePanelProps) {
     startLaneIds.map((id) => makeIdleLaneState(id)),
   );
   const [results, setResults] = useState<RaceResult[] | null>(null);
+  const [baseUrlLane, setBaseUrlLane] = useState<string | null>(null);
 
   const soundRef = useRef(soundEnabled);
   useEffect(() => {
@@ -284,14 +285,18 @@ export function RacePanel({ soundEnabled }: RacePanelProps) {
                   </span>
                 )}
                 {isLocal && (
-                  <input
-                    class="race-config-baseurl"
-                    type="text"
-                    placeholder="http://localhost:11434/v1"
-                    value={c.baseUrl ?? ""}
-                    onInput={(e) => updateLaneConfig(c.laneId, { baseUrl: (e.target as HTMLInputElement).value })}
-                    aria-label={`Lane ${i + 1} base URL`}
-                  />
+                  <button
+                    class="race-config-baseurl-btn"
+                    onClick={() => setBaseUrlLane(c.laneId)}
+                    aria-label={`Lane ${i + 1} base URL settings`}
+                    title={c.baseUrl ? c.baseUrl : "Configure base URL"}
+                    type="button"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="3" />
+                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
+                  </button>
                 )}
                 {configs.length > MIN_RACE_LANES && (
                   <button
@@ -342,6 +347,40 @@ export function RacePanel({ soundEnabled }: RacePanelProps) {
       <footer class="race-footer">
         Doc Hudson says: it's not about speed, it's about consistency.
       </footer>
+
+      {/* Base URL dialog for local provider lanes. */}
+      {baseUrlLane && (() => {
+        const config = configs.find((c) => c.laneId === baseUrlLane);
+        if (!config) return null;
+        const laneIdx = configs.findIndex((c) => c.laneId === baseUrlLane);
+        const color = LANE_COLORS[laneIdx] ?? LANE_COLORS[0];
+        return (
+          <div class="race-baseurl-overlay" onClick={(e) => { if (e.target === e.currentTarget) setBaseUrlLane(null); }}>
+            <div class="race-baseurl-dialog" style={`--lane-color: ${color.hex};`}>
+              <div class="race-baseurl-header">
+                <h3 class="race-baseurl-title">{color.label} — Base URL</h3>
+                <button class="race-baseurl-close" onClick={() => setBaseUrlLane(null)} aria-label="Close" type="button">&#x2715;</button>
+              </div>
+              <label class="race-baseurl-label" for={`baseurl-${baseUrlLane}`}>
+                Local server endpoint
+              </label>
+              <input
+                id={`baseurl-${baseUrlLane}`}
+                class="race-baseurl-input"
+                type="text"
+                placeholder="http://localhost:11434/v1"
+                value={config.baseUrl ?? ""}
+                onInput={(e) => updateLaneConfig(baseUrlLane, { baseUrl: (e.target as HTMLInputElement).value })}
+                autoFocus
+              />
+              <p class="race-baseurl-hint">
+                Ollama: <code>http://localhost:11434/v1</code> · LM Studio: <code>http://localhost:1234/v1</code>
+              </p>
+              <button class="race-baseurl-done" onClick={() => setBaseUrlLane(null)} type="button">Done</button>
+            </div>
+          </div>
+        );
+      })()}
     </main>
   );
 }
