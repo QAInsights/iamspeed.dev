@@ -436,22 +436,20 @@ function BenchmarkPanelContent() {
       </main>
 
       {mode === "simple" && (
-        <>
-          <RecentRuns
-            open={historyOpen}
-            onClose={handleCloseHistory}
-            runs={recentRuns}
-            onClear={() => { clearHistory(); setRecentRuns([]); }}
-          />
-
-          <SettingsPanel
-            open={settingsOpen}
-            onClose={handleCloseSettings}
-            settings={settings}
-            onSettingsChange={setSettings}
-          />
-        </>
+        <RecentRuns
+          open={historyOpen}
+          onClose={handleCloseHistory}
+          runs={recentRuns}
+          onClear={() => { clearHistory(); setRecentRuns([]); }}
+        />
       )}
+
+      <SettingsPanel
+        open={settingsOpen}
+        onClose={handleCloseSettings}
+        settings={settings}
+        onSettingsChange={setSettings}
+      />
     </>
   );
 }

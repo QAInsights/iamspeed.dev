@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, cleanup } from '@testing-library/preact';
+import { render, cleanup, fireEvent, waitFor } from '@testing-library/preact';
 import { BenchmarkPanel } from '../../src/components/BenchmarkPanel';
 import { discoverLocalModels } from '../../src/lib/modelRegistry';
 
@@ -89,5 +89,27 @@ describe('BenchmarkPanel - Local support (integration)', () => {
     expect(disclaimer.textContent).toContain('Disney/Pixar');
     expect(disclaimer.textContent).toContain('unofficial fan project');
     expect(disclaimer.textContent).toContain('not affiliated with or endorsed by Disney');
+  });
+
+  it('opens settings panel when gear is clicked in race mode', async () => {
+    // Switch to race mode via its own localStorage key
+    localStorage.setItem('iamspeed_mode', 'race');
+
+    const { container } = render(<BenchmarkPanel />);
+
+    // Settings panel should not be visible initially
+    expect(container.querySelector('.llm-settings')).toBeNull();
+
+    // Click the gear icon
+    const gear = container.querySelector('.llm-gear') as HTMLButtonElement;
+    expect(gear).toBeInTheDocument();
+    fireEvent.click(gear);
+
+    // Settings panel should now be visible
+    await waitFor(() => {
+      const panel = container.querySelector('.llm-settings');
+      expect(panel).not.toBeNull();
+      expect(panel?.getAttribute('aria-label')).toBe('Settings');
+    });
   });
 });
