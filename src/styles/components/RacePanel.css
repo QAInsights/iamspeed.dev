@@ -210,6 +210,13 @@
   max-width: var(--max-w);
   padding: 1.5rem 0;
 }
+.race-podium-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
 .race-podium-title {
   font-family: var(--mono);
   font-size: 0.875rem;
@@ -218,7 +225,69 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   text-align: center;
-  margin-bottom: 1rem;
+}
+.race-podium-info-toggle {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.race-podium-info-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(37, 99, 235, 0.04);
+}
+.race-podium-award {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  margin: 0 0 0.75rem;
+  border: 1px solid var(--lane-color);
+  border-left: 4px solid var(--lane-color);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--lane-color) 6%, var(--surface));
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
+.race-podium-award-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+.race-podium-award-label {
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.race-podium-award-name {
+  font-weight: 700;
+  color: var(--lane-color);
+  text-transform: uppercase;
+}
+.race-podium-award-value {
+  margin-left: auto;
+  color: var(--text);
+}
+.race-podium-row--fastest-start {
+  border-color: var(--lane-color);
+  background: color-mix(in srgb, var(--lane-color) 4%, var(--surface));
+}
+.race-podium-row-badge {
+  font-size: 0.875rem;
+  line-height: 1;
 }
 .race-podium-list {
   list-style: none;

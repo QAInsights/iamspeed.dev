@@ -329,14 +329,14 @@ export function RacePanel({ soundEnabled }: RacePanelProps) {
         </div>
       )}
 
+      {/* Podium after race completes — shown above the track so results are seen first. */}
+      {raceState === "done" && results && (
+        <RacePodium results={results} providerNames={providerNames} laneIndexById={laneIndexById} />
+      )}
+
       {/* Live race track during race + after. */}
       {(raceState === "running" || raceState === "done") && (
         <RaceTrack lanes={lanes} providerNames={providerNames} />
-      )}
-
-      {/* Podium after race completes. */}
-      {raceState === "done" && results && (
-        <RacePodium results={results} providerNames={providerNames} laneIndexById={laneIndexById} />
       )}
 
       <footer class="race-footer">

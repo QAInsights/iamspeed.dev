@@ -312,6 +312,37 @@ describe("RacePanel", () => {
     });
   });
 
+  it("shows podium above the race track after race completes", async () => {
+    mockRunRace.mockImplementation((_configs, _prompt, callbacks) => {
+      callbacks.onAllDone([makeResult("lane-1", 1), makeResult("lane-2", 2), makeResult("lane-3", 3)]);
+      return { abort: mockAbort } as unknown as RaceHandle;
+    });
+
+    const { container } = render(<RacePanel soundEnabled={true} />);
+
+    await waitFor(() => {
+      const selects = container.querySelectorAll(".race-config-model option");
+      if (selects.length > 0) {
+        const input = container.querySelector(".race-prompt-input") as HTMLInputElement;
+        fireEvent.input(input, { target: { value: "race!" } });
+      }
+    });
+
+    await waitFor(() => {
+      const btn = container.querySelector(".race-btn-start") as HTMLButtonElement;
+      if (btn && !btn.disabled) fireEvent.click(btn);
+    });
+
+    await waitFor(() => {
+      const podium = container.querySelector(".race-podium");
+      const track = container.querySelector(".race-track");
+      if (podium && track) {
+        // Podium should come before the track in DOM order.
+        expect(podium.compareDocumentPosition(track) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+      }
+    });
+  });
+
   it("plays rev sound on start when sound enabled", async () => {
     const { playRev } = await import("../../src/lib/race/sound");
 

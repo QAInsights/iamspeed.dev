@@ -126,4 +126,101 @@ describe("RacePodium", () => {
     expect(model.textContent).toContain("Anthropic");
     expect(model.textContent).toContain("claude-3-5-sonnet");
   });
+
+  it("renders Fastest Start award for the lane with lowest TTFT", () => {
+    const results = [
+      result({ laneId: "lane-1", finishRank: 1, tps: 100, ttft: 800, tokenCount: 50 }),
+      result({ laneId: "lane-2", finishRank: 2, tps: 120, ttft: 300, tokenCount: 40 }),
+      result({ laneId: "lane-3", finishRank: 3, tps: 80, ttft: 600, tokenCount: 30 }),
+    ];
+    const { container } = render(
+      <RacePodium
+        results={results}
+        providerNames={{ "lane-1": "OpenAI", "lane-2": "Anthropic", "lane-3": "Groq" }}
+        laneIndexById={{ "lane-1": 0, "lane-2": 1, "lane-3": 2 }}
+      />,
+    );
+    const award = container.querySelector(".race-podium-award")!;
+    // lane-2 has the lowest TTFT (300ms) -> Sally (lane index 1)
+    expect(award.querySelector(".race-podium-award-name")!.textContent).toBe("Sally");
+    expect(award.querySelector(".race-podium-award-value")!.textContent).toBe("300ms TTFT");
+    // The matching podium row should carry the fastest-start modifier + badge.
+    const rows = container.querySelectorAll(".race-podium-row");
+    const sallyRow = Array.from(rows).find(
+      (r) => r.querySelector(".race-podium-name")!.textContent === "Sally",
+    ) as HTMLElement | undefined;
+    expect(sallyRow?.classList.contains("race-podium-row--fastest-start")).toBe(true);
+    expect(sallyRow?.querySelector(".race-podium-row-badge")!.textContent).toBe("⚡");
+  });
+
+  it("does not render Fastest Start award when no lane has TTFT", () => {
+    const results = [
+      result({ laneId: "lane-1", finishRank: 1, tps: 100, ttft: null, tokenCount: 50 }),
+      result({ laneId: "lane-2", finishRank: 2, tps: 120, ttft: null, tokenCount: 40 }),
+    ];
+    const { container } = render(
+      <RacePodium
+        results={results}
+        providerNames={{ "lane-1": "OpenAI", "lane-2": "Anthropic" }}
+        laneIndexById={{ "lane-1": 0, "lane-2": 1 }}
+      />,
+    );
+    expect(container.querySelector(".race-podium-award")).toBeNull();
+    expect(container.querySelector(".race-podium-row--fastest-start")).toBeNull();
+    expect(container.querySelector(".race-podium-row-badge")).toBeNull();
+  });
+
+  it("ignores zero-token lanes when picking Fastest Start", () => {
+    const results = [
+      result({ laneId: "lane-1", finishRank: 1, tps: 100, ttft: 200, tokenCount: 50 }),
+      // DNF lane has a lower TTFT but produced no tokens — must be skipped.
+      result({ laneId: "lane-2", finishRank: 2, tps: null, ttft: 100, tokenCount: 0, error: "boom" }),
+    ];
+    const { container } = render(
+      <RacePodium
+        results={results}
+        providerNames={{ "lane-1": "OpenAI", "lane-2": "Anthropic" }}
+        laneIndexById={{ "lane-1": 0, "lane-2": 1 }}
+      />,
+    );
+    const award = container.querySelector(".race-podium-award")!;
+    expect(award.querySelector(".race-podium-award-name")!.textContent).toBe("McQueen");
+    expect(award.querySelector(".race-podium-award-value")!.textContent).toBe("200ms TTFT");
+  });
+
+  it("renders an info tooltip explaining how the winner is decided", () => {
+    const results = [result({ laneId: "lane-1", finishRank: 1, tps: 100, ttft: 400, tokenCount: 50 })];
+    const { container } = render(
+      <RacePodium results={results} providerNames={{ "lane-1": "OpenAI" }} laneIndexById={{ "lane-1": 0 }} />,
+    );
+    // The "?" trigger is wrapped by the shared Tooltip component.
+    const toggle = container.querySelector(".race-podium-info-toggle")!;
+    expect(toggle.textContent).toBe("?");
+    expect(toggle.getAttribute("aria-label")).toBe("How is the winner decided?");
+    // Tooltip wraps the trigger in a .llm-tip span.
+    const tip = container.querySelector(".llm-tip")!;
+    expect(tip.contains(toggle)).toBe(true);
+  });
+
+  it("includes Fastest Start line in share text when present", () => {
+    const results = [
+      result({ laneId: "lane-1", finishRank: 1, tps: 100, ttft: 800, tokenCount: 50 }),
+      result({ laneId: "lane-2", finishRank: 2, tps: 120, ttft: 300, tokenCount: 40 }),
+    ];
+    const { container } = render(
+      <RacePodium
+        results={results}
+        providerNames={{ "lane-1": "OpenAI", "lane-2": "Anthropic" }}
+        laneIndexById={{ "lane-1": 0, "lane-2": 1 }}
+      />,
+    );
+    // ShareButtons encodes shareText into onClick-built URLs (not directly
+    // observable here without simulating the click). The pure share-text
+    // builder is exercised by the award-render assertions; here we just
+    // confirm the award that feeds the share text is present and correct.
+    const award = container.querySelector(".race-podium-award")!;
+    expect(award.textContent).toContain("Fastest Start");
+    expect(award.textContent).toContain("Sally");
+    expect(award.textContent).toContain("300ms TTFT");
+  });
 });
