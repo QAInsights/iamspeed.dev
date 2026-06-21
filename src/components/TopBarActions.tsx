@@ -46,14 +46,23 @@ export function TopBarActions({
         >
           {mode === "race" ? (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 7v5l3 2" />
+              <path d="M12 21a9 9 0 1 0-9-9" />
+              <path d="M12 12l4-3" />
+              <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none" />
+              <path d="M5 5l1.5 1.5" />
+              <path d="M2 12h2" />
+              <path d="M5 19l1.5-1.5" />
             </svg>
           ) : (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M4 18h6V6H4z" />
-              <path d="M14 18h6V9h-6z" />
-              <path d="M2 22h20" />
+              <path d="M5 21V4" />
+              <path d="M5 4c4-2 8 2 12 0v8c-4 2-8-2-12 0" />
+              <rect x="6.5" y="5" width="2" height="2" fill="currentColor" stroke="none" />
+              <rect x="10.5" y="5" width="2" height="2" fill="currentColor" stroke="none" />
+              <rect x="8.5" y="7" width="2" height="2" fill="currentColor" stroke="none" />
+              <rect x="12.5" y="7" width="2" height="2" fill="currentColor" stroke="none" />
+              <rect x="6.5" y="9" width="2" height="2" fill="currentColor" stroke="none" />
+              <rect x="10.5" y="9" width="2" height="2" fill="currentColor" stroke="none" />
             </svg>
           )}
         </button>

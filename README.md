@@ -9,7 +9,7 @@ Fast.com but for LLMs.
 - Throughput tracking in tokens/sec
 - AES-GCM encrypted API key storage (local only)
 - OpenAI, Anthropic, Groq, OpenRouter, Google (Gemini), and Local (Ollama, LM Studio, etc.) provider support
-- **Race Mode** — run 3 providers in parallel on the same prompt and watch them race side-by-side with live TPS, finish ranking, and a Piston Cup podium
+- **Race Mode** — run 2–3 providers in parallel on the same prompt and watch them race side-by-side on a live race track with cars, live TPS, and a Piston Cup podium. Winner is decided by TTLT (time-to-last-token) with TPS as tiebreaker; a "Fastest Start" award highlights the lowest TTFT.
 - Responsive, minimal UI inspired by [fast.com](https://fast.com)
 
 ## Quick Start
@@ -52,6 +52,10 @@ Select **Local** in settings.
   - Ollama: `OLLAMA_ORIGINS="*" ollama serve` (or export the variable)
 - **HTTPS/Mixed Content Note**: If you access this app via HTTPS (e.g., `https://iamspeed.dev`), modern browsers block insecure HTTP requests to local endpoints (Mixed Content). To work around this, either run the app locally on `http://localhost:4321` (recommended), or configure a secure tunnel like **Cloudflare Tunnels**: `npx cloudflared tunnel --url http://localhost:11434 --http-host-header localhost`. *Note: Free ngrok tunnels are blocked because their browser warning interstitial violates browser CORS policies.*
 - The app runs entirely in the browser — no proxy.
+
+## Disclaimer
+
+"Cars", "Piston Cup", McQueen, Sally, Chick Hicks, and related character names are trademarks of Disney/Pixar. This is an unofficial fan project and is not affiliated with or endorsed by Disney.
 
 ## License
 

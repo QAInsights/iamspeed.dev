@@ -1,7 +1,7 @@
 /* === Race Mode — Cars vibe === */
 
 .race-app {
-  min-height: 100vh;
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -363,5 +363,23 @@
   }
   .race-config-provider, .race-config-model, .race-config-baseurl {
     flex: 1 1 100%;
+  }
+  /* Podium rows: allow metrics to wrap on narrow screens so TPS/TTFT/badge
+     don't get squeezed off or cause horizontal overflow. */
+  .race-podium-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .race-podium-model {
+    flex-basis: 100%;
+    order: 5;
+  }
+  .race-podium-award {
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+  .race-podium-award-value {
+    flex-basis: 100%;
+    margin-left: 0;
   }
 }

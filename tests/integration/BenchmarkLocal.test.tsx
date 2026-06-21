@@ -82,4 +82,12 @@ describe('BenchmarkPanel - Local support (integration)', () => {
     const gear = container.querySelector('.llm-gear');
     expect(gear).toBeInTheDocument();
   });
+
+  it('renders Disney/Pixar trademark disclaimer in the site footer', () => {
+    const { container } = render(<BenchmarkPanel />);
+    const disclaimer = container.querySelector('.llm-footer-disclaimer')!;
+    expect(disclaimer.textContent).toContain('Disney/Pixar');
+    expect(disclaimer.textContent).toContain('unofficial fan project');
+    expect(disclaimer.textContent).toContain('not affiliated with or endorsed by Disney');
+  });
 });

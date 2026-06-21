@@ -357,6 +357,15 @@
   color: var(--border);
   user-select: none;
 }
+.llm-footer-disclaimer {
+  flex-basis: 100%;
+  margin: 0.75rem 0 0;
+  font-size: 0.625rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  opacity: 0.85;
+  text-align: center;
+}
 
 /* Share bar */
 .llm-share-bar {
