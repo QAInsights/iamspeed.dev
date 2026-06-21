@@ -86,6 +86,7 @@ describe('SettingsPanel', () => {
     expect(options).toContain('OpenAI');
     expect(options).toContain('Anthropic');
     expect(options).toContain('Local');
+    expect(options).toContain('OpenRouter');
   });
 
   it('selects the active provider', () => {
@@ -203,6 +204,66 @@ describe('SettingsPanel', () => {
     expect(onSettingsChange).toHaveBeenCalledWith(
       expect.objectContaining({ providerId: 'anthropic' })
     );
+  });
+
+  describe('OpenRouter provider', () => {
+    it('lists OpenRouter in the provider select', () => {
+      const { container } = render(
+        <SettingsPanel
+          open={true}
+          onClose={vi.fn()}
+          settings={defaultSettings}
+          onSettingsChange={vi.fn()}
+        />
+      );
+      const select = container.querySelector('.llm-provider-select') as HTMLSelectElement;
+      const options = Array.from(select.options).map((o) => o.value);
+      expect(options).toContain('openrouter');
+    });
+
+    it('calls onSettingsChange with providerId openrouter when selected', async () => {
+      const onSettingsChange = vi.fn();
+      const { container } = render(
+        <SettingsPanel
+          open={true}
+          onClose={vi.fn()}
+          settings={defaultSettings}
+          onSettingsChange={onSettingsChange}
+        />
+      );
+      const select = container.querySelector('.llm-provider-select') as HTMLSelectElement;
+      select.value = 'openrouter';
+      await fireEvent.change(select);
+      expect(onSettingsChange).toHaveBeenCalledWith(
+        expect.objectContaining({ providerId: 'openrouter' })
+      );
+    });
+
+    it('does not show Base URL input for openrouter (not a local provider)', () => {
+      const { container } = render(
+        <SettingsPanel
+          open={true}
+          onClose={vi.fn()}
+          settings={{ ...defaultSettings, providerId: 'openrouter' }}
+          onSettingsChange={vi.fn()}
+        />
+      );
+      const baseInput = container.querySelector('#settings-baseurl');
+      expect(baseInput).toBeNull();
+    });
+
+    it('shows required API key label (not optional) for openrouter', () => {
+      const { container } = render(
+        <SettingsPanel
+          open={true}
+          onClose={vi.fn()}
+          settings={{ ...defaultSettings, providerId: 'openrouter' }}
+          onSettingsChange={vi.fn()}
+        />
+      );
+      const label = container.querySelector('label[for="settings-apikey"]');
+      expect(label!.textContent).not.toContain('optional');
+    });
   });
 
   it('calls onSettingsChange when prompt textarea changes', async () => {

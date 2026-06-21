@@ -28,6 +28,12 @@ export const PROVIDERS: Record<string, ProviderMetadata> = {
     category: "fast",
     description: "Fast inference for open models",
   },
+  openrouter: {
+    name: "openrouter",
+    displayName: "OpenRouter",
+    category: "frontier",
+    description: "Unified access to many providers and open models",
+  },
   local: {
     name: LOCAL_PROVIDER_ID,
     displayName: "Local",

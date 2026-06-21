@@ -44,6 +44,15 @@ describe("modelRegistry", () => {
     expect(models.some((m) => m.id.includes("claude"))).toBe(true);
   });
 
+  it("returns fallback models for openrouter when fetch fails", async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
+
+    const models = await loadModels("openrouter");
+    expect(models.length).toBeGreaterThan(0);
+    // OpenRouter model ids use provider/model format (e.g. openai/gpt-4o)
+    expect(models.some((m) => m.id.includes("/"))).toBe(true);
+  });
+
   it("caches models after successful fetch", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,

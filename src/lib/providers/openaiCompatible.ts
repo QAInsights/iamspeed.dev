@@ -12,7 +12,8 @@ export function normalizeBaseURL(input: string): string {
 export function createOpenAICompatibleAdapter(
   baseURL: string,
   providerName: string,
-  displayName: string
+  displayName: string,
+  extraHeaders?: Record<string, string>
 ): ProviderAdapter {
   return {
     id: providerName,
@@ -25,6 +26,7 @@ export function createOpenAICompatibleAdapter(
       onChunk,
       onFirstToken,
       onUsage,
+      onProcessing,
       onDone,
       onError,
       signal,
@@ -48,6 +50,7 @@ export function createOpenAICompatibleAdapter(
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${apiKey}`,
+            ...(extraHeaders || {}),
           },
           body: JSON.stringify({
             model: modelId,
@@ -98,6 +101,13 @@ export function createOpenAICompatibleAdapter(
 
           for (const line of lines) {
             const trimmed = line.trim();
+            // SSE comment lines start with ":" and must be ignored per spec.
+            // OpenRouter sends ": OPENROUTER PROCESSING" as a heartbeat while
+            // a request is queued or being processed — surface it via onProcessing.
+            if (trimmed.startsWith(":")) {
+              if (onProcessing) onProcessing();
+              continue;
+            }
             if (!trimmed.startsWith("data:")) continue;
             const data = trimmed.slice(5).trim();
             if (data === "[DONE]") continue;

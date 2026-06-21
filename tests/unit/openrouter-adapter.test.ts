@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { openaiAdapter } from "../../src/lib/providers/openai";
+import { openrouterAdapter } from "../../src/lib/providers/openrouter";
 
 function createSSEStream(chunks: string[]): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
@@ -19,14 +19,14 @@ function createErrorStream(status: number, body: object): Response {
   });
 }
 
-describe("openai-adapter", () => {
+describe("openrouter-adapter", () => {
   const originalFetch = globalThis.fetch;
 
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
-  it("calls correct endpoint with correct headers", async () => {
+  it("calls OpenRouter endpoint with correct URL and attribution headers", async () => {
     const fetchSpy = vi.fn().mockResolvedValue({
       ok: true,
       body: createSSEStream([
@@ -36,9 +36,9 @@ describe("openai-adapter", () => {
     globalThis.fetch = fetchSpy;
 
     const abort = new AbortController();
-    await openaiAdapter.stream({
-      apiKey: "sk-test",
-      model: "gpt-4o",
+    await openrouterAdapter.stream({
+      apiKey: "sk-or-test",
+      model: "openai/gpt-4o",
       prompt: "Hello",
       onChunk: vi.fn(),
       onFirstToken: vi.fn(),
@@ -48,15 +48,71 @@ describe("openai-adapter", () => {
     });
 
     expect(fetchSpy).toHaveBeenCalledWith(
-      "https://api.openai.com/v1/chat/completions",
+      "https://openrouter.ai/api/v1/chat/completions",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({
-          Authorization: "Bearer sk-test",
+          Authorization: "Bearer sk-or-test",
           "Content-Type": "application/json",
+          "HTTP-Referer": "https://iamspeed.dev",
+          "X-Title": "I am speed.",
         }),
       })
     );
+
+    globalThis.fetch = originalFetch;
+  });
+
+  it("preserves provider-prefixed model ids (e.g. openai/gpt-4o)", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue({
+      ok: true,
+      body: createSSEStream([
+        JSON.stringify({ choices: [{ delta: { content: "Hi" } }] }),
+      ]),
+    });
+    globalThis.fetch = fetchSpy;
+
+    const abort = new AbortController();
+    await openrouterAdapter.stream({
+      apiKey: "sk-or-test",
+      model: "openai/gpt-4o",
+      prompt: "Hello",
+      onChunk: vi.fn(),
+      onFirstToken: vi.fn(),
+      onDone: vi.fn(),
+      onError: vi.fn(),
+      signal: abort.signal,
+    });
+
+    const callBody = JSON.parse((fetchSpy.mock.calls[0][1] as RequestInit).body as string);
+    expect(callBody.model).toBe("openai/gpt-4o");
+
+    globalThis.fetch = originalFetch;
+  });
+
+  it("strips openrouter/ prefix when present in model id", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue({
+      ok: true,
+      body: createSSEStream([
+        JSON.stringify({ choices: [{ delta: { content: "Hi" } }] }),
+      ]),
+    });
+    globalThis.fetch = fetchSpy;
+
+    const abort = new AbortController();
+    await openrouterAdapter.stream({
+      apiKey: "sk-or-test",
+      model: "openrouter/openai/gpt-4o",
+      prompt: "Hello",
+      onChunk: vi.fn(),
+      onFirstToken: vi.fn(),
+      onDone: vi.fn(),
+      onError: vi.fn(),
+      signal: abort.signal,
+    });
+
+    const callBody = JSON.parse((fetchSpy.mock.calls[0][1] as RequestInit).body as string);
+    expect(callBody.model).toBe("openai/gpt-4o");
 
     globalThis.fetch = originalFetch;
   });
@@ -73,9 +129,9 @@ describe("openai-adapter", () => {
     const chunks: string[] = [];
     const abort = new AbortController();
 
-    await openaiAdapter.stream({
-      apiKey: "sk-test",
-      model: "gpt-4o",
+    await openrouterAdapter.stream({
+      apiKey: "sk-or-test",
+      model: "openai/gpt-4o",
       prompt: "test",
       onChunk: (text) => chunks.push(text),
       onFirstToken: vi.fn(),
@@ -101,9 +157,9 @@ describe("openai-adapter", () => {
     const onFirstToken = vi.fn();
     const abort = new AbortController();
 
-    await openaiAdapter.stream({
-      apiKey: "sk-test",
-      model: "gpt-4o",
+    await openrouterAdapter.stream({
+      apiKey: "sk-or-test",
+      model: "openai/gpt-4o",
       prompt: "test",
       onChunk: vi.fn(),
       onFirstToken,
@@ -124,9 +180,9 @@ describe("openai-adapter", () => {
     const onError = vi.fn();
     const abort = new AbortController();
 
-    await openaiAdapter.stream({
+    await openrouterAdapter.stream({
       apiKey: "bad-key",
-      model: "gpt-4o",
+      model: "openai/gpt-4o",
       prompt: "test",
       onChunk: vi.fn(),
       onFirstToken: vi.fn(),
@@ -150,9 +206,9 @@ describe("openai-adapter", () => {
 
     globalThis.fetch = vi.fn().mockRejectedValue(new DOMException("Aborted", "AbortError"));
 
-    await openaiAdapter.stream({
-      apiKey: "sk-test",
-      model: "gpt-4o",
+    await openrouterAdapter.stream({
+      apiKey: "sk-or-test",
+      model: "openai/gpt-4o",
       prompt: "test",
       onChunk: vi.fn(),
       onFirstToken: vi.fn(),
@@ -178,9 +234,9 @@ describe("openai-adapter", () => {
     const onUsage = vi.fn();
     const abort = new AbortController();
 
-    await openaiAdapter.stream({
-      apiKey: "sk-test",
-      model: "gpt-4o",
+    await openrouterAdapter.stream({
+      apiKey: "sk-or-test",
+      model: "openai/gpt-4o",
       prompt: "test",
       onChunk: vi.fn(),
       onFirstToken: vi.fn(),
@@ -205,9 +261,9 @@ describe("openai-adapter", () => {
     const onUsage = vi.fn();
     const abort = new AbortController();
 
-    await openaiAdapter.stream({
-      apiKey: "sk-test",
-      model: "gpt-4o",
+    await openrouterAdapter.stream({
+      apiKey: "sk-or-test",
+      model: "openai/gpt-4o",
       prompt: "test",
       onChunk: vi.fn(),
       onFirstToken: vi.fn(),
@@ -221,8 +277,13 @@ describe("openai-adapter", () => {
     globalThis.fetch = originalFetch;
   });
 
-  it("calls onProcessing when an SSE comment line is received", async () => {
-    // Simulate a stream with a comment line (e.g. OpenRouter's ": OPENROUTER PROCESSING")
+  it("has correct adapter id and name", () => {
+    expect(openrouterAdapter.id).toBe("openrouter");
+    expect(openrouterAdapter.name).toBe("OpenRouter");
+  });
+
+  it("calls onProcessing for OpenRouter's PROCESSING heartbeat comments", async () => {
+    // Real-world OpenRouter stream shape: comment heartbeats before content chunks
     const encoder = new TextEncoder();
     const sseData =
       ": OPENROUTER PROCESSING\n\n" +
@@ -240,49 +301,25 @@ describe("openai-adapter", () => {
     });
 
     const onProcessing = vi.fn();
+    const onFirstToken = vi.fn();
     const abort = new AbortController();
 
-    await openaiAdapter.stream({
-      apiKey: "sk-test",
-      model: "gpt-4o",
-      prompt: "test",
+    await openrouterAdapter.stream({
+      apiKey: "sk-or-test",
+      model: "nvidia/nemotron-3-ultra-550b-a55b:free",
+      prompt: "Just say Hi, nothing else.",
       onChunk: vi.fn(),
-      onFirstToken: vi.fn(),
+      onFirstToken,
       onProcessing,
       onDone: vi.fn(),
       onError: vi.fn(),
       signal: abort.signal,
     });
 
-    // Two comment lines were sent before the data chunk
+    // Two heartbeat comments were sent before the first content chunk
     expect(onProcessing).toHaveBeenCalledTimes(2);
-    globalThis.fetch = originalFetch;
-  });
-
-  it("does not call onProcessing when no comment lines are present", async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      body: createSSEStream([
-        JSON.stringify({ choices: [{ delta: { content: "Hi" } }] }),
-      ]),
-    });
-
-    const onProcessing = vi.fn();
-    const abort = new AbortController();
-
-    await openaiAdapter.stream({
-      apiKey: "sk-test",
-      model: "gpt-4o",
-      prompt: "test",
-      onChunk: vi.fn(),
-      onFirstToken: vi.fn(),
-      onProcessing,
-      onDone: vi.fn(),
-      onError: vi.fn(),
-      signal: abort.signal,
-    });
-
-    expect(onProcessing).not.toHaveBeenCalled();
+    // First token should still fire once when content arrives
+    expect(onFirstToken).toHaveBeenCalledTimes(1);
     globalThis.fetch = originalFetch;
   });
 });

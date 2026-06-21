@@ -6,6 +6,10 @@ interface HeroResultProps {
   heroText: string;
   isActive: boolean;
   ttft: number | null;
+  // True when the provider has sent an SSE processing heartbeat (e.g.
+  // OpenRouter's ": OPENROUTER PROCESSING"), indicating the request is
+  // queued / being processed upstream. Overrides the cycling statuses.
+  providerQueued?: boolean;
 }
 
 const style = `
@@ -70,7 +74,7 @@ const style = `
   }
 `;
 
-function ThinkingStatus({ isActive, ttft }: { isActive: boolean; ttft: number | null }) {
+function ThinkingStatus({ isActive, ttft, providerQueued }: { isActive: boolean; ttft: number | null; providerQueued?: boolean }) {
   const [statusIdx, setStatusIdx] = useState(0);
   const statuses = [
     "Connecting to provider...",
@@ -84,21 +88,26 @@ function ThinkingStatus({ isActive, ttft }: { isActive: boolean; ttft: number | 
       setStatusIdx(0);
       return;
     }
+    // When the provider has signalled it is queued/processing upstream,
+    // stop cycling and show a single, accurate status.
+    if (providerQueued) return;
     const interval = setInterval(() => {
       setStatusIdx((prev) => (prev + 1) % statuses.length);
     }, 2000);
     return () => clearInterval(interval);
-  }, [isActive, ttft]);
+  }, [isActive, ttft, providerQueued]);
+
+  const text = providerQueued ? "Queued at provider..." : statuses[statusIdx];
 
   return (
     <div class="llm-hero-status" role="status">
       <span class="llm-status-pulse" />
-      <span class="llm-status-text">{statuses[statusIdx]}</span>
+      <span class="llm-status-text">{text}</span>
     </div>
   );
 }
 
-export function HeroResult({ heroText, isActive, ttft }: HeroResultProps) {
+export function HeroResult({ heroText, isActive, ttft, providerQueued }: HeroResultProps) {
   const isThinking = isActive && ttft === null;
   const numberClass = `llm-hero-number${isActive ? " active" : ""}${isThinking ? " thinking" : ""}`;
 
@@ -111,7 +120,7 @@ export function HeroResult({ heroText, isActive, ttft }: HeroResultProps) {
         <span class="llm-hero-unit">tokens / sec</span>
       </div>
 
-      {isThinking && <ThinkingStatus isActive={isActive} ttft={ttft} />}
+      {isThinking && <ThinkingStatus isActive={isActive} ttft={ttft} providerQueued={providerQueued} />}
 
       {ttft !== null && (
         <div class="llm-ttft">

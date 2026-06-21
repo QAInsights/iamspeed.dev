@@ -30,6 +30,12 @@ const FALLBACK_MODELS: Record<string, ModelEntry[]> = {
     { id: "llama-3.1-8b-instant", label: "Llama 3.1 8B Instant", contextWindow: 128000 },
     { id: "gemma2-9b-it", label: "Gemma 2 9B", contextWindow: 8192 },
   ],
+  openrouter: [
+    { id: "openai/gpt-4o", label: "GPT-4o (via OpenRouter)", contextWindow: 128000 },
+    { id: "anthropic/claude-3.5-sonnet", label: "Claude 3.5 Sonnet (via OpenRouter)", contextWindow: 200000 },
+    { id: "google/gemini-flash-1.5", label: "Gemini Flash 1.5 (via OpenRouter)", contextWindow: 1000000 },
+    { id: "meta-llama/llama-3.3-70b-instruct", label: "Llama 3.3 70B (via OpenRouter)", contextWindow: 128000 },
+  ],
 };
 
 interface CacheEntry {

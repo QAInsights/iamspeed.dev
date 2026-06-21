@@ -100,6 +100,7 @@ function BenchmarkPanelContent() {
   const [rawResponse, setRawResponse] = useState<object | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showMore, setShowMore] = useState(false);
+  const [providerQueued, setProviderQueued] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
   const trackerRef = useRef<ReturnType<typeof createMetricsTracker> | null>(null);
@@ -154,6 +155,7 @@ function BenchmarkPanelContent() {
     setMetrics(null);
     setRawResponse(null);
     setError(null);
+    setProviderQueued(false);
 
     const abort = new AbortController();
     abortRef.current = abort;
@@ -205,9 +207,13 @@ function BenchmarkPanelContent() {
           tracker.recordFirstToken();
           const currentMetrics = tracker.getMetrics();
           setMetrics(currentMetrics);
+          setProviderQueued(false);
           if (soundEnabledRef.current) {
             playTick(currentMetrics.tokensPerSecond ?? undefined);
           }
+        },
+        onProcessing() {
+          setProviderQueued(true);
         },
         onUsage(usage) {
           tracker.recordUsage(usage.inputTokens, usage.outputTokens);
@@ -335,7 +341,7 @@ function BenchmarkPanelContent() {
 
         {/* Hero */}
         <div class="llm-hero">
-          <HeroResult heroText={heroText} isActive={isActive} ttft={ttft} />
+          <HeroResult heroText={heroText} isActive={isActive} ttft={ttft} providerQueued={providerQueued} />
 
           {/* Compact sparkline for recent runs */}
           <HeroSparkline data={sparklineData} />
