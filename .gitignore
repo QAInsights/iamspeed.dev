@@ -29,6 +29,7 @@ dist/
 # Test / Coverage
 coverage/
 .nyc_output/
+test-results/
 
 # OS files
 .DS_Store
