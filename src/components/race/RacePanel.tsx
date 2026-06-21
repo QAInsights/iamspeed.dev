@@ -17,9 +17,10 @@ import { playTick } from "../../lib/audio";
 import { playRev, playFinish } from "../../lib/race/sound";
 import { MIN_RACE_LANES, MAX_RACE_LANES } from "../../lib/race/types";
 import { RaceSetupBar } from "./RaceSetupBar";
-import { RaceLanes } from "./RaceLanes";
+import { RaceTrack } from "./RaceTrack";
 import { RacePodium } from "./RacePodium";
 import "../../styles/components/RacePanel.css";
+import "../../styles/components/RaceTrack.css";
 
 type RaceState = "idle" | "running" | "done" | "error";
 
@@ -328,9 +329,9 @@ export function RacePanel({ soundEnabled }: RacePanelProps) {
         </div>
       )}
 
-      {/* Live lanes during race + after. */}
+      {/* Live race track during race + after. */}
       {(raceState === "running" || raceState === "done") && (
-        <RaceLanes lanes={lanes} providerNames={providerNames} />
+        <RaceTrack lanes={lanes} providerNames={providerNames} />
       )}
 
       {/* Podium after race completes. */}

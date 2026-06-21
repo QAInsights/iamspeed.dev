@@ -1,0 +1,270 @@
+/* === Race Track — horizontal lanes with car simulation === */
+
+.race-track {
+  width: 100%;
+  max-width: var(--max-w);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 0;
+}
+
+.race-track-lane {
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.race-track-lane--running {
+  border-color: var(--lane-color);
+  box-shadow: 0 0 0 1px var(--lane-color), 0 4px 12px rgba(0,0,0,0.05);
+}
+.race-track-lane--done {
+  border-color: var(--border);
+}
+.race-track-lane--error {
+  border-color: #cf222e;
+}
+
+/* Header: lane name + model + medal */
+.race-track-lane-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.race-track-lane-name {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--lane-color);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.race-track-lane-model {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.race-track-lane-medal {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+/* Track surface — the road the car drives on */
+.race-track-surface {
+  position: relative;
+  height: 56px;
+  border-radius: 6px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(0,0,0,0.04) 0,
+      rgba(0,0,0,0.04) 2px,
+      transparent 2px,
+      transparent 24px
+    ),
+    var(--bg);
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+}
+
+/* Start line — solid white strip on the left */
+.race-track-start-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--text-muted);
+  opacity: 0.5;
+}
+
+/* Finish line — checkered pattern on the right */
+.race-track-finish-line {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  background-image:
+    linear-gradient(45deg, var(--text) 25%, transparent 25%, transparent 75%, var(--text) 75%),
+    linear-gradient(45deg, var(--text) 25%, transparent 25%, transparent 75%, var(--text) 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 4px 4px;
+  background-color: var(--bg);
+  opacity: 0.85;
+}
+
+/* The car — a small rounded sprite tinted with the lane color.
+   `left` is set inline as a percentage; the car self-anchors via
+   translateX(-100%) at progress=1 so it sits flush against the finish line. */
+.race-track-car {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 36px;
+  height: 22px;
+  margin-top: -11px;
+  transform: translateX(-100%);
+  transition: left 0.3s ease-out;
+  background: var(--lane-color);
+  border-radius: 6px 9px 9px 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.race-track-car::before {
+  /* Windshield */
+  content: "";
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  width: 10px;
+  height: 8px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 3px;
+}
+.race-track-car::after {
+  /* Exhaust puff when running */
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  width: 6px;
+  height: 4px;
+  margin-top: -2px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 3px;
+  filter: blur(1px);
+}
+.race-track-lane--running .race-track-car::after {
+  animation: race-track-car-puff 0.4s ease-out infinite;
+}
+@keyframes race-track-car-puff {
+  0% { opacity: 0.6; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(2) translateX(-4px); }
+}
+.race-track-car-number {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.4);
+  z-index: 1;
+}
+
+/* Thin progress bar under the track */
+.race-track-lane-progress {
+  height: 3px;
+  margin-top: 0.5rem;
+  background: var(--border-light);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.race-track-lane-progress-fill {
+  height: 100%;
+  background: var(--lane-color);
+  transition: width 0.3s ease-out;
+}
+
+/* Metrics row */
+.race-track-lane-metrics {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+.race-track-lane-tps {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+.race-track-lane-tps-value {
+  font-family: var(--mono);
+  font-size: 2rem;
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1;
+}
+.race-track-lane--running .race-track-lane-tps-value {
+  color: var(--lane-color);
+}
+.race-track-lane-tps-unit {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+.race-track-lane-secondary {
+  display: flex;
+  gap: 0.75rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.race-track-lane-secondary-label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.race-track-lane-status {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.race-track-lane-text {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text);
+  margin-top: 0.5rem;
+  max-height: 80px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 0.25rem 0;
+  border-top: 1px solid var(--border-light);
+}
+
+.race-track-lane-error {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: #cf222e;
+  margin-top: 0.5rem;
+}
+
+/* Ka-chow! — winner callout */
+.race-track-lane-kachow {
+  font-family: var(--body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--lane-color);
+  margin-top: 0.5rem;
+  animation: race-track-kachow-pop 0.5s ease-out;
+}
+@keyframes race-track-kachow-pop {
+  0% { opacity: 0; transform: scale(0.5) rotate(-5deg); }
+  60% { opacity: 1; transform: scale(1.15) rotate(2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+@media (max-width: 640px) {
+  .race-track-lane-tps-value {
+    font-size: 1.5rem;
+  }
+  .race-track-lane-secondary {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}

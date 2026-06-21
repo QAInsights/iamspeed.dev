@@ -104,7 +104,7 @@ describe("RacePanel", () => {
 
   it("does not show lane cards in idle state", () => {
     const { container } = render(<RacePanel soundEnabled={true} />);
-    expect(container.querySelector(".race-lanes")).toBeNull();
+    expect(container.querySelector(".race-track")).toBeNull();
   });
 
   it("does not show podium in idle state", () => {
