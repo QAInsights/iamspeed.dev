@@ -106,7 +106,9 @@
   min-width: 4.5rem;
 }
 .race-config-provider, .race-config-model {
-  flex: 1;
+  flex: 0 0 auto;
+  min-width: 10rem;
+  max-width: 12rem;
   padding: 0.4rem 0.5rem;
   font-size: 0.8125rem;
   border: 1px solid var(--border);
@@ -115,7 +117,8 @@
   color: var(--text);
 }
 .race-config-model {
-  flex: 1.5;
+  min-width: 14rem;
+  max-width: 18rem;
 }
 .race-config-provider:focus, .race-config-model:focus {
   outline: 1px solid var(--accent);
@@ -363,6 +366,8 @@
   }
   .race-config-provider, .race-config-model, .race-config-baseurl {
     flex: 1 1 100%;
+    min-width: 0;
+    max-width: none;
   }
   /* Podium rows: allow metrics to wrap on narrow screens so TPS/TTFT/badge
      don't get squeezed off or cause horizontal overflow. */
