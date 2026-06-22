@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "preact/hooks";
 import { saveKey, loadKey, clearKey, hasStoredKey } from "../lib/crypto";
 import { loadModels, discoverLocalModels, type ModelEntry } from "../lib/modelRegistry";
-import { LOCAL_PROVIDER_ID, DEFAULT_LOCAL_BASE_URL } from "../lib/config";
+import { LOCAL_PROVIDER_ID, DEFAULT_LOCAL_BASE_URL, PROVIDERS } from "../lib/config";
 import { ProviderSelect } from "./ProviderSelect";
 import { ApiKeyField } from "./ApiKeyField";
 
@@ -37,6 +37,8 @@ const style = `
   .llm-textarea { width: 100%; min-height: 90px; padding: 0.75rem; font-size: 0.8125rem; font-family: var(--body); resize: vertical; border: 1px solid var(--border); border-radius: 0; }
   .llm-models-loading { font-size: 0.75rem; color: var(--text-muted); padding: 0.5rem 0; }
   .llm-models-empty { font-size: 0.75rem; color: var(--text-muted); padding: 0.5rem 0; font-style: italic; }
+  .llm-models-empty .llm-models-hint { display: block; margin-top: 0.25rem; color: var(--accent); font-style: normal; }
+  .llm-models-empty button { margin-top: 0.5rem; font-style: normal; }
   .llm-settings-done { margin-top: auto; padding: 0.75rem; background: var(--accent); color: #fff; font-weight: 600; font-size: 0.8125rem; border: none; cursor: pointer; text-align: center; letter-spacing: 0.02em; }
   .llm-settings-done:hover { background: var(--accent-hover); }
   .llm-disclaimer { font-size: 0.6875rem; color: var(--text-muted); line-height: 1.5; padding-top: 0.75rem; border-top: 1px solid var(--border-light); }
@@ -373,7 +375,30 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
             ) : modelsLoading ? (
               <span class="llm-models-loading" role="status">Loading models...</span>
             ) : models.length === 0 ? (
-              <span class="llm-models-empty" role="status">No models returned for this provider</span>
+              <div class="llm-models-empty" role="status">
+                <span>No models returned for this provider</span>
+                {PROVIDERS[settings.providerId]?.modelsEndpoint && !settings.apiKey && (
+                  <span class="llm-models-hint">Enter your API key above to load available models.</span>
+                )}
+                {settings.apiKey && (
+                  <button
+                    type="button"
+                    class="llm-action-btn"
+                    disabled={modelsLoading}
+                    onClick={async () => {
+                      setModelsLoading(true);
+                      const loaded = await loadModels(settings.providerId, settings.apiKey || undefined);
+                      setModels(loaded);
+                      setModelsLoading(false);
+                      if (loaded.length > 0) {
+                        onSettingsChange({ ...settings, modelId: loaded[0].id });
+                      }
+                    }}
+                  >
+                    Retry
+                  </button>
+                )}
+              </div>
             ) : (
               <select
                 id="settings-model"

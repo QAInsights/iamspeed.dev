@@ -82,6 +82,11 @@ export function ApiKeyField({
           value={value}
           onInput={(e) => onInput((e.target as HTMLInputElement).value)}
           onBlur={onBlur}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              (e.target as HTMLInputElement).blur();
+            }
+          }}
           aria-label={`${providerId} API key`}
         />
         {stored && (
