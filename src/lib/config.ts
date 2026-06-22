@@ -45,7 +45,7 @@ export const PROVIDERS: Record<string, ProviderMetadata> = {
     displayName: "Fireworks AI",
     category: "fast",
     description: "Fast inference for open and fine-tuned models on Fireworks AI",
-    modelsEndpoint: "https://api.fireworks.ai/inference/v1",
+    modelsEndpoint: "https://api.fireworks.ai/v1/accounts/fireworks/models?filter=supports_serverless=true&pageSize=200",
   },
   openrouter: {
     name: "openrouter",

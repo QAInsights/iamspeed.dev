@@ -376,27 +376,60 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
               <span class="llm-models-loading" role="status">Loading models...</span>
             ) : models.length === 0 ? (
               <div class="llm-models-empty" role="status">
-                <span>No models returned for this provider</span>
-                {PROVIDERS[settings.providerId]?.modelsEndpoint && !settings.apiKey && (
-                  <span class="llm-models-hint">Enter your API key above to load available models.</span>
-                )}
-                {settings.apiKey && (
-                  <button
-                    type="button"
-                    class="llm-action-btn"
-                    disabled={modelsLoading}
-                    onClick={async () => {
-                      setModelsLoading(true);
-                      const loaded = await loadModels(settings.providerId, settings.apiKey || undefined);
-                      setModels(loaded);
-                      setModelsLoading(false);
-                      if (loaded.length > 0) {
-                        onSettingsChange({ ...settings, modelId: loaded[0].id });
+                {showManualInput ? (
+                  <>
+                    <input
+                      id="settings-model"
+                      type="text"
+                      class="llm-select"
+                      placeholder="e.g. accounts/fireworks/models/llama-v3p1-8b-instruct"
+                      value={settings.modelId}
+                      onInput={(e) =>
+                        onSettingsChange({ ...settings, modelId: (e.target as HTMLInputElement).value })
                       }
-                    }}
-                  >
-                    Retry
-                  </button>
+                    />
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                      <button
+                        type="button"
+                        class="llm-action-btn"
+                        onClick={() => setShowManualInput(false)}
+                      >
+                        Back to list
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <span>No models returned for this provider</span>
+                    {PROVIDERS[settings.providerId]?.modelsEndpoint && !settings.apiKey && (
+                      <span class="llm-models-hint">Enter your API key above to load available models.</span>
+                    )}
+                    {settings.apiKey && (
+                      <button
+                        type="button"
+                        class="llm-action-btn"
+                        disabled={modelsLoading}
+                        onClick={async () => {
+                          setModelsLoading(true);
+                          const loaded = await loadModels(settings.providerId, settings.apiKey || undefined);
+                          setModels(loaded);
+                          setModelsLoading(false);
+                          if (loaded.length > 0) {
+                            onSettingsChange({ ...settings, modelId: loaded[0].id });
+                          }
+                        }}
+                      >
+                        Retry
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      class="llm-action-btn"
+                      onClick={() => setShowManualInput(true)}
+                    >
+                      Enter model manually
+                    </button>
+                  </>
                 )}
               </div>
             ) : (

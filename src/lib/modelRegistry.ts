@@ -192,8 +192,10 @@ export function clearModelCache(): void {
 export async function fetchModelsFromEndpoint(baseURL: string, apiKey?: string): Promise<ModelEntry[]> {
   if (!baseURL) return [];
   try {
-    const normalized = normalizeBaseURL(baseURL);
-    const url = normalized + "/models";
+    // If the URL already contains /models (e.g. Fireworks management API with
+    // query params), use it as-is. Otherwise, treat it as a base URL and
+    // append /models (OpenAI-compatible convention).
+    const url = baseURL.includes("/models") ? baseURL : normalizeBaseURL(baseURL) + "/models";
     const headers: Record<string, string> = {};
     if (apiKey) {
       headers["Authorization"] = `Bearer ${apiKey}`;
@@ -206,16 +208,39 @@ export async function fetchModelsFromEndpoint(baseURL: string, apiKey?: string):
       return [];
     }
     const data = await response.json();
-    const list = Array.isArray(data?.data) ? data.data : [];
+
+    // Handle two response formats:
+    // 1. OpenAI-compatible: { data: [{ id }] }
+    // 2. Fireworks management API: { models: [{ name, displayName, contextLength }] }
+    let list: { id?: unknown; name?: unknown; displayName?: unknown; contextLength?: unknown }[];
+    let isFireworksFormat = false;
+    if (Array.isArray(data?.models)) {
+      list = data.models;
+      isFireworksFormat = true;
+    } else {
+      list = Array.isArray(data?.data) ? data.data : [];
+    }
+
     const models: ModelEntry[] = list
-      .map((m: { id?: unknown }) => ({
-        id: String(m?.id || ""),
-        label: String(m?.id || ""),
-        contextWindow: 0,
-      }))
+      .map((m) => {
+        if (isFireworksFormat) {
+          const name = String(m?.name || "");
+          return {
+            id: name,
+            label: String(m?.displayName || name),
+            contextWindow: Number(m?.contextLength) || 0,
+          };
+        }
+        const id = String(m?.id || "");
+        return {
+          id,
+          label: id,
+          contextWindow: 0,
+        };
+      })
       .filter((m: ModelEntry) => m.id);
 
-    // Dedup + sort alphabetically (context unknown for endpoint discovery)
+    // Dedup + sort alphabetically
     const seen = new Set<string>();
     const unique = models.filter((m) => {
       if (seen.has(m.id)) return false;

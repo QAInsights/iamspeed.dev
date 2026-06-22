@@ -60,7 +60,7 @@ describe("modelRegistry", () => {
     expect(models).toEqual([]);
   });
 
-  it("falls back to provider /models endpoint for fireworks (not in models.dev)", async () => {
+  it("falls back to Fireworks serverless models endpoint (not in models.dev)", async () => {
     // models.dev returns data but without a fireworks provider key
     globalThis.fetch = vi.fn().mockImplementation((url: string) => {
       if (url.includes("models.dev")) {
@@ -69,13 +69,14 @@ describe("modelRegistry", () => {
           json: () => Promise.resolve({ google: { models: {} } }),
         });
       }
-      if (url.includes("api.fireworks.ai")) {
+      if (url.includes("api.fireworks.ai") && url.includes("/models")) {
+        // Fireworks management API format: { models: [{ name, displayName, contextLength }] }
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve({
-            data: [
-              { id: "accounts/fireworks/models/llama-v3p1-8b-instruct" },
-              { id: "accounts/fireworks/models/llama-v3p1-70b-instruct" },
+            models: [
+              { name: "accounts/fireworks/models/llama-v3p1-8b-instruct", displayName: "Llama 3.1 8B Instruct", contextLength: 128000 },
+              { name: "accounts/fireworks/models/deepseek-v4-flash", displayName: "DeepSeek-V4-Flash", contextLength: 1048576 },
             ],
           }),
         });
@@ -86,7 +87,13 @@ describe("modelRegistry", () => {
     const models = await loadModels("fireworks", "fw-test-key");
     expect(models.length).toBe(2);
     expect(models.some((m) => m.id === "accounts/fireworks/models/llama-v3p1-8b-instruct")).toBe(true);
-    expect(models.some((m) => m.id === "accounts/fireworks/models/llama-v3p1-70b-instruct")).toBe(true);
+    expect(models.some((m) => m.id === "accounts/fireworks/models/deepseek-v4-flash")).toBe(true);
+    // Verify displayName is used as label
+    expect(models.some((m) => m.label === "Llama 3.1 8B Instruct")).toBe(true);
+    expect(models.some((m) => m.label === "DeepSeek-V4-Flash")).toBe(true);
+    // Verify contextLength is parsed
+    expect(models.some((m) => m.contextWindow === 128000)).toBe(true);
+    expect(models.some((m) => m.contextWindow === 1048576)).toBe(true);
 
     // Verify the API key was sent as Bearer auth to the provider endpoint
     const fireworksCall = globalThis.fetch.mock.calls.find(
