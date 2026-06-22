@@ -60,6 +60,40 @@ describe("modelRegistry", () => {
     expect(models).toEqual([]);
   });
 
+  it("returns empty array for sambanova when fetch fails (no hardcoded fallback)", async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
+
+    const models = await loadModels("sambanova");
+    expect(models).toEqual([]);
+  });
+
+  it("returns sambanova models from models.dev catalog", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({
+        sambanova: {
+          models: {
+            "Meta-Llama-3.1-70B-Instruct": {
+              id: "Meta-Llama-3.1-70B-Instruct",
+              name: "Llama 3.1 70B Instruct",
+              limit: { context: 128000 },
+            },
+            "Meta-Llama-3.1-8B-Instruct": {
+              id: "Meta-Llama-3.1-8B-Instruct",
+              name: "Llama 3.1 8B Instruct",
+              limit: { context: 128000 },
+            },
+          },
+        },
+      }),
+    });
+
+    const models = await loadModels("sambanova");
+    expect(models.length).toBe(2);
+    expect(models.some((m) => m.id === "Meta-Llama-3.1-70B-Instruct")).toBe(true);
+    expect(models.some((m) => m.id === "Meta-Llama-3.1-8B-Instruct")).toBe(true);
+  });
+
   it("returns cerebras models from models.dev catalog", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
