@@ -96,7 +96,8 @@ describe("modelRegistry", () => {
     expect(models.some((m) => m.contextWindow === 1048576)).toBe(true);
 
     // Verify the API key was sent as Bearer auth to the provider endpoint
-    const fireworksCall = globalThis.fetch.mock.calls.find(
+    const fetchMock = globalThis.fetch as unknown as { mock: { calls: unknown[][] } };
+    const fireworksCall = fetchMock.mock.calls.find(
       (c: unknown[]) => (c[0] as string).includes("api.fireworks.ai")
     );
     expect(fireworksCall).toBeTruthy();
