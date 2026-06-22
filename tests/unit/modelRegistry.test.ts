@@ -53,6 +53,40 @@ describe("modelRegistry", () => {
     expect(models.some((m) => m.id.includes("/"))).toBe(true);
   });
 
+  it("returns empty array for cerebras when fetch fails (no hardcoded fallback)", async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
+
+    const models = await loadModels("cerebras");
+    expect(models).toEqual([]);
+  });
+
+  it("returns cerebras models from models.dev catalog", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({
+        cerebras: {
+          models: {
+            "llama-3.3-70b": {
+              id: "llama-3.3-70b",
+              name: "Llama 3.3 70B",
+              limit: { context: 128000 },
+            },
+            "llama3.1-8b": {
+              id: "llama3.1-8b",
+              name: "Llama 3.1 8B",
+              limit: { context: 128000 },
+            },
+          },
+        },
+      }),
+    });
+
+    const models = await loadModels("cerebras");
+    expect(models.length).toBe(2);
+    expect(models.some((m) => m.id === "llama-3.3-70b")).toBe(true);
+    expect(models.some((m) => m.id === "llama3.1-8b")).toBe(true);
+  });
+
   it("returns google models from models.dev catalog", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,

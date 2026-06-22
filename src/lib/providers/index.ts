@@ -1,6 +1,7 @@
 import { openaiAdapter } from "./openai";
 import { anthropicAdapter } from "./anthropic";
 import { groqAdapter } from "./groq";
+import { cerebrasAdapter } from "./cerebras";
 import { openrouterAdapter } from "./openrouter";
 import { googleAdapter } from "./google";
 import type { ProviderAdapter } from "./types";
@@ -9,6 +10,7 @@ export const providers: Record<string, ProviderAdapter> = {
   openai: openaiAdapter,
   anthropic: anthropicAdapter,
   groq: groqAdapter,
+  cerebras: cerebrasAdapter,
   openrouter: openrouterAdapter,
   google: googleAdapter,
 };

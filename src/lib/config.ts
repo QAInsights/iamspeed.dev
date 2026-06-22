@@ -28,6 +28,12 @@ export const PROVIDERS: Record<string, ProviderMetadata> = {
     category: "fast",
     description: "Fast inference for open models",
   },
+  cerebras: {
+    name: "cerebras",
+    displayName: "Cerebras",
+    category: "fast",
+    description: "Fastest inference for open models on Cerebras wafer-scale engines",
+  },
   openrouter: {
     name: "openrouter",
     displayName: "OpenRouter",

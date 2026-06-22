@@ -87,6 +87,7 @@ describe('SettingsPanel', () => {
     expect(options).toContain('Anthropic');
     expect(options).toContain('Local');
     expect(options).toContain('OpenRouter');
+    expect(options).toContain('Cerebras');
   });
 
   it('selects the active provider', () => {
