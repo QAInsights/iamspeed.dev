@@ -15,7 +15,7 @@
 ## Features
 - **Live Streaming & Real-Time Metrics**: Track throughput in tokens/second, Time-to-First-Token (TTFT), and Time-to-Last-Token (TTLT) dynamically.
 - **Dynamic Model Discovery**: Fetches active models dynamically from models.dev with robust offline fallback.
-- **Local & Cloud Provider Support**: Native support for cloud APIs (OpenAI, Anthropic) and local developer endpoints (Ollama, LM Studio).
+- **Local & Cloud Provider Support**: Native support for cloud APIs (OpenAI, Anthropic, Groq, Cerebras, OpenRouter, Google Gemini) and local developer endpoints (Ollama, LM Studio).
 - **Sci-Fi Sound Synthesis**: Dynamic additive audio synthesis (Web Audio API) playing metallic "calculation chimes" as numbers roll, with a top-bar mute toggle.
 - **Secure Local Storage**: API keys are securely stored client-side using AES-GCM encryption via the Web Crypto API.
 - **Run History**: Persistent local history of recent runs with sparkline visualizations.
@@ -42,7 +42,7 @@ Open `http://localhost:4321`, click the gear icon to configure your API key or l
 
 ## Settings & Endpoints
 The benchmarking tool relies on configuring providers via the Settings panel (gear icon):
-- **Cloud Providers**: OpenAI, Anthropic, and Groq require valid API keys. These keys are encrypted using Web Crypto AES-GCM and stored only in the browser's localStorage.
+- **Cloud Providers**: OpenAI, Anthropic, Groq, Cerebras, OpenRouter, and Google Gemini require valid API keys. These keys are encrypted using Web Crypto AES-GCM and stored only in the browser's localStorage.
 - **Local Endpoints**: Ollama, LM Studio, etc., do not require API keys. Click "Discover models from endpoint" to dynamically retrieve active models from the endpoint.
 
 ---
