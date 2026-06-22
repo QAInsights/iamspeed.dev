@@ -40,13 +40,6 @@ export const PROVIDERS: Record<string, ProviderMetadata> = {
     category: "fast",
     description: "Fastest inference for open models on Cerebras wafer-scale engines",
   },
-  sambanova: {
-    name: "sambanova",
-    displayName: "SambaNova",
-    category: "fast",
-    description: "Fast inference for open models on SambaNova's RDU chips",
-    modelsEndpoint: "https://api.sambanova.ai/v1",
-  },
   openrouter: {
     name: "openrouter",
     displayName: "OpenRouter",

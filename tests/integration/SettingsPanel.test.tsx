@@ -88,7 +88,6 @@ describe('SettingsPanel', () => {
     expect(options).toContain('Local');
     expect(options).toContain('OpenRouter');
     expect(options).toContain('Cerebras');
-    expect(options).toContain('SambaNova');
   });
 
   it('selects the active provider', () => {
