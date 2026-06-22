@@ -9,6 +9,12 @@ export interface ProviderMetadata {
   // Future-proof fields for when we have many providers
   category?: 'frontier' | 'fast' | 'open' | 'other';
   description?: string;
+  /**
+   * OpenAI-compatible /models endpoint used as a fallback when the provider
+   * is not listed in models.dev. If omitted, loadModels returns [] when
+   * models.dev has no models for this provider.
+   */
+  modelsEndpoint?: string;
 }
 
 export const PROVIDERS: Record<string, ProviderMetadata> = {
@@ -39,6 +45,7 @@ export const PROVIDERS: Record<string, ProviderMetadata> = {
     displayName: "SambaNova",
     category: "fast",
     description: "Fast inference for open models on SambaNova's RDU chips",
+    modelsEndpoint: "https://api.sambanova.ai/v1",
   },
   openrouter: {
     name: "openrouter",

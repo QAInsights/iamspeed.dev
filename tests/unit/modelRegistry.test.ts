@@ -60,13 +60,6 @@ describe("modelRegistry", () => {
     expect(models).toEqual([]);
   });
 
-  it("returns empty array for sambanova when fetch fails (no hardcoded fallback)", async () => {
-    globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
-
-    const models = await loadModels("sambanova");
-    expect(models).toEqual([]);
-  });
-
   it("returns sambanova models from models.dev catalog", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -92,6 +85,42 @@ describe("modelRegistry", () => {
     expect(models.length).toBe(2);
     expect(models.some((m) => m.id === "Meta-Llama-3.1-70B-Instruct")).toBe(true);
     expect(models.some((m) => m.id === "Meta-Llama-3.1-8B-Instruct")).toBe(true);
+  });
+
+  it("falls back to provider /models endpoint when models.dev has no sambanova models", async () => {
+    // models.dev returns data but without a sambanova provider key
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.includes("models.dev")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ google: { models: {} } }),
+        });
+      }
+      if (url.includes("api.sambanova.ai")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            data: [
+              { id: "Meta-Llama-3.1-70B-Instruct" },
+              { id: "Meta-Llama-3.1-8B-Instruct" },
+            ],
+          }),
+        });
+      }
+      return Promise.reject(new Error("Unexpected URL"));
+    });
+
+    const models = await loadModels("sambanova");
+    expect(models.length).toBe(2);
+    expect(models.some((m) => m.id === "Meta-Llama-3.1-70B-Instruct")).toBe(true);
+    expect(models.some((m) => m.id === "Meta-Llama-3.1-8B-Instruct")).toBe(true);
+  });
+
+  it("returns empty array for sambanova when both models.dev and provider endpoint fail", async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
+
+    const models = await loadModels("sambanova");
+    expect(models).toEqual([]);
   });
 
   it("returns cerebras models from models.dev catalog", async () => {
@@ -268,6 +297,97 @@ describe("modelRegistry", () => {
     expect(models[0].id).toBe("openai/large");
     expect(models[1].id).toBe("openai/medium");
     expect(models[2].id).toBe("openai/small");
+  });
+});
+
+describe("fetchModelsFromEndpoint", () => {
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it("returns empty array when no baseURL", async () => {
+    const { fetchModelsFromEndpoint } = await import("../../src/lib/modelRegistry");
+    const models = await fetchModelsFromEndpoint("");
+    expect(models).toEqual([]);
+  });
+
+  it("fetches /models and returns entries from data array", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({
+        data: [
+          { id: "Meta-Llama-3.1-70B-Instruct" },
+          { id: "Meta-Llama-3.1-8B-Instruct" },
+        ],
+      }),
+    });
+
+    const { fetchModelsFromEndpoint } = await import("../../src/lib/modelRegistry");
+    const models = await fetchModelsFromEndpoint("https://api.sambanova.ai/v1");
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "https://api.sambanova.ai/v1/models",
+      expect.anything()
+    );
+    expect(models).toHaveLength(2);
+    expect(models[0].id).toBe("Meta-Llama-3.1-70B-Instruct");
+    expect(models[0].contextWindow).toBe(0);
+  });
+
+  it("returns empty on fetch failure (graceful)", async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
+
+    const { fetchModelsFromEndpoint } = await import("../../src/lib/modelRegistry");
+    const models = await fetchModelsFromEndpoint("https://api.sambanova.ai/v1");
+    expect(models).toEqual([]);
+  });
+
+  it("normalizes base URL by appending /v1 if missing", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: [{ id: "test-model" }] }),
+    });
+
+    const { fetchModelsFromEndpoint } = await import("../../src/lib/modelRegistry");
+    await fetchModelsFromEndpoint("https://api.example.com");
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "https://api.example.com/v1/models",
+      expect.anything()
+    );
+  });
+
+  it("deduplicates and sorts models alphabetically", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({
+        data: [
+          { id: "zebra-model" },
+          { id: "alpha-model" },
+          { id: "alpha-model" },
+          { id: "beta-model" },
+        ],
+      }),
+    });
+
+    const { fetchModelsFromEndpoint } = await import("../../src/lib/modelRegistry");
+    const models = await fetchModelsFromEndpoint("https://api.example.com/v1");
+
+    expect(models).toHaveLength(3);
+    expect(models.map((m) => m.id)).toEqual(["alpha-model", "beta-model", "zebra-model"]);
+  });
+
+  it("returns empty array for non-ok response", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+    });
+
+    const { fetchModelsFromEndpoint } = await import("../../src/lib/modelRegistry");
+    const models = await fetchModelsFromEndpoint("https://api.example.com/v1");
+    expect(models).toEqual([]);
   });
 });
 

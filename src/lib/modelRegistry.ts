@@ -1,4 +1,5 @@
 import { normalizeBaseURL } from "./providers";
+import { PROVIDERS } from "./config";
 
 export interface ModelEntry {
   id: string;
@@ -114,12 +115,12 @@ export async function loadModels(providerId: string): Promise<ModelEntry[]> {
   // Check cache first
   const cached = localStorage.getItem(CACHE_KEY);
   let catalog: Record<string, ModelsDevEntry> | null = null;
-  
+
   if (cached) {
     try {
       const entry: CacheEntry = JSON.parse(cached);
       const age = Date.now() - entry.timestamp;
-      
+
       if (age < CACHE_TTL_MS) {
         catalog = entry.data as Record<string, ModelsDevEntry>;
       }
@@ -127,12 +128,12 @@ export async function loadModels(providerId: string): Promise<ModelEntry[]> {
       // Invalid cache, will refetch
     }
   }
-  
+
   // Fetch if cache is stale or missing
   if (!catalog) {
     try {
       catalog = await fetchCatalog();
-      
+
       // Update cache
       const cacheEntry: CacheEntry = {
         data: catalog,
@@ -140,18 +141,35 @@ export async function loadModels(providerId: string): Promise<ModelEntry[]> {
       };
       localStorage.setItem(CACHE_KEY, JSON.stringify(cacheEntry));
     } catch (error) {
-      console.warn("Failed to fetch models from models.dev, using fallback:", error);
-      // Only use fallback when models.dev is down or returns nothing
-      return FALLBACK_MODELS[providerId] || [];
+      console.warn("Failed to fetch models from models.dev:", error);
+      // catalog stays null — provider-endpoint fallback below may still work
     }
   }
-  
-  const models = getModelsForProvider(catalog, providerId);
-  
+
+  // 1. Try models.dev catalog first (primary source)
+  let models: ModelEntry[] = catalog ? getModelsForProvider(catalog, providerId) : [];
+
+  // 2. If models.dev has no models for this provider, try the provider's own
+  //    /models endpoint (for providers not listed in models.dev, e.g. SambaNova)
   if (models.length === 0) {
-    console.warn(`No models found for ${providerId} in models.dev catalog`);
+    const endpoint = PROVIDERS[providerId]?.modelsEndpoint;
+    if (endpoint) {
+      models = await fetchModelsFromEndpoint(endpoint);
+    }
   }
-  
+
+  // 3. Legacy hardcoded fallback (only for providers with FALLBACK_MODELS entries)
+  if (models.length === 0) {
+    const fallback = FALLBACK_MODELS[providerId];
+    if (fallback) {
+      console.warn(`No models found for ${providerId}, using hardcoded fallback`);
+      return fallback;
+    }
+    if (catalog) {
+      console.warn(`No models found for ${providerId} in models.dev catalog`);
+    }
+  }
+
   return models;
 }
 
@@ -159,7 +177,15 @@ export function clearModelCache(): void {
   localStorage.removeItem(CACHE_KEY);
 }
 
-export async function discoverLocalModels(baseURL: string): Promise<ModelEntry[]> {
+/**
+ * Fetch models from any OpenAI-compatible /models endpoint.
+ *
+ * Shared by discoverLocalModels (for local servers like Ollama/LM Studio) and
+ * by loadModels (as a fallback for providers not listed in models.dev, e.g.
+ * SambaNova). Returns an empty array on any failure — callers handle the
+ * empty case.
+ */
+export async function fetchModelsFromEndpoint(baseURL: string): Promise<ModelEntry[]> {
   if (!baseURL) return [];
   try {
     const normalized = normalizeBaseURL(baseURL);
@@ -180,7 +206,7 @@ export async function discoverLocalModels(baseURL: string): Promise<ModelEntry[]
       }))
       .filter((m: ModelEntry) => m.id);
 
-    // Dedup + sort alphabetically (context unknown for local)
+    // Dedup + sort alphabetically (context unknown for endpoint discovery)
     const seen = new Set<string>();
     const unique = models.filter((m) => {
       if (seen.has(m.id)) return false;
@@ -191,4 +217,8 @@ export async function discoverLocalModels(baseURL: string): Promise<ModelEntry[]
   } catch {
     return [];
   }
+}
+
+export async function discoverLocalModels(baseURL: string): Promise<ModelEntry[]> {
+  return fetchModelsFromEndpoint(baseURL);
 }
