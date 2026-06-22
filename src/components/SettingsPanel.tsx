@@ -60,17 +60,23 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
     setShowManualInput(false);
     setDiscoveryError(null);
 
-    loadKey(settings.providerId).then((key) => {
-      if (key) {
-        setInputValue(key);
-        onSettingsChange({ ...settings, apiKey: key });
-      }
-    });
-
     const isLocal = settings.providerId === LOCAL_PROVIDER_ID;
     setModelsLoading(true);
 
     const loadForProvider = async () => {
+      // Load the stored API key first — some providers (e.g. SambaNova)
+      // require auth to list models from their /models endpoint.
+      let apiKey: string | null = settings.apiKey || null;
+      if (!isLocal) {
+        const storedKey = await loadKey(settings.providerId);
+        if (storedKey) {
+          apiKey = storedKey;
+          setInputValue(storedKey);
+          setStored(true);
+          onSettingsChange({ ...settings, apiKey: storedKey });
+        }
+      }
+
       let loaded: ModelEntry[] = [];
       if (isLocal && settings.baseUrl) {
         loaded = await discoverLocalModels(settings.baseUrl);
@@ -80,7 +86,7 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
           }
         }
       } else if (!isLocal) {
-        loaded = await loadModels(settings.providerId);
+        loaded = await loadModels(settings.providerId, apiKey || undefined);
       }
       setModels(loaded);
       setModelsLoading(false);
@@ -160,7 +166,9 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
     if (isLocal && nextBase) {
       loadedModels = await discoverLocalModels(nextBase);
     } else if (!isLocal) {
-      loadedModels = await loadModels(id);
+      // Load stored key first — some providers need auth to list models
+      const storedKey = await loadKey(id);
+      loadedModels = await loadModels(id, storedKey || undefined);
     }
 
     setModels(loadedModels);
@@ -177,9 +185,22 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
 
   const handleKeyBlur = async () => {
     if (inputValue.trim()) {
-      await saveKey(settings.providerId, inputValue.trim());
+      const key = inputValue.trim();
+      await saveKey(settings.providerId, key);
       setStored(true);
-      onSettingsChange({ ...settings, apiKey: inputValue.trim() });
+      onSettingsChange({ ...settings, apiKey: key });
+
+      // If no models loaded yet (e.g. SambaNova needs auth to list models),
+      // retry now that we have a key.
+      if (models.length === 0 && settings.providerId !== LOCAL_PROVIDER_ID) {
+        setModelsLoading(true);
+        const loaded = await loadModels(settings.providerId, key);
+        setModels(loaded);
+        setModelsLoading(false);
+        if (loaded.length > 0) {
+          onSettingsChange({ ...settings, apiKey: key, modelId: loaded[0].id });
+        }
+      }
     }
   };
 

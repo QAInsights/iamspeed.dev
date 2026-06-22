@@ -131,7 +131,7 @@ function BenchmarkPanelContent() {
     const isLocal = settings.providerId === LOCAL_PROVIDER_ID;
     const loader = isLocal && settings.baseUrl
       ? discoverLocalModels(settings.baseUrl)
-      : loadModels(settings.providerId);
+      : loadModels(settings.providerId, settings.apiKey || undefined);
 
     loader.then((models) => {
       if (models.length > 0) {
@@ -141,7 +141,7 @@ function BenchmarkPanelContent() {
         }
       }
     });
-  }, [settings.providerId, settings.baseUrl]);
+  }, [settings.providerId, settings.baseUrl, settings.apiKey]);
 
   const displayTps = metrics?.tokensPerSecond ?? null;
   const ttft = metrics?.ttft ?? null;
@@ -183,7 +183,7 @@ function BenchmarkPanelContent() {
       if (/decommissioned|no longer supported|model .* (not found|invalid)/i.test(message)) {
         const recover = isLocal && settings.baseUrl
           ? discoverLocalModels(settings.baseUrl)
-          : loadModels(settings.providerId);
+          : loadModels(settings.providerId, settings.apiKey || undefined);
         recover.then((models) => {
           if (models.length > 0) {
             const newModel = models[0];

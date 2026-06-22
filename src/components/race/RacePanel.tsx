@@ -105,9 +105,14 @@ export function RacePanel({ soundEnabled }: RacePanelProps) {
   useEffect(() => {
     for (const config of configs) {
       const isLocal = config.providerId === LOCAL_PROVIDER_ID;
-      const loader = isLocal && config.baseUrl
-        ? discoverLocalModels(config.baseUrl)
-        : loadModels(config.providerId);
+      const loader = (async () => {
+        if (isLocal && config.baseUrl) {
+          return discoverLocalModels(config.baseUrl);
+        }
+        // Load stored key first — some providers need auth to list models
+        const storedKey = await loadKey(config.providerId);
+        return loadModels(config.providerId, storedKey || undefined);
+      })();
       loader.then((models) => {
         setConfigs((prev) =>
           prev.map((c) => {

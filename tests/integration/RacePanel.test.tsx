@@ -348,18 +348,20 @@ describe("RacePanel", () => {
 
     const { container } = render(<RacePanel soundEnabled={true} />);
 
+    // Wait for model options to appear (loadKey + loadModels are async)
     await waitFor(() => {
-      const selects = container.querySelectorAll(".race-config-model option");
-      if (selects.length > 0) {
-        const input = container.querySelector(".race-prompt-input") as HTMLInputElement;
-        fireEvent.input(input, { target: { value: "race!" } });
-      }
+      expect(container.querySelectorAll(".race-config-model option").length).toBeGreaterThan(0);
     });
+    const input = container.querySelector(".race-prompt-input") as HTMLInputElement;
+    fireEvent.input(input, { target: { value: "race!" } });
 
     await waitFor(() => {
       const btn = container.querySelector(".race-btn-start") as HTMLButtonElement;
-      if (btn && !btn.disabled) fireEvent.click(btn);
+      expect(btn).toBeTruthy();
+      expect(btn.disabled).toBe(false);
     });
+    const btn = container.querySelector(".race-btn-start") as HTMLButtonElement;
+    fireEvent.click(btn);
 
     await waitFor(() => {
       expect(playRev).toHaveBeenCalled();
@@ -372,27 +374,26 @@ describe("RacePanel", () => {
 
     const { container } = render(<RacePanel soundEnabled={false} />);
 
+    // Wait for model options to appear (loadKey + loadModels are async)
     await waitFor(() => {
-      const selects = container.querySelectorAll(".race-config-model option");
-      if (selects.length > 0) {
-        const input = container.querySelector(".race-prompt-input") as HTMLInputElement;
-        fireEvent.input(input, { target: { value: "race!" } });
-      }
+      expect(container.querySelectorAll(".race-config-model option").length).toBeGreaterThan(0);
     });
+    const input = container.querySelector(".race-prompt-input") as HTMLInputElement;
+    fireEvent.input(input, { target: { value: "race!" } });
 
     await waitFor(() => {
       const btn = container.querySelector(".race-btn-start") as HTMLButtonElement;
-      if (btn && !btn.disabled) fireEvent.click(btn);
+      expect(btn).toBeTruthy();
+      expect(btn.disabled).toBe(false);
     });
+    const btn = container.querySelector(".race-btn-start") as HTMLButtonElement;
+    fireEvent.click(btn);
 
     // playRev should not be called when sound is disabled
-    // (may or may not reach start depending on timing, but if it did, rev shouldn't fire)
     await waitFor(() => {
-      const stop = container.querySelector(".race-btn-stop");
-      if (stop) {
-        expect(playRev).not.toHaveBeenCalled();
-      }
+      expect(container.querySelector(".race-btn-stop")).toBeTruthy();
     });
+    expect(playRev).not.toHaveBeenCalled();
   });
 
   it("renders provider select for each lane", async () => {

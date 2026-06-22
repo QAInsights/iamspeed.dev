@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, fireEvent, cleanup } from '@testing-library/preact';
+import { render, fireEvent, cleanup, waitFor } from '@testing-library/preact';
 import { SettingsPanel, type SettingsState } from '../../src/components/SettingsPanel';
 import { discoverLocalModels } from '../../src/lib/modelRegistry';
 
@@ -203,9 +203,11 @@ describe('SettingsPanel', () => {
     // Simulate changing to anthropic
     select.value = 'anthropic';
     await fireEvent.change(select);
-    expect(onSettingsChange).toHaveBeenCalledWith(
-      expect.objectContaining({ providerId: 'anthropic' })
-    );
+    await waitFor(() => {
+      expect(onSettingsChange).toHaveBeenCalledWith(
+        expect.objectContaining({ providerId: 'anthropic' })
+      );
+    });
   });
 
   describe('OpenRouter provider', () => {
@@ -236,9 +238,11 @@ describe('SettingsPanel', () => {
       const select = container.querySelector('.llm-provider-select') as HTMLSelectElement;
       select.value = 'openrouter';
       await fireEvent.change(select);
-      expect(onSettingsChange).toHaveBeenCalledWith(
-        expect.objectContaining({ providerId: 'openrouter' })
-      );
+      await waitFor(() => {
+        expect(onSettingsChange).toHaveBeenCalledWith(
+          expect.objectContaining({ providerId: 'openrouter' })
+        );
+      });
     });
 
     it('does not show Base URL input for openrouter (not a local provider)', () => {

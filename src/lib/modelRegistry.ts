@@ -111,7 +111,7 @@ function getModelsForProvider(catalog: Record<string, ModelsDevEntry>, providerI
   });
 }
 
-export async function loadModels(providerId: string): Promise<ModelEntry[]> {
+export async function loadModels(providerId: string, apiKey?: string): Promise<ModelEntry[]> {
   // Check cache first
   const cached = localStorage.getItem(CACHE_KEY);
   let catalog: Record<string, ModelsDevEntry> | null = null;
@@ -154,7 +154,7 @@ export async function loadModels(providerId: string): Promise<ModelEntry[]> {
   if (models.length === 0) {
     const endpoint = PROVIDERS[providerId]?.modelsEndpoint;
     if (endpoint) {
-      models = await fetchModelsFromEndpoint(endpoint);
+      models = await fetchModelsFromEndpoint(endpoint, apiKey);
     }
   }
 
@@ -184,14 +184,23 @@ export function clearModelCache(): void {
  * by loadModels (as a fallback for providers not listed in models.dev, e.g.
  * SambaNova). Returns an empty array on any failure — callers handle the
  * empty case.
+ *
+ * For hosted providers that require auth (e.g. SambaNova), pass an apiKey
+ * and it will be sent as a Bearer token. Local servers typically don't
+ * need auth, so apiKey is optional.
  */
-export async function fetchModelsFromEndpoint(baseURL: string): Promise<ModelEntry[]> {
+export async function fetchModelsFromEndpoint(baseURL: string, apiKey?: string): Promise<ModelEntry[]> {
   if (!baseURL) return [];
   try {
     const normalized = normalizeBaseURL(baseURL);
     const url = normalized + "/models";
+    const headers: Record<string, string> = {};
+    if (apiKey) {
+      headers["Authorization"] = `Bearer ${apiKey}`;
+    }
     const response = await fetch(url, {
       signal: AbortSignal.timeout(6000),
+      headers,
     });
     if (!response.ok) {
       return [];

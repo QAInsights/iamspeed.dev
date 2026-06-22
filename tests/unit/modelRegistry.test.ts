@@ -110,10 +110,19 @@ describe("modelRegistry", () => {
       return Promise.reject(new Error("Unexpected URL"));
     });
 
-    const models = await loadModels("sambanova");
+    const models = await loadModels("sambanova", "sk-test-key");
     expect(models.length).toBe(2);
     expect(models.some((m) => m.id === "Meta-Llama-3.1-70B-Instruct")).toBe(true);
     expect(models.some((m) => m.id === "Meta-Llama-3.1-8B-Instruct")).toBe(true);
+
+    // Verify the API key was sent as Bearer auth to the provider endpoint
+    const sambanovaCall = globalThis.fetch.mock.calls.find(
+      (c: unknown[]) => (c[0] as string).includes("api.sambanova.ai")
+    );
+    expect(sambanovaCall).toBeTruthy();
+    expect((sambanovaCall![1] as Record<string, unknown>).headers).toMatchObject({
+      Authorization: "Bearer sk-test-key",
+    });
   });
 
   it("returns empty array for sambanova when both models.dev and provider endpoint fail", async () => {
@@ -388,6 +397,40 @@ describe("fetchModelsFromEndpoint", () => {
     const { fetchModelsFromEndpoint } = await import("../../src/lib/modelRegistry");
     const models = await fetchModelsFromEndpoint("https://api.example.com/v1");
     expect(models).toEqual([]);
+  });
+
+  it("sends Authorization header when apiKey is provided", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: [{ id: "test-model" }] }),
+    });
+    globalThis.fetch = fetchSpy;
+
+    const { fetchModelsFromEndpoint } = await import("../../src/lib/modelRegistry");
+    await fetchModelsFromEndpoint("https://api.sambanova.ai/v1", "sk-test-key");
+
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "https://api.sambanova.ai/v1/models",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: "Bearer sk-test-key",
+        }),
+      })
+    );
+  });
+
+  it("does not send Authorization header when apiKey is omitted", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: [{ id: "test-model" }] }),
+    });
+    globalThis.fetch = fetchSpy;
+
+    const { fetchModelsFromEndpoint } = await import("../../src/lib/modelRegistry");
+    await fetchModelsFromEndpoint("http://localhost:11434/v1");
+
+    const callArgs = fetchSpy.mock.calls[0][1];
+    expect(callArgs.headers?.Authorization).toBeUndefined();
   });
 });
 
