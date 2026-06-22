@@ -60,6 +60,51 @@ describe("modelRegistry", () => {
     expect(models).toEqual([]);
   });
 
+  it("falls back to provider /models endpoint for fireworks (not in models.dev)", async () => {
+    // models.dev returns data but without a fireworks provider key
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.includes("models.dev")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ google: { models: {} } }),
+        });
+      }
+      if (url.includes("api.fireworks.ai")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            data: [
+              { id: "accounts/fireworks/models/llama-v3p1-8b-instruct" },
+              { id: "accounts/fireworks/models/llama-v3p1-70b-instruct" },
+            ],
+          }),
+        });
+      }
+      return Promise.reject(new Error("Unexpected URL"));
+    });
+
+    const models = await loadModels("fireworks", "fw-test-key");
+    expect(models.length).toBe(2);
+    expect(models.some((m) => m.id === "accounts/fireworks/models/llama-v3p1-8b-instruct")).toBe(true);
+    expect(models.some((m) => m.id === "accounts/fireworks/models/llama-v3p1-70b-instruct")).toBe(true);
+
+    // Verify the API key was sent as Bearer auth to the provider endpoint
+    const fireworksCall = globalThis.fetch.mock.calls.find(
+      (c: unknown[]) => (c[0] as string).includes("api.fireworks.ai")
+    );
+    expect(fireworksCall).toBeTruthy();
+    expect((fireworksCall![1] as Record<string, unknown>).headers).toMatchObject({
+      Authorization: "Bearer fw-test-key",
+    });
+  });
+
+  it("returns empty array for fireworks when both models.dev and provider endpoint fail", async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
+
+    const models = await loadModels("fireworks");
+    expect(models).toEqual([]);
+  });
+
   it("returns cerebras models from models.dev catalog", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,

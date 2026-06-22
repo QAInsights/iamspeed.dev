@@ -8,7 +8,7 @@ Fast.com but for LLMs.
 - Time-to-first-token (TTFT) measurement
 - Throughput tracking in tokens/sec
 - AES-GCM encrypted API key storage (local only)
-- OpenAI, Anthropic, Groq, Cerebras, OpenRouter, Google (Gemini), and Local (Ollama, LM Studio, etc.) provider support
+- OpenAI, Anthropic, Groq, Cerebras, Fireworks AI, OpenRouter, Google (Gemini), and Local (Ollama, LM Studio, etc.) provider support
 - **Race Mode** — run 2–3 providers in parallel on the same prompt and watch them race side-by-side on a live race track with cars, live TPS, and a Piston Cup podium. Winner is decided by TTLT (time-to-last-token) with TPS as tiebreaker; a "Fastest Start" award highlights the lowest TTFT.
 - Responsive, minimal UI inspired by [fast.com](https://fast.com)
 

@@ -40,6 +40,13 @@ export const PROVIDERS: Record<string, ProviderMetadata> = {
     category: "fast",
     description: "Fastest inference for open models on Cerebras wafer-scale engines",
   },
+  fireworks: {
+    name: "fireworks",
+    displayName: "Fireworks AI",
+    category: "fast",
+    description: "Fast inference for open and fine-tuned models on Fireworks AI",
+    modelsEndpoint: "https://api.fireworks.ai/inference/v1",
+  },
   openrouter: {
     name: "openrouter",
     displayName: "OpenRouter",
