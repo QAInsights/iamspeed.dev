@@ -174,6 +174,40 @@ describe("modelRegistry", () => {
     expect(models).toEqual([]);
   });
 
+  it("returns empty array for mistral when fetch fails (no hardcoded fallback)", async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
+
+    const models = await loadModels("mistral");
+    expect(models).toEqual([]);
+  });
+
+  it("returns mistral models from models.dev catalog", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({
+        mistral: {
+          models: {
+            "mistral-small-latest": {
+              id: "mistral-small-latest",
+              name: "Mistral Small",
+              limit: { context: 128000 },
+            },
+            "mistral-large-latest": {
+              id: "mistral-large-latest",
+              name: "Mistral Large",
+              limit: { context: 128000 },
+            },
+          },
+        },
+      }),
+    });
+
+    const models = await loadModels("mistral");
+    expect(models.length).toBe(2);
+    expect(models.some((m) => m.id === "mistral-small-latest")).toBe(true);
+    expect(models.some((m) => m.id === "mistral-large-latest")).toBe(true);
+  });
+
   it("caches models after successful fetch", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,

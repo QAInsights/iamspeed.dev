@@ -6,7 +6,7 @@
 - **Live Streaming & Real-Time Metrics**: Track throughput in tokens/second, Time-to-First-Token (TTFT), and Time-to-Last-Token (TTLT) dynamically.
 - **Race Mode**: Run 2–3 providers in parallel on the same prompt and watch them race side-by-side on a live race track with cars, live TPS, and a Piston Cup podium. Winner is decided by TTLT (time-to-last-token) with TPS as tiebreaker; a "Fastest Start" award highlights the lowest TTFT.
 - **Dynamic Model Discovery**: Fetches active models dynamically from models.dev with robust offline fallback.
-- **Local & Cloud Provider Support**: Native support for cloud APIs (OpenAI, Anthropic, Groq, Cerebras, Fireworks AI, OpenRouter, Google Gemini) and local developer endpoints (Ollama, LM Studio).
+- **Local & Cloud Provider Support**: Native support for cloud APIs (OpenAI, Anthropic, Groq, Cerebras, Fireworks AI, Mistral, OpenRouter, Google Gemini) and local developer endpoints (Ollama, LM Studio).
 - **Sci-Fi Sound Synthesis**: Dynamic additive audio synthesis (Web Audio API) playing metallic "calculation chimes" as numbers roll, with a top-bar mute toggle.
 - **Secure Local Storage**: API keys are securely stored client-side using AES-GCM encryption via the Web Crypto API.
 - **Run History**: Persistent local history of recent runs with sparkline visualizations.
@@ -25,7 +25,7 @@
 - `/src/components/race/`: Race Mode UI (RacePanel, RaceTrack, RaceTrackLane, RacePodium, RaceSetupBar).
 - `/src/lib/`: Core libraries (metrics tracker, cryptographic adapter, local model discovery, sound synthesizer).
 - `/src/lib/race/`: Race orchestration, ranking, persistence, and sound effects.
-- `/src/lib/providers/`: Endpoints and response parser adapters for Anthropic, OpenAI, Groq, Cerebras, Fireworks AI, OpenRouter, Google Gemini, and local endpoints.
+- `/src/lib/providers/`: Endpoints and response parser adapters for Anthropic, OpenAI, Groq, Cerebras, Fireworks AI, Mistral, OpenRouter, Google Gemini, and local endpoints.
 
 ## Disclaimer
 "Cars", "Piston Cup", McQueen, Sally, Chick Hicks, and related character names are trademarks of Disney/Pixar. This is an unofficial fan project and is not affiliated with or endorsed by Disney.

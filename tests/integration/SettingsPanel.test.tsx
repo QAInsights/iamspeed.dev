@@ -89,6 +89,7 @@ describe('SettingsPanel', () => {
     expect(options).toContain('OpenRouter');
     expect(options).toContain('Cerebras');
     expect(options).toContain('Fireworks AI');
+    expect(options).toContain('Mistral');
   });
 
   it('selects the active provider', () => {

@@ -47,6 +47,12 @@ export const PROVIDERS: Record<string, ProviderMetadata> = {
     description: "Fast inference for open and fine-tuned models on Fireworks AI",
     modelsEndpoint: "https://api.fireworks.ai/v1/accounts/fireworks/models?filter=supports_serverless=true&pageSize=200",
   },
+  mistral: {
+    name: "mistral",
+    displayName: "Mistral",
+    category: "frontier",
+    description: "Mistral AI frontier and open models via the OpenAI-compatible La Plateforme API",
+  },
   openrouter: {
     name: "openrouter",
     displayName: "OpenRouter",
