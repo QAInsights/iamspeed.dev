@@ -401,6 +401,7 @@
   margin: 0;
 }
 .race-baseurl-close {
+  flex-shrink: 0;
   font-size: 1.125rem;
   color: var(--text-muted);
   padding: 0.25rem;
