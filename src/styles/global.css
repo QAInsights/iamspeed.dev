@@ -108,3 +108,10 @@ pre {
   background: var(--accent);
   color: #fff;
 }
+
+/* Theme toggle icon — must be in global.css (not inline <style> in Preact)
+   so the correct icon shows on first paint, before hydration. */
+.theme-toggle-icon .sun-icon { display: block; }
+.theme-toggle-icon .moon-icon { display: none; }
+[data-theme="dark"] .theme-toggle-icon .sun-icon { display: none; }
+[data-theme="dark"] .theme-toggle-icon .moon-icon { display: block; }

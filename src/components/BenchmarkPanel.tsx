@@ -42,7 +42,12 @@ function BenchmarkPanelContent() {
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [runState, setRunState] = useState<RunState>("idle");
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof document !== "undefined") {
+      return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    }
+    return "light";
+  });
   const [recentRuns, setRecentRuns] = useState<RunSummary[]>(() => loadHistory());
   const [historyOpen, setHistoryOpen] = useState(false);
   const [mode, setMode] = useState<AppMode>(() => loadMode());
@@ -88,17 +93,6 @@ function BenchmarkPanelContent() {
       localStorage.setItem("iamspeed_sound", String(next));
       return next;
     });
-  }, []);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("iamspeed_theme") as "light" | "dark" | null;
-    if (stored) {
-      setTheme(stored);
-      document.documentElement.setAttribute("data-theme", stored);
-    } else {
-      setTheme("light");
-      document.documentElement.setAttribute("data-theme", "light");
-    }
   }, []);
 
   const toggleTheme = useCallback(() => {

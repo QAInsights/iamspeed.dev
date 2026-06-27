@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { useState, useCallback, useEffect } from "preact/hooks";
+import { useState, useCallback } from "preact/hooks";
 import { TopBar } from "./TopBar";
 import { LeaderboardTable } from "./LeaderboardTable";
 import { loadMode, type AppMode } from "../lib/race/storage";
@@ -22,7 +22,12 @@ const style = `
 `;
 
 export function LeaderboardPage() {
-  const [, setTheme] = useState<"light" | "dark">("light");
+  const [, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof document !== "undefined") {
+      return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    }
+    return "light";
+  });
   const [mode] = useState<AppMode>(() => loadMode());
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
@@ -30,13 +35,6 @@ export function LeaderboardPage() {
     }
     return true;
   });
-
-  useEffect(() => {
-    const stored = localStorage.getItem("iamspeed_theme") as "light" | "dark" | null;
-    const initial = stored || "light";
-    setTheme(initial);
-    document.documentElement.setAttribute("data-theme", initial);
-  }, [setTheme]);
 
   const toggleTheme = useCallback(() => {
     setTheme((prev) => {

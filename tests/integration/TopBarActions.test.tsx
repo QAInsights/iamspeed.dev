@@ -113,6 +113,31 @@ describe("TopBarActions", () => {
     });
   });
 
+  describe("leaderboard link", () => {
+    it("renders leaderboard link with trophy icon", () => {
+      const { container } = render(<TopBarActions {...defaultProps} />);
+      const link = container.querySelector(".llm-leaderboard-link");
+      expect(link).toBeTruthy();
+      expect(link!.tagName).toBe("A");
+      expect(link!.getAttribute("href")).toBe("/leaderboard");
+      expect(link!.querySelector("svg")).toBeTruthy();
+    });
+
+    it("has aria-label and title", () => {
+      const { container } = render(<TopBarActions {...defaultProps} />);
+      const link = container.querySelector(".llm-leaderboard-link")!;
+      expect(link.getAttribute("aria-label")).toBe("Leaderboard");
+      expect(link.getAttribute("title")).toBe("Leaderboard");
+    });
+
+    it("is always visible regardless of showHistory/showSettings/showModeToggle", () => {
+      const { container } = render(
+        <TopBarActions {...defaultProps} showHistory={false} showSettings={false} showModeToggle={false} />
+      );
+      expect(container.querySelector(".llm-leaderboard-link")).toBeTruthy();
+    });
+  });
+
   describe("other buttons", () => {
     it("renders sound, theme, and settings buttons", () => {
       const { container } = render(<TopBarActions {...defaultProps} />);
