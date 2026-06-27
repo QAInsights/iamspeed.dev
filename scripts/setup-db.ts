@@ -95,8 +95,23 @@ async function tableExists(name: string): Promise<boolean> {
   }
 }
 
+/** Poll until the table is ACTIVE (DynamoDB tables are CREATING for a few seconds). */
+async function waitForActive(name: string, timeoutMs = 30_000): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const res = await client.send(new DescribeTableCommand({ TableName: name }));
+    if (res.Table?.TableStatus === "ACTIVE") return;
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  throw new Error(`Table ${name} did not become ACTIVE within ${timeoutMs}ms`);
+}
+
 async function createTable(spec: TableSpec): Promise<void> {
   if (await tableExists(spec.name)) {
+    // Ensure TTL is enabled even if table already existed
+    if (spec.ttlAttributeName) {
+      await enableTtl(spec.name, spec.ttlAttributeName);
+    }
     console.log(`  ✓ ${spec.name} (already exists)`);
     return;
   }
@@ -116,21 +131,29 @@ async function createTable(spec: TableSpec): Promise<void> {
     })
   );
 
+  // Wait for the table to become ACTIVE before enabling TTL
+  // (UpdateTimeToLive fails with ResourceNotFoundException if the table
+  // is still in CREATING state).
+  await waitForActive(spec.name);
+
   if (spec.ttlAttributeName) {
-    // TTL must be enabled separately — done via UpdateTimeToLive
-    const { UpdateTimeToLiveCommand } = await import("@aws-sdk/client-dynamodb");
-    await client.send(
-      new UpdateTimeToLiveCommand({
-        TableName: spec.name,
-        TimeToLiveSpecification: {
-          AttributeName: spec.ttlAttributeName,
-          Enabled: true,
-        },
-      })
-    );
+    await enableTtl(spec.name, spec.ttlAttributeName);
   }
 
   console.log(`  + ${spec.name} (created)`);
+}
+
+async function enableTtl(tableName: string, attributeName: string): Promise<void> {
+  const { UpdateTimeToLiveCommand } = await import("@aws-sdk/client-dynamodb");
+  await client.send(
+    new UpdateTimeToLiveCommand({
+      TableName: tableName,
+      TimeToLiveSpecification: {
+        AttributeName: attributeName,
+        Enabled: true,
+      },
+    })
+  );
 }
 
 async function main() {
