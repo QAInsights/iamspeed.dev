@@ -314,8 +314,6 @@ function BenchmarkPanelContent() {
   }, [settings.modelId, settings.providerId]);
 
   const heroText = displayTps !== null ? String(displayTps) : "--";
-  const hasConfig = !!settings.apiKey;
-
   const sparklineData = recentRuns
     .filter((r) => r.tokensPerSecond !== null)
     .map((r) => ({
@@ -390,12 +388,7 @@ function BenchmarkPanelContent() {
 
 
 
-              <BenchmarkHint
-                hasConfig={hasConfig}
-                runState={runState}
-                error={error}
-                onOpenSettings={handleOpenSettings}
-              />
+              <BenchmarkHint error={error} />
 
               {/* Show more */}
               {(runState === "done" || runState === "running") && (

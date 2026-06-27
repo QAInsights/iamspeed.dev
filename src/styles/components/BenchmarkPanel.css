@@ -328,8 +328,6 @@
   max-width: var(--max-w);
 }
 
-/* (hint styles moved to BenchmarkHint component) */
-
 /* Footer */
 .llm-footer {
   width: 100%;
@@ -408,6 +406,6 @@
 /* Smooth color transitions for weather background switches */
 .llm-brand-name, .llm-brand-tagline, .llm-hero-number, .llm-hero-label, .llm-hero-unit,
 .llm-ttft-value, .llm-ttft-label, .llm-sec-value, .llm-sec-label, .llm-model-context,
-.llm-hint, .llm-error, .llm-share-bar {
+.llm-error, .llm-share-bar {
   transition: color 0.3s ease-in-out;
 }

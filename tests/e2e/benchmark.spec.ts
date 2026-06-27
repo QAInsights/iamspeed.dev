@@ -118,17 +118,6 @@ test.describe("I am speed. Benchmark", () => {
     await expect(page.locator(".llm-settings")).not.toBeVisible();
   });
 
-  test("hint text appears when no API key configured", async ({ page }) => {
-    // Clear localStorage to ensure no key is configured
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
-    await waitForHydration(page);
-
-    const hint = page.locator(".llm-hint");
-    await expect(hint).toBeVisible();
-    await expect(hint).toContainText("Settings");
-  });
-
   test("with mocked stream, clicking Run shows streaming text and metrics", async ({ page }) => {
     // Mock the OpenAI API endpoint
     await page.route("**/api.openai.com/**", async (route) => {
