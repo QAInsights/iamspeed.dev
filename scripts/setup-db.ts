@@ -121,13 +121,18 @@ async function createTable(spec: TableSpec): Promise<void> {
       TableName: spec.name,
       KeySchema: spec.keySchema,
       AttributeDefinitions: spec.attributeDefinitions,
-      GlobalSecondaryIndexes: spec.gsis?.map((gsi) => ({
-        ...gsi,
-        // Local DynamoDB needs explicit throughput; on-demand isn't supported
-        // in older versions. Set both for compatibility.
-        ProvisionedThroughput: { ReadCapacityUnits: 10, WriteCapacityUnits: 10 },
-      })),
-      ProvisionedThroughput: { ReadCapacityUnits: 10, WriteCapacityUnits: 10 },
+      // Production: on-demand (pay per request — cheaper for low/unknown traffic).
+      // Local: provisioned (DynamoDB Local doesn't support on-demand).
+      BillingMode: isLocal ? "PROVISIONED" : "PAY_PER_REQUEST",
+      ...(isLocal
+        ? {
+            GlobalSecondaryIndexes: spec.gsis?.map((gsi) => ({
+              ...gsi,
+              ProvisionedThroughput: { ReadCapacityUnits: 10, WriteCapacityUnits: 10 },
+            })),
+            ProvisionedThroughput: { ReadCapacityUnits: 10, WriteCapacityUnits: 10 },
+          }
+        : {}),
     })
   );
 
