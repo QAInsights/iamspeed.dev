@@ -408,7 +408,7 @@ export function LeaderboardTable() {
           style={{ left: tipLeft, top: `${hoveredRow.y + 8}px` }}
         >
           <div class="llm-lb-row-tip-title">
-            #{hoveredRow.entry.rank} — {hoveredRow.entry.handle}
+            #{hoveredRow.entry.rank} - {hoveredRow.entry.handle}
           </div>
           <div class="llm-lb-row-tip-grid">
             <span class="llm-lb-row-tip-label">Provider</span>
@@ -441,8 +441,8 @@ export function LeaderboardTable() {
               <h2 class="llm-lb-title">Leaderboard</h2>
               <p class="llm-lb-subtitle">
                 {sortBy === "tps"
-                  ? "Top speeds — ranked by tokens per second."
-                  : "Fastest starts — ranked by time to first token."}
+                  ? "Top speeds - ranked by tokens per second."
+                  : "Fastest starts - ranked by time to first token."}
               </p>
             </div>
             <div class="llm-lb-sort-toggle" role="group" aria-label="Sort leaderboard by">

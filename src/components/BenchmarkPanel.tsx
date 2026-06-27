@@ -426,11 +426,14 @@ function BenchmarkPanelContent() {
           <a href="https://achu.app" target="_blank" rel="noopener noreferrer" aria-label="Achu (opens in new tab)">Achu</a>
           <span class="llm-footer-dot" aria-hidden="true">&middot;</span>
           <a href="https://github.com/qainsights/iamspeed.dev" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository (opens in new tab)">GitHub</a>
-          <p class="llm-footer-disclaimer">
-            "Cars", "Piston Cup", McQueen, Sally, Chick Hicks, and related character
-            names are trademarks of Disney/Pixar. This is an unofficial fan project
-            and is not affiliated with or endorsed by Disney.
-          </p>
+          <details class="llm-footer-disclaimer">
+            <summary>Trademark Disclaimer</summary>
+            <p>
+              "Cars", "Piston Cup", McQueen, Sally, Chick Hicks, and related character
+              names are trademarks of Disney/Pixar. This is an unofficial fan project
+              and is not affiliated with or endorsed by Disney.
+            </p>
+          </details>
         </footer>
       </main>
 

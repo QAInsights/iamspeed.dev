@@ -51,14 +51,16 @@ describe("TopBarActions", () => {
       expect(onToggleMode).toHaveBeenCalledOnce();
     });
 
-    it("has title 'Race mode' in simple mode", () => {
+    it("is wrapped in a tooltip in simple mode", () => {
       const { container } = render(<TopBarActions {...defaultProps} mode="simple" />);
-      expect(container.querySelector(".llm-mode-toggle")!.getAttribute("title")).toBe("Race mode");
+      const button = container.querySelector(".llm-mode-toggle")!;
+      expect(button.closest(".llm-tip")).toBeTruthy();
     });
 
-    it("has title 'Simple mode' in race mode", () => {
+    it("is wrapped in a tooltip in race mode", () => {
       const { container } = render(<TopBarActions {...defaultProps} mode="race" />);
-      expect(container.querySelector(".llm-mode-toggle")!.getAttribute("title")).toBe("Simple mode");
+      const button = container.querySelector(".llm-mode-toggle")!;
+      expect(button.closest(".llm-tip")).toBeTruthy();
     });
   });
 
@@ -123,11 +125,11 @@ describe("TopBarActions", () => {
       expect(link!.querySelector("svg")).toBeTruthy();
     });
 
-    it("has aria-label and title", () => {
+    it("has aria-label and is wrapped in a tooltip", () => {
       const { container } = render(<TopBarActions {...defaultProps} />);
       const link = container.querySelector(".llm-leaderboard-link")!;
       expect(link.getAttribute("aria-label")).toBe("Leaderboard");
-      expect(link.getAttribute("title")).toBe("Leaderboard");
+      expect(link.closest(".llm-tip")).toBeTruthy();
     });
 
     it("is always visible regardless of showHistory/showSettings/showModeToggle", () => {

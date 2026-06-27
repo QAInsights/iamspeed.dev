@@ -31,123 +31,17 @@
   width: 32px;
   height: 32px;
   display: block;
-  transition: filter 0.3s ease;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s ease;
 }
-
-/* === Thunderstorm lightning hover === */
-
-/* Theme colors */
-:root {
-  --zap-aura: rgba(250, 204, 21, 0.5);
-}
-[data-theme="dark"] {
-  --zap-aura: rgba(165, 180, 252, 0.5);
-}
-
-/* The logo shakes violently and glows like it's being struck */
 .llm-brand-logo:hover img {
-  animation: zap-strike 0.65s ease-in-out;
+  transform: scale(1.1) rotate(6deg);
+  filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.45));
+}
+[data-theme="dark"] .llm-brand-logo:hover img {
+  filter: drop-shadow(0 0 6px rgba(165, 180, 252, 0.45));
 }
 
-/* Radial flash — the bright burst of light around the strike point */
-.llm-brand-logo::before {
-  content: "";
-  position: absolute;
-  inset: -14px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.3) 30%, transparent 68%);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 1;
-}
-.llm-brand-logo:hover::before {
-  animation: zap-double-flash 0.65s ease-out;
-}
-
-/* Jagged lightning bolt crack overlay */
-.llm-brand-logo::after {
-  content: "";
-  position: absolute;
-  top: -18px;
-  bottom: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 18px;
-  background: var(--zap-bolt-color, rgba(255,255,255,0.95));
-  clip-path: polygon(
-    46% 0%, 32% 30%, 50% 27%,
-    22% 60%, 48% 54%,
-    14% 100%, 58% 58%, 36% 63%, 72% 20%
-  );
-  opacity: 0;
-  pointer-events: none;
-  z-index: 2;
-}
-[data-theme="dark"] .llm-brand-logo::after {
-  --zap-bolt-color: rgba(224, 231, 255, 0.97);
-}
-.llm-brand-logo:hover::after {
-  animation: zap-bolt-flash 0.65s ease-out;
-}
-
-/* Thunder-shake + pulsing electric aura */
-@keyframes zap-strike {
-  0%, 100% {
-    transform: translate(0,0) scale(1);
-    filter: drop-shadow(0 0 0 transparent);
-  }
-  8% {
-    transform: translate(-2px,-1px) scale(1.12);
-    filter:
-      drop-shadow(0 0 8px var(--zap-aura))
-      drop-shadow(0 0 18px var(--zap-aura));
-  }
-  18% {
-    transform: translate(2px,0) scale(1.12);
-    filter:
-      drop-shadow(0 0 4px var(--zap-aura))
-      drop-shadow(0 0 10px var(--zap-aura));
-  }
-  34% {
-    transform: translate(-1px,1px) scale(1.08);
-    filter:
-      drop-shadow(0 0 10px var(--zap-aura))
-      drop-shadow(0 0 22px var(--zap-aura));
-  }
-  50% {
-    transform: translate(1px,-1px) scale(1.05);
-    filter:
-      drop-shadow(0 0 3px var(--zap-aura))
-      drop-shadow(0 0 8px var(--zap-aura));
-  }
-  66% {
-    transform: translate(-1px,0) scale(1.02);
-    filter: drop-shadow(0 0 5px var(--zap-aura));
-  }
-  82% {
-    transform: translate(0,0) scale(1);
-    filter: drop-shadow(0 0 2px var(--zap-aura));
-  }
-}
-
-/* Double flash — real lightning has a bright initial stroke then a dimmer return stroke */
-@keyframes zap-double-flash {
-  0%    { opacity: 0;   transform: scale(0.2); }
-  10%   { opacity: 1;   transform: scale(1.3); }
-  24%   { opacity: 0.05; transform: scale(1.1); }
-  38%   { opacity: 0.8; transform: scale(1.25); }
-  100%  { opacity: 0;   transform: scale(1.7); }
-}
-
-/* Bolt crack: bright flash then afterglow */
-@keyframes zap-bolt-flash {
-  0%   { opacity: 0; }
-  8%   { opacity: 1; }
-  26%  { opacity: 0; }
-  36%  { opacity: 0.65; }
-  60%  { opacity: 0; }
-  100% { opacity: 0; }
-}
+/* Comic-style "ka-chow" hover overlay next to the title */
 .llm-brand-text {
   display: flex;
   flex-direction: column;
@@ -159,8 +53,45 @@
   font-weight: 300;
   letter-spacing: -0.03em;
   color: var(--text);
+  position: relative;
+  display: inline-block;
+}
+.llm-brand-name::after {
+  content: "ka-chow";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-family: "Impact", "Comic Sans MS", "Bangers", var(--body);
+  font-weight: 900;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  font-style: italic;
+  color: #fbbf24; /* amber-400 */
+  text-shadow:
+    1px 1px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    2px 2px 0 rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transform: scale(0.6) rotate(-12deg);
+  transform-origin: left center;
+  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+  z-index: 10;
+  white-space: nowrap;
+}
+.llm-brand-logo:hover + .llm-brand-text .llm-brand-name,
+.llm-brand-text:hover .llm-brand-name {
+  color: transparent;
+}
+.llm-brand-logo:hover + .llm-brand-text .llm-brand-name::after,
+.llm-brand-text:hover .llm-brand-name::after {
+  opacity: 1;
+  transform: scale(1) rotate(-4deg);
 }
 .llm-brand-tagline {
+  display: none;
   font-family: var(--mono);
   font-size: 0.6875rem;
   font-weight: 400;
@@ -364,6 +295,26 @@
   color: var(--text-muted);
   opacity: 0.85;
   text-align: center;
+}
+.llm-footer-disclaimer summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-block;
+  text-decoration: underline;
+  transition: color 0.2s ease-in-out;
+  outline: none;
+}
+.llm-footer-disclaimer summary:hover {
+  color: var(--accent);
+}
+.llm-footer-disclaimer summary::-webkit-details-marker {
+  display: none;
+}
+.llm-footer-disclaimer p {
+  margin-top: 0.5rem;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Share bar */

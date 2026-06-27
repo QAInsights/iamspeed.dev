@@ -363,7 +363,7 @@ export function RacePanel({ soundEnabled }: RacePanelProps) {
           <div class="race-baseurl-overlay" onClick={(e) => { if (e.target === e.currentTarget) setBaseUrlLane(null); }}>
             <div class="race-baseurl-dialog" style={`--lane-color: ${color.hex};`}>
               <div class="race-baseurl-header">
-                <h3 class="race-baseurl-title">{color.label} — Base URL</h3>
+                <h3 class="race-baseurl-title">{color.label} - Base URL</h3>
                 <button class="race-baseurl-close" onClick={() => setBaseUrlLane(null)} aria-label="Close" type="button">&#x2715;</button>
               </div>
               <label class="race-baseurl-label" for={`baseurl-${baseUrlLane}`}>

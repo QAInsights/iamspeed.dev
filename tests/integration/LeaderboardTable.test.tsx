@@ -78,7 +78,7 @@ describe("LeaderboardTable", () => {
     mockFetch([makeEntry()]);
     const { getByText } = render(<LeaderboardTable />);
     await waitFor(() => expect(getByText("Leaderboard")).toBeTruthy());
-    expect(getByText("Top speeds — ranked by tokens per second.")).toBeTruthy();
+    expect(getByText("Top speeds - ranked by tokens per second.")).toBeTruthy();
   });
 
   it("shows TTFT subtitle when sorted by TTFT", async () => {
@@ -87,7 +87,7 @@ describe("LeaderboardTable", () => {
     await waitFor(() => expect(container.querySelector("table")).toBeTruthy());
 
     fireEvent.click(container.querySelectorAll(".llm-lb-sort-btn")[1]!);
-    expect(getByText("Fastest starts — ranked by time to first token.")).toBeTruthy();
+    expect(getByText("Fastest starts - ranked by time to first token.")).toBeTruthy();
   });
 
   it("renders table rows from fetched entries", async () => {

@@ -29,14 +29,14 @@ function buildRaceShareText(
       const medal = MEDALS[i] ?? `${i + 1}.`;
       const tps = r.tps !== null ? `${r.tps} tok/s` : "--";
       const name = providerNames[r.laneId] ?? r.providerId;
-      return `${medal} ${color.label} (${name} ${r.modelId}) — ${tps}`;
+      return `${medal} ${color.label} (${name} ${r.modelId}): ${tps}`;
     });
   if (lines.length === 0) return `🏁 Race results on iamspeed.dev\n\n${SITE_URL}`;
   const extras: string[] = [];
   if (fastestStart) {
     const color = LANE_COLORS[laneIndexById[fastestStart.laneId] ?? 0] ?? LANE_COLORS[0];
     const name = providerNames[fastestStart.laneId] ?? fastestStart.providerId;
-    extras.push(`⚡ Fastest Start: ${color.label} (${name}) — ${Math.round(fastestStart.ttft!)}ms TTFT`);
+    extras.push(`⚡ Fastest Start: ${color.label} (${name}): ${Math.round(fastestStart.ttft!)}ms TTFT`);
   }
   return `🏁 Piston Cup results on iamspeed.dev\n\n${lines.join("\n")}${extras.length ? "\n" + extras.join("\n") : ""}\n\n${SITE_URL}`;
 }
