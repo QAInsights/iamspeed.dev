@@ -1,6 +1,8 @@
 import type { APIRoute } from "astro";
 import { insertEntry, type SubmitPayload } from "../../../lib/server/leaderboardRepository";
 import { PROVIDERS } from "../../../lib/config";
+import { getSpeedGrade } from "../../../lib/grade";
+import { updateStats } from "../../../lib/server/statsRepository";
 
 export const prerender = false;
 
@@ -58,9 +60,14 @@ export const POST: APIRoute = async ({ request }) => {
       inputTokens: body.inputTokens ?? null,
       outputTokens: body.outputTokens ?? null,
       promptLength: body.promptLength ?? 0,
+      grade: getSpeedGrade(body.tps).label,
     };
 
     const row = await insertEntry(payload);
+
+    // Update aggregate stats — fire-and-forget so a stats failure never blocks submission
+    updateStats(payload.tps, payload.provider, payload.model, payload.region)
+      .catch((err) => console.error("Stats update failed (non-blocking):", err));
 
     return new Response(JSON.stringify({ success: true, id: row.id }), {
       status: 201,

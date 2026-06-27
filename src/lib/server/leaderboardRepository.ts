@@ -22,6 +22,7 @@ export interface LeaderboardRow {
   inputTokens: number | null;
   outputTokens: number | null;
   promptLength: number;
+  grade: string;
   createdAt: string; // ISO timestamp
 }
 
@@ -37,6 +38,7 @@ export interface SubmitPayload {
   inputTokens: number | null;
   outputTokens: number | null;
   promptLength: number;
+  grade: string;
 }
 
 /**
@@ -57,6 +59,7 @@ export async function insertEntry(payload: SubmitPayload): Promise<LeaderboardRo
     inputTokens: payload.inputTokens,
     outputTokens: payload.outputTokens,
     promptLength: payload.promptLength,
+    grade: payload.grade,
     createdAt: new Date().toISOString(),
   };
 
@@ -93,6 +96,29 @@ export async function getTopEntries(limit = 50): Promise<LeaderboardRow[]> {
         ":pk": "SIMPLE",
       },
       ScanIndexForward: false, // descending = highest TPS first
+      Limit: limit,
+    })
+  );
+
+  if (!result.Items || result.Items.length === 0) return [];
+
+  return result.Items.map(stripIndexKeys) as LeaderboardRow[];
+}
+
+/**
+ * Fetch top-N entries for a specific provider, sorted by TPS descending.
+ * Uses the by-provider GSI (gsi2pk=<provider>, gsi2sk=tps).
+ */
+export async function getByProvider(provider: string, limit = 50): Promise<LeaderboardRow[]> {
+  const result = await docClient.send(
+    new QueryCommand({
+      TableName: TABLES.leaderboard,
+      IndexName: "by-provider",
+      KeyConditionExpression: "gsi2pk = :pk",
+      ExpressionAttributeValues: {
+        ":pk": provider,
+      },
+      ScanIndexForward: false,
       Limit: limit,
     })
   );

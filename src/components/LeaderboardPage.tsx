@@ -2,6 +2,8 @@
 import { useState, useCallback } from "preact/hooks";
 import { TopBar } from "./TopBar";
 import { LeaderboardTable } from "./LeaderboardTable";
+import { StatsBar } from "./StatsBar";
+import { Footer } from "./Footer";
 import { loadMode, type AppMode } from "../lib/race/storage";
 
 /**
@@ -18,6 +20,7 @@ const style = `
     flex-direction: column;
     align-items: center;
     position: relative;
+    gap: 1rem;
   }
 `;
 
@@ -74,7 +77,9 @@ export function LeaderboardPage() {
           showModeToggle={false}
         />
 
+        <StatsBar />
         <LeaderboardTable />
+        <Footer />
       </div>
     </>
   );

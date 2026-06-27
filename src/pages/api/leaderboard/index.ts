@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { getTopEntries } from "../../../lib/server/leaderboardRepository";
+import { getTopEntries, getByProvider } from "../../../lib/server/leaderboardRepository";
 
 export const prerender = false;
 
@@ -7,8 +7,11 @@ export const GET: APIRoute = async ({ url }) => {
   try {
     const limitParam = url.searchParams.get("limit");
     const limit = limitParam ? Math.min(parseInt(limitParam, 10) || 50, 100) : 50;
+    const provider = url.searchParams.get("provider");
 
-    const entries = await getTopEntries(limit);
+    const entries = provider
+      ? await getByProvider(provider, limit)
+      : await getTopEntries(limit);
 
     // Add rank based on position (already sorted by TPS desc)
     const ranked = entries.map((entry, i) => ({

@@ -10,6 +10,10 @@ import { useState, useCallback } from "preact/hooks";
 interface ShareButtonsProps {
   shareText: string;
   ariaLabel?: string;
+  tps?: number | null;
+  ttft?: number | null;
+  provider?: string;
+  model?: string;
 }
 
 const SITE_URL = "https://iamspeed.dev";
@@ -51,11 +55,20 @@ const CheckIcon = () => (
   </svg>
 );
 
+const ImageIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+    <circle cx="8.5" cy="8.5" r="1.5" />
+    <polyline points="21 15 16 10 5 21" />
+  </svg>
+);
+
 export { SITE_URL };
 
-export function ShareButtons({ shareText, ariaLabel = "Share results" }: ShareButtonsProps) {
+export function ShareButtons({ shareText, ariaLabel = "Share results", tps, ttft, provider, model }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
   const [linkedinCopied, setLinkedinCopied] = useState(false);
+  const [sharingCard, setSharingCard] = useState(false);
 
   const encodedText = encodeURIComponent(shareText);
   const encodedUrl = encodeURIComponent(SITE_URL);
@@ -82,6 +95,47 @@ export function ShareButtons({ shareText, ariaLabel = "Share results" }: ShareBu
     openPopup(url);
   }, [shareText, openPopup]);
 
+  const handleShareCard = useCallback(async () => {
+    if (tps === undefined || tps === null || !ttft || !provider || !model) return;
+    setSharingCard(true);
+    try {
+      const { generateShareCard } = await import("../lib/shareCard");
+      const { getDeviceHash, generateHandle } = await import("../lib/fingerprint");
+      const hash = await getDeviceHash().catch(() => "anon");
+      const handle = generateHandle(hash);
+
+      const blob = await generateShareCard({
+        tps,
+        ttft,
+        provider,
+        model,
+        handle,
+      });
+
+      const file = new File([blob], `${provider}_${model}_benchmark.png`, { type: "image/png" });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: "LLM Speed Benchmark",
+          text: shareText,
+        });
+      } else {
+        // Fallback to direct download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `iamspeed_${provider.toLowerCase()}_${model.replace(/\//g, "_")}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error("Failed to generate or share card:", err);
+    } finally {
+      setSharingCard(false);
+    }
+  }, [tps, ttft, provider, model, shareText]);
+
   const shareLinks = [
     { label: "Share on X", Icon: XIcon, url: `https://x.com/intent/tweet?text=${encodedText}` },
     {
@@ -104,6 +158,8 @@ export function ShareButtons({ shareText, ariaLabel = "Share results" }: ShareBu
     }
   }, [shareText]);
 
+  const showShareCardButton = tps !== undefined && tps !== null && ttft !== null && provider !== undefined && model !== undefined;
+
   return (
     <div class="llm-share-bar" role="group" aria-label={ariaLabel}>
       {shareLinks.map(({ label, Icon, url, tooltip }) => (
@@ -125,6 +181,17 @@ export function ShareButtons({ shareText, ariaLabel = "Share results" }: ShareBu
       >
         {copied ? <CheckIcon /> : <CopyIcon />}
       </button>
+      {showShareCardButton && (
+        <button
+          class={`llm-share-btn${sharingCard ? " loading" : ""}`}
+          onClick={handleShareCard}
+          disabled={sharingCard}
+          aria-label={sharingCard ? "Generating image card..." : "Download image card"}
+          title={sharingCard ? "Generating image card..." : "Download image card"}
+        >
+          <ImageIcon />
+        </button>
+      )}
     </div>
   );
 }

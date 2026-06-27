@@ -4,6 +4,7 @@ import { LANE_COLORS } from "../../lib/race/types";
 import { rankResults } from "../../lib/race/ranking";
 import { ShareButtons, SITE_URL } from "../ShareButtons";
 import { Tooltip } from "../Tooltip";
+import { getSpeedGrade } from "../../lib/grade";
 
 interface RacePodiumProps {
   results: RaceResult[];
@@ -97,7 +98,7 @@ export function RacePodium({ results, providerNames, laneIndexById }: RacePodium
                 {providerNames[r.laneId] ?? r.providerId} · {r.modelId}
               </span>
               <span class="race-podium-tps">
-                {r.tps !== null ? `${r.tps} tok/s` : "--"}
+                {r.tps !== null ? `${getSpeedGrade(r.tps).emoji} ${r.tps} tok/s` : "--"}
               </span>
               <span class="race-podium-ttft">
                 {r.ttft !== null ? `${Math.round(r.ttft)}ms TTFT` : "--"}

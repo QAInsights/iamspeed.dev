@@ -16,5 +16,5 @@ function buildShareText(provider: string, model: string, tps: number | null, ttf
 
 export function ShareBar({ provider, model, tps, ttft }: ShareBarProps) {
   const shareText = buildShareText(provider, model, tps, ttft);
-  return <ShareButtons shareText={shareText} />;
+  return <ShareButtons shareText={shareText} tps={tps} ttft={ttft} provider={provider} model={model} />;
 }

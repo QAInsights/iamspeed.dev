@@ -2,6 +2,8 @@
 import { useState, useEffect, useCallback, useRef } from "preact/hooks";
 import { createPortal } from "preact/compat";
 import { Tooltip } from "./Tooltip";
+import { getSpeedGrade } from "../lib/grade";
+import { PROVIDERS } from "../lib/config";
 
 /**
  * Leaderboard table — Simple mode.
@@ -56,6 +58,36 @@ const style = `
   .llm-lb-subtitle {
     font-size: 0.75rem;
     color: var(--text-muted);
+  }
+  .llm-lb-filters-row {
+    display: flex;
+    gap: 0.375rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+  .llm-lb-filter-btn {
+    padding: 0.25rem 0.625rem;
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+  }
+  .llm-lb-filter-btn:hover {
+    color: var(--text);
+    border-color: var(--text-muted);
+  }
+  .llm-lb-filter-btn.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--border-light);
+    font-weight: 600;
   }
   .llm-lb-sort-toggle {
     display: inline-flex;
@@ -134,11 +166,11 @@ const style = `
     width: 18%;
   }
   .llm-lb-table thead th.llm-lb-tps {
-    width: 64px;
+    width: 96px;
     text-align: right;
   }
   .llm-lb-table thead th.llm-lb-ttft {
-    width: 64px;
+    width: 80px;
     text-align: right;
   }
   .llm-lb-table thead th.llm-lb-region {
@@ -350,6 +382,7 @@ export function LeaderboardTable() {
   const [error, setError] = useState<string | null>(null);
   const [hoveredRow, setHoveredRow] = useState<{ entry: LeaderboardEntry; x: number; y: number } | null>(null);
   const [sortBy, setSortBy] = useState<"tps" | "ttft">("tps");
+  const [providerFilter, setProviderFilter] = useState<string | null>(null);
   const [flashKey, setFlashKey] = useState(0);
   const prevSort = useRef(sortBy);
 
@@ -369,7 +402,10 @@ export function LeaderboardTable() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/leaderboard?limit=15");
+      const url = providerFilter 
+        ? `/api/leaderboard?limit=15&provider=${encodeURIComponent(providerFilter)}`
+        : "/api/leaderboard?limit=15";
+      const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       setEntries(data);
@@ -378,11 +414,28 @@ export function LeaderboardTable() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [providerFilter]);
 
+  // Load on mount and filter changes
   useEffect(() => {
     fetchLeaderboard();
   }, [fetchLeaderboard]);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      // Refresh without full loading state to avoid visual flickering
+      fetch("/api/leaderboard?limit=15" + (providerFilter ? `&provider=${encodeURIComponent(providerFilter)}` : ""))
+        .then((res) => {
+          if (res.ok) return res.json();
+        })
+        .then((data) => {
+          if (data) setEntries(data);
+        })
+        .catch(() => {});
+    }, 30000);
+    return () => clearInterval(timer);
+  }, [providerFilter]);
 
   // Re-sort and re-rank entries client-side based on the selected metric
   const rankedEntries: LeaderboardEntry[] = entries
@@ -463,6 +516,28 @@ export function LeaderboardTable() {
               </button>
             </div>
           </div>
+          <div class="llm-lb-filters-row">
+            {[
+              { id: null, label: "All" },
+              { id: "openai", label: "OpenAI" },
+              { id: "anthropic", label: "Anthropic" },
+              { id: "groq", label: "Groq" },
+              { id: "cerebras", label: "Cerebras" },
+              { id: "fireworks", label: "Fireworks" },
+              { id: "google", label: "Google" },
+              { id: "mistral", label: "Mistral" },
+              { id: "openrouter", label: "OpenRouter" },
+              { id: "local", label: "Local" }
+            ].map((p) => (
+              <button
+                key={p.label}
+                class={`llm-lb-filter-btn ${providerFilter === p.id ? "active" : ""}`}
+                onClick={() => setProviderFilter(p.id)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div class="llm-lb-table-wrap">
@@ -520,9 +595,9 @@ export function LeaderboardTable() {
                     >
                       <td class={`llm-lb-rank-cell ${rankClass(entry.rank)}`}>{entry.rank}</td>
                       <td class="llm-lb-handle-cell">{entry.handle}</td>
-                      <td>{entry.provider}</td>
+                      <td>{PROVIDERS[entry.provider]?.displayName || entry.provider}</td>
                       <td class="llm-lb-model-cell">{formatModel(entry.model)}</td>
-                      <td class={`llm-lb-num llm-lb-tps-cell ${sortBy === "tps" ? "llm-lb-sort-col" : ""}`}>{formatTps(entry.tps)}</td>
+                      <td class={`llm-lb-num llm-lb-tps-cell ${sortBy === "tps" ? "llm-lb-sort-col" : ""}`}>{getSpeedGrade(entry.tps).emoji} {formatTps(entry.tps)}</td>
                       <td class={`llm-lb-num ${sortBy === "ttft" ? "llm-lb-sort-col llm-lb-ttft-cell" : ""}`}>{formatMs(entry.ttft)}</td>
                       <td class="llm-lb-region-cell">{entry.region}</td>
                     </tr>

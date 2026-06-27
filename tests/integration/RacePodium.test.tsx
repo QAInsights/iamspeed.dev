@@ -77,7 +77,7 @@ describe("RacePodium", () => {
     const { container } = render(
       <RacePodium results={results} providerNames={{ "lane-1": "OpenAI" }} laneIndexById={{ "lane-1": 0 }} />,
     );
-    expect(container.querySelector(".race-podium-tps")!.textContent).toBe("120 tok/s");
+    expect(container.querySelector(".race-podium-tps")!.textContent).toBe("🚀 120 tok/s");
     expect(container.querySelector(".race-podium-ttft")!.textContent).toBe("450ms TTFT");
   });
 

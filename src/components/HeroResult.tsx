@@ -1,11 +1,13 @@
 /** @jsxImportSource preact */
 import { useEffect, useState } from "preact/hooks";
 import { Tooltip } from "./Tooltip";
+import { getSpeedGrade } from "../lib/grade";
 
 interface HeroResultProps {
   heroText: string;
   isActive: boolean;
   ttft: number | null;
+  tps?: number | null;
   // True when the provider has sent an SSE processing heartbeat (e.g.
   // OpenRouter's ": OPENROUTER PROCESSING"), indicating the request is
   // queued / being processed upstream. Overrides the cycling statuses.
@@ -65,6 +67,27 @@ const style = `
     0% { transform: scale(0.8); opacity: 0.8; }
     100% { transform: scale(2.2); opacity: 0; }
   }
+  .llm-grade-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.375rem 0.875rem;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: 20px;
+    animation: fade-in 0.3s ease-out;
+  }
+  .llm-grade-emoji {
+    font-size: 1.125rem;
+  }
+  .llm-grade-label {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
   .llm-status-text {
     font-family: var(--mono);
     font-size: 0.6875rem;
@@ -107,9 +130,10 @@ function ThinkingStatus({ isActive, ttft, providerQueued }: { isActive: boolean;
   );
 }
 
-export function HeroResult({ heroText, isActive, ttft, providerQueued }: HeroResultProps) {
+export function HeroResult({ heroText, isActive, ttft, tps, providerQueued }: HeroResultProps) {
   const isThinking = isActive && ttft === null;
   const numberClass = `llm-hero-number${isActive ? " active" : ""}${isThinking ? " thinking" : ""}`;
+  const grade = typeof tps === "number" ? getSpeedGrade(tps) : null;
 
   return (
     <>
@@ -128,6 +152,13 @@ export function HeroResult({ heroText, isActive, ttft, providerQueued }: HeroRes
           <Tooltip label="How long before the model starts responding.">
             <div class="llm-ttft-label">First Token</div>
           </Tooltip>
+        </div>
+      )}
+
+      {grade && !isActive && (
+        <div class="llm-grade-badge" style={`color: ${grade.color}`}>
+          <span class="llm-grade-emoji">{grade.emoji}</span>
+          <span class="llm-grade-label">{grade.label}</span>
         </div>
       )}
     </>
