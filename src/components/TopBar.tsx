@@ -14,6 +14,10 @@ interface TopBarProps {
   onToggleMode: () => void;
   /** Hide the history button in modes that don't have it (e.g. race MVP). */
   showHistory?: boolean;
+  /** Hide the settings button (e.g. leaderboard page). */
+  showSettings?: boolean;
+  /** Hide the mode toggle button (e.g. leaderboard page). */
+  showModeToggle?: boolean;
 }
 
 export function TopBar({
@@ -27,13 +31,15 @@ export function TopBar({
   mode,
   onToggleMode,
   showHistory = true,
+  showSettings = true,
+  showModeToggle = true,
 }: TopBarProps) {
   return (
     <div class="llm-topbar">
       <span class="llm-brand">
-        <span class="llm-brand-logo">
+        <a class="llm-brand-logo" href="/" aria-label="Go to home page">
           <img src="/logo.svg" alt="I am speed" />
-        </span>
+        </a>
         <span class="llm-brand-text">
           <h1 class="llm-brand-name">I am speed.</h1>
           <span class="llm-brand-tagline">
@@ -52,6 +58,8 @@ export function TopBar({
         mode={mode}
         onToggleMode={onToggleMode}
         showHistory={showHistory}
+        showSettings={showSettings}
+        showModeToggle={showModeToggle}
       />
     </div>
   );

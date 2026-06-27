@@ -11,6 +11,7 @@ import { ErrorBoundary } from "./ErrorBoundary";
 import { WeatherBackground } from "./WeatherBackground";
 import { RecentRuns } from "./RecentRuns";
 import { ShareBar } from "./ShareBar";
+import { LeaderboardSubmit } from "./LeaderboardSubmit";
 import { loadHistory, saveRun, clearHistory, type RunSummary } from "../lib/history";
 import { loadPrefs, savePrefs } from "../lib/prefs";
 import { CurrentSelection } from "./CurrentSelection";
@@ -367,6 +368,17 @@ function BenchmarkPanelContent() {
                   model={settings.modelId}
                   tps={displayTps}
                   ttft={ttft}
+                />
+              )}
+
+              {/* Submit to leaderboard — only in simple mode after a run */}
+              {mode === "simple" && runState === "done" && metrics && (
+                <LeaderboardSubmit
+                  provider={settings.providerId}
+                  model={settings.modelId}
+                  tps={displayTps}
+                  ttft={ttft}
+                  ttlt={totalTime}
                 />
               )}
 

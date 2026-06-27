@@ -25,6 +25,7 @@
   position: relative;
   display: inline-block;
   cursor: pointer;
+  text-decoration: none;
 }
 .llm-brand-logo img {
   width: 32px;

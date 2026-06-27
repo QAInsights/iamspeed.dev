@@ -15,6 +15,9 @@ dist/
 # Astro cache
 .astro/
 
+# Vercel build output
+.vercel/
+
 # VS Code
 .vscode/
 !.vscode/extensions.json

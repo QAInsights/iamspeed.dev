@@ -1,0 +1,63 @@
+---
+import { LeaderboardPage } from "../components/LeaderboardPage";
+import "../styles/global.css";
+import "../styles/components/BenchmarkPanel.css";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <script is:inline>
+      (function() {
+        const stored = localStorage.getItem('iamspeed_theme');
+        const theme = stored || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; connect-src 'self' https://api.openai.com https://api.anthropic.com https://api.groq.com https://api.cerebras.ai https://api.fireworks.ai https://api.mistral.ai https://openrouter.ai https://generativelanguage.googleapis.com https://models.dev https://www.google-analytics.com https://analytics.google.com http://localhost:* http://127.0.0.1:* https://*.ngrok-free.app https://*.ngrok.io https://*.trycloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://www.google-analytics.com https://analytics.google.com; frame-src 'none'; object-src 'none';" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GV6SZ030N3" is:inline></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-GV6SZ030N3');
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leaderboard — I am speed.</title>
+    <meta name="description" content="Community leaderboard for LLM API speed benchmarks. See the fastest providers and models ranked by tokens per second." />
+
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#0046cc" />
+    <link rel="canonical" href="https://iamspeed.dev/leaderboard" />
+    <meta name="robots" content="index, follow" />
+
+    <link rel="apple-touch-icon" href="/logo.svg" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="I am speed." />
+
+    <meta property="og:title" content="Leaderboard — I am speed." />
+    <meta property="og:description" content="Community leaderboard for LLM API speed benchmarks. See the fastest providers and models ranked by tokens per second." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://iamspeed.dev/leaderboard" />
+    <meta property="og:image" content="https://iamspeed.dev/iamspeed-og.png" />
+    <meta property="og:site_name" content="I am speed." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Leaderboard — I am speed." />
+    <meta name="twitter:description" content="Community leaderboard for LLM API speed benchmarks. See the fastest providers and models ranked by tokens per second." />
+    <meta name="twitter:image" content="https://iamspeed.dev/iamspeed-og.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <LeaderboardPage client:load />
+  </body>
+</html>

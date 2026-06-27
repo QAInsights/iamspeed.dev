@@ -79,6 +79,40 @@ describe("TopBarActions", () => {
     });
   });
 
+  describe("settings button conditional", () => {
+    it("shows settings button when showSettings is true", () => {
+      const { container } = render(<TopBarActions {...defaultProps} showSettings={true} />);
+      expect(container.querySelector(".llm-gear")).toBeTruthy();
+    });
+
+    it("hides settings button when showSettings is false", () => {
+      const { container } = render(<TopBarActions {...defaultProps} showSettings={false} />);
+      expect(container.querySelector(".llm-gear")).toBeNull();
+    });
+
+    it("defaults to showing settings button when showSettings not provided", () => {
+      const { container } = render(<TopBarActions {...defaultProps} />);
+      expect(container.querySelector(".llm-gear")).toBeTruthy();
+    });
+  });
+
+  describe("mode toggle button conditional", () => {
+    it("shows mode toggle when showModeToggle is true", () => {
+      const { container } = render(<TopBarActions {...defaultProps} showModeToggle={true} />);
+      expect(container.querySelector(".llm-mode-toggle")).toBeTruthy();
+    });
+
+    it("hides mode toggle when showModeToggle is false", () => {
+      const { container } = render(<TopBarActions {...defaultProps} showModeToggle={false} />);
+      expect(container.querySelector(".llm-mode-toggle")).toBeNull();
+    });
+
+    it("defaults to showing mode toggle when showModeToggle not provided", () => {
+      const { container } = render(<TopBarActions {...defaultProps} />);
+      expect(container.querySelector(".llm-mode-toggle")).toBeTruthy();
+    });
+  });
+
   describe("other buttons", () => {
     it("renders sound, theme, and settings buttons", () => {
       const { container } = render(<TopBarActions {...defaultProps} />);
