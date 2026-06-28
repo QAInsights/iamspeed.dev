@@ -65,6 +65,13 @@ export const PROVIDERS: Record<string, ProviderMetadata> = {
     category: "frontier",
     description: "Gemini models via Google's OpenAI-compatible endpoint",
   },
+  xai: {
+    name: "xai",
+    displayName: "x.ai",
+    category: "frontier",
+    description: "Grok models via x.ai's OpenAI-compatible API",
+    modelsEndpoint: "https://api.x.ai/v1",
+  },
   local: {
     name: LOCAL_PROVIDER_ID,
     displayName: "Local",

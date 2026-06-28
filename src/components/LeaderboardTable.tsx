@@ -527,6 +527,7 @@ export function LeaderboardTable() {
               { id: "google", label: "Google" },
               { id: "mistral", label: "Mistral" },
               { id: "openrouter", label: "OpenRouter" },
+              { id: "xai", label: "x.ai" },
               { id: "local", label: "Local" }
             ].map((p) => (
               <button

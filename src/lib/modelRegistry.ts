@@ -7,7 +7,7 @@ export interface ModelEntry {
   contextWindow: number;
 }
 
-const CACHE_KEY = "iamspeed_models_cache_v2"; // bumped for api.json + groq support
+const CACHE_KEY = "iamspeed_models_cache_v3"; // bumped for api.json + xai support
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const MODELS_URL = "https://models.dev/api.json";
 
@@ -36,6 +36,11 @@ const FALLBACK_MODELS: Record<string, ModelEntry[]> = {
     { id: "anthropic/claude-3.5-sonnet", label: "Claude 3.5 Sonnet (via OpenRouter)", contextWindow: 200000 },
     { id: "google/gemini-flash-1.5", label: "Gemini Flash 1.5 (via OpenRouter)", contextWindow: 1000000 },
     { id: "meta-llama/llama-3.3-70b-instruct", label: "Llama 3.3 70B (via OpenRouter)", contextWindow: 128000 },
+  ],
+  xai: [
+    { id: "grok-4.3", label: "Grok 4.3", contextWindow: 1000000 },
+    { id: "grok-build-0.1", label: "Grok Build 0.1", contextWindow: 256000 },
+    { id: "grok-4.20-0309-reasoning", label: "Grok 4.20 (Reasoning)", contextWindow: 1000000 },
   ],
 };
 
