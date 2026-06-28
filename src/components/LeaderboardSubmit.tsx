@@ -1,6 +1,7 @@
 /** @jsxImportSource preact */
-import { useState, useCallback, useEffect } from "preact/hooks";
+import { useState, useCallback, useEffect, useRef } from "preact/hooks";
 import { getDeviceHash, generateHandle, getRegion } from "../lib/fingerprint";
+import { TurnstileWidget } from "./TurnstileWidget";
 
 /**
  * Inline "Submit to Leaderboard" flow shown in Simple mode after a run
@@ -20,6 +21,8 @@ interface LeaderboardSubmitProps {
   tps: number | null;
   ttft: number | null;
   ttlt: number | null;
+  /** Public Turnstile site key — omit to disable widget (e.g. local dev). */
+  siteKey?: string;
   /** Override the default fetch-based submit (used for testing). */
   onSubmit?: (handle: string, deviceHash: string) => Promise<void>;
 }
@@ -155,12 +158,14 @@ const TrophyIcon = () => (
   </svg>
 );
 
-export function LeaderboardSubmit({ provider, model, tps, ttft, ttlt, onSubmit }: LeaderboardSubmitProps) {
+export function LeaderboardSubmit({ provider, model, tps, ttft, ttlt, siteKey, onSubmit }: LeaderboardSubmitProps) {
   const [expanded, setExpanded] = useState(false);
   const [handle, setHandle] = useState<string>("");
   const [deviceHash, setDeviceHash] = useState<string>("");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const widgetRef = useRef<{ reset: () => void }>({ reset: () => {} });
 
   // Generate handle on mount (deterministic from device fingerprint)
   useEffect(() => {
@@ -179,6 +184,7 @@ export function LeaderboardSubmit({ provider, model, tps, ttft, ttlt, onSubmit }
       const region = await getRegion().catch(() => "Other");
 
       if (onSubmit) {
+        // Test / override path — skip Turnstile
         await onSubmit(handle, deviceHash);
       } else {
         const res = await fetch("/api/leaderboard/submit", {
@@ -193,19 +199,21 @@ export function LeaderboardSubmit({ provider, model, tps, ttft, ttlt, onSubmit }
             tps,
             ttft,
             ttlt,
+            cfTurnstileToken: turnstileToken,
           }),
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Submission failed");
         }
+        widgetRef.current.reset();
       }
       setStatus("success");
     } catch (err) {
       setStatus("error");
       setErrorMsg(err instanceof Error ? err.message : "Submission failed. Try again.");
     }
-  }, [handle, deviceHash, provider, model, tps, ttft, ttlt, onSubmit]);
+  }, [handle, deviceHash, provider, model, tps, ttft, ttlt, turnstileToken, onSubmit]);
 
   if (status === "success") {
     return (
@@ -241,7 +249,18 @@ export function LeaderboardSubmit({ provider, model, tps, ttft, ttlt, onSubmit }
         <div class="llm-lb-handle-display">
           <span class="llm-lb-handle-label">Your handle</span>
           <span class="llm-lb-handle-value">{handle || "…"}</span>
-          <button class="llm-lb-send" onClick={handleSubmit} disabled={!handle || status === "submitting"}>
+          {siteKey && !onSubmit && (
+            <TurnstileWidget
+              siteKey={siteKey}
+              onToken={setTurnstileToken}
+              widgetRef={widgetRef.current}
+            />
+          )}
+          <button
+            class="llm-lb-send"
+            onClick={handleSubmit}
+            disabled={!handle || status === "submitting" || (!onSubmit && !!siteKey && !turnstileToken)}
+          >
             {status === "submitting" ? "Submitting…" : "Submit"}
           </button>
         </div>

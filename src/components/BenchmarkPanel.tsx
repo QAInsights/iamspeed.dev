@@ -33,7 +33,7 @@ type RunState = "idle" | "running" | "done" | "error";
 
 
 
-function BenchmarkPanelContent() {
+function BenchmarkPanelContent({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
   const prefs = loadPrefs();
   const [settings, setSettings] = useState<SettingsState>({
     providerId: prefs.providerId || "openai",
@@ -375,6 +375,7 @@ function BenchmarkPanelContent() {
                   tps={displayTps}
                   ttft={ttft}
                   ttlt={totalTime}
+                  siteKey={turnstileSiteKey}
                 />
               )}
 
@@ -443,10 +444,10 @@ function BenchmarkPanelContent() {
   );
 }
 
-export function BenchmarkPanel() {
+export function BenchmarkPanel({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
   return (
     <ErrorBoundary>
-      <BenchmarkPanelContent />
+      <BenchmarkPanelContent turnstileSiteKey={turnstileSiteKey} />
     </ErrorBoundary>
   );
 }

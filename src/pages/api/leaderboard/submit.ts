@@ -3,6 +3,8 @@ import { insertEntry, type SubmitPayload } from "../../../lib/server/leaderboard
 import { PROVIDERS } from "../../../lib/config";
 import { getSpeedGrade } from "../../../lib/grade";
 import { updateStats } from "../../../lib/server/statsRepository";
+import { verifyTurnstileToken } from "../../../lib/server/turnstile";
+import { checkRateLimit } from "../../../lib/server/rateLimit";
 
 export const prerender = false;
 
@@ -17,6 +19,18 @@ const MAX_MODEL_LENGTH = 200;
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
+
+    // Turnstile bot protection — must pass before any other processing
+    const cfToken = typeof body.cfTurnstileToken === "string" ? body.cfTurnstileToken : "";
+    if (!cfToken) return jsonError(400, "Missing challenge token");
+    const tokenValid = await verifyTurnstileToken(cfToken);
+    if (!tokenValid) return jsonError(403, "Challenge verification failed");
+
+    // Per-device rate limit (defense-in-depth)
+    const deviceHashForLimit = typeof body.deviceHash === "string" ? body.deviceHash : "";
+    if (deviceHashForLimit && !checkRateLimit(deviceHashForLimit)) {
+      return jsonError(429, "Too many submissions. Please wait before submitting again.");
+    }
 
     // Validate required fields
     const required = ["handle", "deviceHash", "provider", "model", "tps"];
