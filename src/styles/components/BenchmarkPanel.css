@@ -278,7 +278,7 @@
 .llm-footer {
   width: 100%;
   max-width: var(--max-w);
-  padding: 2rem 0 1.5rem;
+  padding: 4.5rem 0 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -287,6 +287,8 @@
   font-family: var(--mono);
   font-size: 0.6875rem;
   color: var(--text-muted);
+  position: relative;
+  z-index: 10;
 }
 .llm-footer a {
   color: var(--text-muted);
@@ -374,4 +376,31 @@
 .llm-ttft-value, .llm-ttft-label, .llm-sec-value, .llm-sec-label, .llm-model-context,
 .llm-error, .llm-share-bar {
   transition: color 0.3s ease-in-out;
+}
+
+/* Futuristic Car Silhouette */
+.llm-car-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 240px;
+  overflow: hidden;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  z-index: 1;
+}
+.llm-car-svg {
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  opacity: 0.65;
+  transition: opacity 0.3s ease;
+}
+@media (max-width: 768px) {
+  .llm-car-container {
+    height: 150px;
+  }
 }

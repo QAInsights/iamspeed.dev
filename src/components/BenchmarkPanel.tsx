@@ -26,6 +26,7 @@ import { playTick } from "../lib/audio";
 import { loadMode, saveMode, type AppMode } from "../lib/race/storage";
 import { RacePanel } from "./race/RacePanel";
 import { Footer } from "./Footer";
+import { CarSilhouette } from "./CarSilhouette";
 import "../styles/components/BenchmarkPanel.css";
 
 type RunState = "idle" | "running" | "done" | "error";
@@ -416,6 +417,9 @@ function BenchmarkPanelContent() {
             )}
           </>
         )}
+
+        {/* Futuristic Car Silhouette */}
+        <CarSilhouette animating={isActive} />
 
         <Footer />
       </main>

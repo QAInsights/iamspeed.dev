@@ -5,6 +5,7 @@ import { LeaderboardTable } from "./LeaderboardTable";
 import { StatsBar } from "./StatsBar";
 import { Footer } from "./Footer";
 import { loadMode, type AppMode } from "../lib/race/storage";
+import { CarSilhouette } from "./CarSilhouette";
 
 /**
  * Standalone leaderboard page. Reuses the exact same TopBar + TopBarActions
@@ -79,6 +80,10 @@ export function LeaderboardPage() {
 
         <StatsBar />
         <LeaderboardTable />
+
+        {/* Futuristic Car Silhouette */}
+        <CarSilhouette idSuffix="-lb" />
+
         <Footer />
       </div>
     </>
