@@ -42,6 +42,12 @@ const FALLBACK_MODELS: Record<string, ModelEntry[]> = {
     { id: "grok-build-0.1", label: "Grok Build 0.1", contextWindow: 256000 },
     { id: "grok-4.20-0309-reasoning", label: "Grok 4.20 (Reasoning)", contextWindow: 1000000 },
   ],
+  zai: [
+    { id: "glm-5.2", label: "GLM-5.2", contextWindow: 1000000 },
+    { id: "glm-5.1", label: "GLM-5.1", contextWindow: 200000 },
+    { id: "glm-4.7-flash", label: "GLM-4.7 Flash", contextWindow: 200000 },
+    { id: "glm-4.6", label: "GLM-4.6", contextWindow: 204800 },
+  ],
 };
 
 interface CacheEntry {

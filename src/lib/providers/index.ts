@@ -7,6 +7,7 @@ import { mistralAdapter } from "./mistral";
 import { openrouterAdapter } from "./openrouter";
 import { googleAdapter } from "./google";
 import { xaiAdapter } from "./xai";
+import { zaiAdapter } from "./zai";
 import type { ProviderAdapter } from "./types";
 
 export const providers: Record<string, ProviderAdapter> = {
@@ -19,6 +20,7 @@ export const providers: Record<string, ProviderAdapter> = {
   openrouter: openrouterAdapter,
   google: googleAdapter,
   xai: xaiAdapter,
+  zai: zaiAdapter,
 };
 
 export type { ProviderAdapter, StreamParams } from "./types";

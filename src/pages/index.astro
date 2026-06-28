@@ -15,7 +15,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
       })();
     </script>
     <!-- Content Security Policy -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://challenges.cloudflare.com; connect-src 'self' https://api.openai.com https://api.anthropic.com https://api.groq.com https://api.cerebras.ai https://api.fireworks.ai https://api.mistral.ai https://openrouter.ai https://api.x.ai https://generativelanguage.googleapis.com https://models.dev https://www.google-analytics.com https://analytics.google.com http://localhost:* http://127.0.0.1:* https://*.ngrok-free.app https://*.ngrok.io https://*.trycloudflare.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://www.google-analytics.com https://analytics.google.com; frame-src https://challenges.cloudflare.com; object-src 'none';" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://challenges.cloudflare.com; connect-src 'self' https://api.openai.com https://api.anthropic.com https://api.groq.com https://api.cerebras.ai https://api.fireworks.ai https://api.mistral.ai https://openrouter.ai https://api.x.ai https://api.z.ai https://generativelanguage.googleapis.com https://models.dev https://www.google-analytics.com https://analytics.google.com http://localhost:* http://127.0.0.1:* https://*.ngrok-free.app https://*.ngrok.io https://*.trycloudflare.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://www.google-analytics.com https://analytics.google.com; frame-src https://challenges.cloudflare.com; object-src 'none';" />
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-GV6SZ030N3" is:inline></script>
     <script is:inline>
@@ -27,8 +27,8 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>I am speed. A fast.com-style benchmarking tool for LLM APIs | OpenAI, Anthropic, Groq, Cerebras, Fireworks AI, Mistral, OpenRouter, Google Gemini, x.ai & local models.</title>
-    <meta name="description" content="A fast.com style benchmarking tool for LLM APIs. Compare OpenAI, Anthropic, Groq, Cerebras, Fireworks AI, Mistral, OpenRouter, Google Gemini, x.ai, and local models. See live streaming output with real-time throughput metrics. Race Mode lets you run multiple providers in parallel and watch them race side-by-side." />
+    <title>I am speed. A fast.com-style benchmarking tool for LLM APIs | OpenAI, Anthropic, Groq, Cerebras, Fireworks AI, Mistral, OpenRouter, Google Gemini, x.ai, z.ai & local models.</title>
+    <meta name="description" content="A fast.com style benchmarking tool for LLM APIs. Compare OpenAI, Anthropic, Groq, Cerebras, Fireworks AI, Mistral, OpenRouter, Google Gemini, x.ai, z.ai, and local models. See live streaming output with real-time throughput metrics. Race Mode lets you run multiple providers in parallel and watch them race side-by-side." />
     
     <!-- Browsers & SEO -->
     <link rel="icon" type="image/png" href="/favicon.png" />
@@ -47,7 +47,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
     
     <!-- Open Graph -->
     <meta property="og:title" content="I am speed. LLM API Benchmark" />
-    <meta property="og:description" content="A fast.com style benchmarking tool for LLM APIs. Compare OpenAI, Anthropic, Groq, Cerebras, Fireworks AI, Mistral, OpenRouter, Google Gemini, x.ai, and local models. See live streaming output with real-time throughput metrics. Race Mode lets you run multiple providers in parallel and watch them race side-by-side." />
+    <meta property="og:description" content="A fast.com style benchmarking tool for LLM APIs. Compare OpenAI, Anthropic, Groq, Cerebras, Fireworks AI, Mistral, OpenRouter, Google Gemini, x.ai, z.ai, and local models. See live streaming output with real-time throughput metrics. Race Mode lets you run multiple providers in parallel and watch them race side-by-side." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://iamspeed.dev/" />
     <meta property="og:image" content="https://iamspeed.dev/iamspeed-og.png" />
@@ -56,10 +56,10 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
     <meta property="og:site_name" content="I am speed." />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="I am speed. LLM API Benchmark" />
-    <meta name="twitter:description" content="A fast.com style benchmarking tool for LLM APIs. Compare OpenAI, Anthropic, Groq, Cerebras, Fireworks AI, Mistral, OpenRouter, Google Gemini, x.ai, and local models. See live streaming output with real-time throughput metrics. Race Mode lets you run multiple providers in parallel and watch them race side-by-side." />
+    <meta name="twitter:description" content="A fast.com style benchmarking tool for LLM APIs. Compare OpenAI, Anthropic, Groq, Cerebras, Fireworks AI, Mistral, OpenRouter, Google Gemini, x.ai, z.ai, and local models. See live streaming output with real-time throughput metrics. Race Mode lets you run multiple providers in parallel and watch them race side-by-side." />
     <meta name="twitter:image" content="https://iamspeed.dev/iamspeed-og.png" />
     <meta name="twitter:image:alt" content="I am speed - fast.com style but for LLMs" />
-
+ 
     <!-- Schema.org JSON-LD Structured Data for AEO -->
     <script type="application/ld+json" is:inline>
       {
@@ -67,7 +67,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
         "@type": "WebApplication",
         "name": "I am speed. A fast.com-style benchmarking tool for LLM APIs",
         "url": "https://iamspeed.dev/",
-        "description": "A fast.com style benchmarking tool for LLM APIs. Compare OpenAI, Anthropic, Groq, Cerebras, Fireworks AI, Mistral, OpenRouter, Google Gemini, x.ai, and local models. See live streaming output with real-time throughput metrics. Race Mode lets you run multiple providers in parallel and watch them race side-by-side.",
+        "description": "A fast.com style benchmarking tool for LLM APIs. Compare OpenAI, Anthropic, Groq, Cerebras, Fireworks AI, Mistral, OpenRouter, Google Gemini, x.ai, z.ai, and local models. See live streaming output with real-time throughput metrics. Race Mode lets you run multiple providers in parallel and watch them race side-by-side.",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "All",
         "browserRequirements": "Requires JavaScript. Requires HTML5.",

@@ -53,6 +53,14 @@ describe("modelRegistry", () => {
     expect(models.some((m) => m.id.includes("/"))).toBe(true);
   });
 
+  it("returns fallback models for zai when fetch fails", async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
+
+    const models = await loadModels("zai");
+    expect(models.length).toBeGreaterThan(0);
+    expect(models.some((m) => m.id.includes("glm"))).toBe(true);
+  });
+
   it("returns empty array for cerebras when fetch fails (no hardcoded fallback)", async () => {
     globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
 

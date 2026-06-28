@@ -72,6 +72,12 @@ export const PROVIDERS: Record<string, ProviderMetadata> = {
     description: "Grok models via x.ai's OpenAI-compatible API",
     modelsEndpoint: "https://api.x.ai/v1",
   },
+  zai: {
+    name: "zai",
+    displayName: "Z.ai",
+    category: "frontier",
+    description: "GLM models via Z.ai's OpenAI-compatible completions API",
+  },
   local: {
     name: LOCAL_PROVIDER_ID,
     displayName: "Local",
