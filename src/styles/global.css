@@ -115,3 +115,71 @@ pre {
 .theme-toggle-icon .moon-icon { display: none; }
 [data-theme="dark"] .theme-toggle-icon .sun-icon { display: none; }
 [data-theme="dark"] .theme-toggle-icon .moon-icon { display: block; }
+
+/* Side racing telemetry decorations (visible only on wide viewports) */
+.llm-telemetry-decor-left, .llm-telemetry-decor-right {
+  display: none;
+}
+
+@media (min-width: 1200px) {
+  body::before, body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 14px;
+    z-index: 99;
+    pointer-events: none;
+    opacity: 0.12;
+    transition: opacity 0.3s ease-in-out;
+  }
+  
+  body::before {
+    left: 2rem;
+    background-image: 
+      linear-gradient(45deg, var(--text) 25%, transparent 25%, transparent 75%, var(--text) 75%, var(--text)),
+      linear-gradient(45deg, var(--text) 25%, transparent 25%, transparent 75%, var(--text) 75%, var(--text));
+    background-size: 8px 8px;
+    background-position: 0 0, 4px 4px;
+    border-right: 2px solid var(--accent);
+  }
+  
+  body::after {
+    right: 2rem;
+    background-image: 
+      linear-gradient(45deg, var(--text) 25%, transparent 25%, transparent 75%, var(--text) 75%, var(--text)),
+      linear-gradient(45deg, var(--text) 25%, transparent 25%, transparent 75%, var(--text) 75%, var(--text));
+    background-size: 8px 8px;
+    background-position: 0 0, 4px 4px;
+    border-left: 2px solid var(--accent);
+  }
+
+  .llm-telemetry-decor-left, .llm-telemetry-decor-right {
+    display: block;
+    position: fixed;
+    top: 50%;
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    color: var(--text-muted);
+    opacity: 0.15;
+    text-transform: uppercase;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 98;
+    user-select: none;
+  }
+  
+  .llm-telemetry-decor-left {
+    left: 4.5rem;
+    writing-mode: vertical-rl;
+    transform: translateY(-50%) rotate(180deg);
+  }
+  
+  .llm-telemetry-decor-right {
+    right: 4.5rem;
+    writing-mode: vertical-rl;
+    transform: translateY(-50%);
+  }
+}

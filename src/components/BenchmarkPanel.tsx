@@ -53,6 +53,12 @@ function BenchmarkPanelContent({ turnstileSiteKey }: { turnstileSiteKey?: string
   const [recentRuns, setRecentRuns] = useState<RunSummary[]>(() => loadHistory());
   const [historyOpen, setHistoryOpen] = useState(false);
   const [mode, setMode] = useState<AppMode>(() => loadMode());
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("iamspeed_sound") !== "false";
+    }
+    return true;
+  });
 
   const handleOpenSettings = useCallback(() => {
     setSettingsOpen(true);
@@ -77,12 +83,6 @@ function BenchmarkPanelContent({ turnstileSiteKey }: { turnstileSiteKey?: string
       return next;
     });
   }, []);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("iamspeed_sound") !== "false";
-    }
-    return true;
-  });
 
   const soundEnabledRef = useRef(soundEnabled);
   useEffect(() => {
@@ -139,6 +139,8 @@ function BenchmarkPanelContent({ turnstileSiteKey }: { turnstileSiteKey?: string
       }
     });
   }, [settings.providerId, settings.baseUrl, settings.apiKey]);
+
+
 
   const displayTps = metrics?.tokensPerSecond ?? null;
   const ttft = metrics?.ttft ?? null;
@@ -419,10 +421,11 @@ function BenchmarkPanelContent({ turnstileSiteKey }: { turnstileSiteKey?: string
           </>
         )}
 
-        {/* Futuristic Car Silhouette */}
-        <CarSilhouette animating={isActive} />
-
-        <Footer />
+        {/* Futuristic Car Silhouette & Footer wrapper to maintain bottom alignment in block flow */}
+        <div class="llm-footer-wrap">
+          <CarSilhouette animating={isActive} />
+          <Footer />
+        </div>
       </main>
 
       {mode === "simple" && (

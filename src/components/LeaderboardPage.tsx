@@ -81,10 +81,11 @@ export function LeaderboardPage() {
         <StatsBar />
         <LeaderboardTable />
 
-        {/* Futuristic Car Silhouette */}
-        <CarSilhouette idSuffix="-lb" />
-
-        <Footer />
+        {/* Futuristic Car Silhouette & Footer wrapper to maintain bottom alignment in block flow */}
+        <div class="llm-footer-wrap">
+          <CarSilhouette idSuffix="-lb" />
+          <Footer />
+        </div>
       </div>
     </>
   );

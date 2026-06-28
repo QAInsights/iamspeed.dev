@@ -1,4 +1,5 @@
 /** @jsxImportSource preact */
+import { useState, useEffect } from "preact/hooks";
 import { Tooltip } from "./Tooltip";
 import type { AppMode } from "../lib/race/storage";
 
@@ -31,17 +32,30 @@ export function TopBarActions({
   showSettings = true,
   showModeToggle = true,
 }: TopBarActionsProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const activeMode = mounted ? mode : "simple";
+  const activeSound = mounted ? soundEnabled : true;
+  const activeShowHistory = mounted ? showHistory : true;
+  const activeShowSettings = mounted ? showSettings : true;
+  const activeShowModeToggle = mounted ? showModeToggle : true;
+  const activeHistoryOpen = mounted ? historyOpen : false;
+  const activeSettingsOpen = mounted ? settingsOpen : false;
+
   return (
     <div class="llm-topbar-actions">
-      {showModeToggle && (
-        <Tooltip label={mode === "race" ? "Simple mode" : "Race mode"}>
+      {activeShowModeToggle && (
+        <Tooltip key="mode-toggle" label={activeMode === "race" ? "Simple mode" : "Race mode"}>
           <button
             class="llm-mode-toggle"
             onClick={onToggleMode}
-            aria-label={mode === "race" ? "Switch to Simple mode" : "Switch to Race mode"}
-            aria-pressed={mode === "race"}
+            aria-label={activeMode === "race" ? "Switch to Simple mode" : "Switch to Race mode"}
+            aria-pressed={activeMode === "race"}
           >
-            {mode === "race" ? (
+            {activeMode === "race" ? (
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M12 21a9 9 0 1 0-9-9" />
                 <path d="M12 12l4-3" />
@@ -65,9 +79,9 @@ export function TopBarActions({
           </button>
         </Tooltip>
       )}
-      <Tooltip label={soundEnabled ? "Mute sound" : "Enable sound"}>
-        <button class="llm-sound-toggle" onClick={onToggleSound} aria-label={soundEnabled ? "Mute Sound" : "Enable Sound"}>
-          {soundEnabled ? (
+      <Tooltip key="sound" label={activeSound ? "Mute sound" : "Enable sound"}>
+        <button class="llm-sound-toggle" onClick={onToggleSound} aria-label={activeSound ? "Mute Sound" : "Enable Sound"}>
+          {activeSound ? (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
               <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
@@ -82,7 +96,7 @@ export function TopBarActions({
           )}
         </button>
       </Tooltip>
-      <Tooltip label="Toggle theme">
+      <Tooltip key="theme" label="Toggle theme">
         <button class="llm-theme-toggle" onClick={onToggleTheme} aria-label="Toggle Theme">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="theme-toggle-icon" aria-hidden="true">
             <path class="sun-icon" d="M12 12m-5 0a5 5 0 1 0 10 0a5 5 0 1 0-10 0 M12 1v2 M12 21v2 M4.22 4.22l1.42 1.42 M18.36 18.36l1.42 1.42 M1 12h2 M21 12h2 M4.22 19.78l1.42-1.42 M18.36 5.64l1.42-1.42" />
@@ -90,7 +104,7 @@ export function TopBarActions({
           </svg>
         </button>
       </Tooltip>
-      <Tooltip label="Leaderboard">
+      <Tooltip key="leaderboard" label="Leaderboard">
         <a class="llm-leaderboard-link" href="/leaderboard" aria-label="Leaderboard">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
@@ -102,9 +116,9 @@ export function TopBarActions({
           </svg>
         </a>
       </Tooltip>
-      {showHistory && (
-        <Tooltip label="History">
-          <button class="llm-history-btn" onClick={onHistory} aria-label="History" aria-expanded={historyOpen}>
+      {activeShowHistory && (
+        <Tooltip key="history" label="History">
+          <button class="llm-history-btn" onClick={onHistory} aria-label="History" aria-expanded={activeHistoryOpen}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="9" />
               <polyline points="12 7 12 12 15 14" />
@@ -112,9 +126,9 @@ export function TopBarActions({
           </button>
         </Tooltip>
       )}
-      {showSettings && (
-        <Tooltip label="Settings">
-          <button class="llm-gear" onClick={onSettings} aria-label="Settings" aria-expanded={settingsOpen}>
+      {activeShowSettings && (
+        <Tooltip key="settings" label="Settings">
+          <button class="llm-gear" onClick={onSettings} aria-label="Settings" aria-expanded={activeSettingsOpen}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="3" />
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
