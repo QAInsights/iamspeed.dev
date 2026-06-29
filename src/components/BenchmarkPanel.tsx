@@ -103,12 +103,23 @@ function BenchmarkPanelContent({ turnstileSiteKey }: { turnstileSiteKey?: string
     localStorage.setItem("iamspeed_theme", nextTheme);
     document.documentElement.setAttribute("data-theme", nextTheme);
   }, [theme]);
+
+  const dismissOpenRouterNote = useCallback(() => {
+    setShowOpenRouterNote(false);
+    localStorage.setItem("iamspeed_openrouter_note_dismissed", "true");
+  }, []);
   const [streamText, setStreamText] = useState("");
   const [metrics, setMetrics] = useState<BenchmarkMetrics | null>(null);
   const [rawResponse, setRawResponse] = useState<object | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showMore, setShowMore] = useState(false);
   const [providerQueued, setProviderQueued] = useState(false);
+  const [showOpenRouterNote, setShowOpenRouterNote] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("iamspeed_openrouter_note_dismissed") !== "true";
+    }
+    return true;
+  });
 
   const abortRef = useRef<AbortController | null>(null);
   const trackerRef = useRef<ReturnType<typeof createMetricsTracker> | null>(null);
@@ -379,6 +390,16 @@ function BenchmarkPanelContent({ turnstileSiteKey }: { turnstileSiteKey?: string
                   ttlt={totalTime}
                   siteKey={turnstileSiteKey}
                 />
+              )}
+
+              {/* OpenRouter free tier note */}
+              {showOpenRouterNote && (
+                <div class="llm-openrouter-note">
+                  <button class="llm-openrouter-note-close" onClick={dismissOpenRouterNote} aria-label="Dismiss note">
+                    ✕
+                  </button>
+                  💡 <strong>New?</strong> <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer">OpenRouter</a> is free to try - no credit card required. Give it a spin!
+                </div>
               )}
 
               {/* Current selection - always visible + clickable (Option B scalable UX) */}
