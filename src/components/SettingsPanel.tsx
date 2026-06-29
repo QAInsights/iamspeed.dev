@@ -31,7 +31,7 @@ const style = `
   .llm-field { display: flex; flex-direction: column; gap: 0.375rem; border: none; padding: 0; margin: 0; }
   .llm-field legend { padding: 0; }
   .llm-field-label { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
-  .llm-select { padding: 0.5rem 0.75rem; font-size: 0.8125rem; border: 1px solid var(--border); border-radius: 0; background: var(--surface); cursor: pointer; }
+  .llm-select { padding: 0.5rem 0.75rem; font-size: 0.8125rem; border: 1px solid var(--border); border-radius: 0; background: var(--surface); cursor: pointer; width: 100%; box-sizing: border-box; }
   .llm-action-btn { font-size: 0.75rem; color: var(--text-muted); padding: 0.25rem 0.5rem; border: 1px solid var(--border-light); background: var(--surface); cursor: pointer; border-radius: 0; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.02em; }
   .llm-action-btn:hover { color: var(--text); border-color: var(--text); }
   .llm-textarea { width: 100%; min-height: 90px; padding: 0.75rem; font-size: 0.8125rem; font-family: var(--body); resize: vertical; border: 1px solid var(--border); border-radius: 0; }
@@ -44,6 +44,12 @@ const style = `
   .llm-disclaimer { font-size: 0.6875rem; color: var(--text-muted); line-height: 1.5; padding-top: 0.75rem; border-top: 1px solid var(--border-light); }
   .llm-warning { font-size: 0.75rem; color: var(--json-bool); line-height: 1.4; margin-top: 0.375rem; }
   .llm-settings code { font-family: var(--mono); font-size: 0.6875rem; background: var(--border-light); padding: 0.125rem 0.25rem; border-radius: 2px; }
+  .llm-openrouter-note { font-family: var(--body); font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: var(--bg); border: 1px solid var(--border-light); border-radius: 6px; line-height: 1.4; position: relative; width: 100%; max-width: 400px; box-sizing: border-box; margin-left: auto; margin-right: auto; }
+  .llm-openrouter-note-close { position: absolute; top: 0.25rem; right: 0.25rem; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); border: none; background: none; padding: 0; border-radius: 4px; font-size: 0.75rem; line-height: 1; transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out; }
+  .llm-openrouter-note-close:hover { color: var(--text); background-color: var(--border-light); }
+  .llm-openrouter-note a { color: var(--accent); text-decoration: none; font-weight: 500; transition: color 0.2s ease-in-out; }
+  .llm-openrouter-note a:hover { text-decoration: underline; color: var(--text); }
+  .llm-openrouter-note strong { color: var(--text); }
 `;
 
 export function SettingsPanel({ open, onClose, settings, onSettingsChange }: SettingsPanelProps) {
@@ -53,6 +59,12 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
   const [modelsLoading, setModelsLoading] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
   const [discoveryError, setDiscoveryError] = useState<string | null>(null);
+  const [showOpenRouterNote, setShowOpenRouterNote] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("iamspeed_openrouter_note_dismissed") !== "true";
+    }
+    return true;
+  });
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -213,6 +225,11 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
     onSettingsChange({ ...settings, apiKey: null });
   };
 
+  const dismissOpenRouterNote = () => {
+    setShowOpenRouterNote(false);
+    localStorage.setItem("iamspeed_openrouter_note_dismissed", "true");
+  };
+
   return (
     <>
       <style>{style}</style>
@@ -289,6 +306,14 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
               onBlur={handleKeyBlur}
               onClear={handleClearKey}
             />
+            {showOpenRouterNote && settings.providerId !== LOCAL_PROVIDER_ID && (
+              <div class="llm-openrouter-note">
+                <button class="llm-openrouter-note-close" onClick={dismissOpenRouterNote} aria-label="Dismiss note">
+                  ✕
+                </button>
+                💡 <strong>New?</strong> <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer">OpenRouter</a> is free to try - no credit card required. Give it a spin!
+              </div>
+            )}
           </div>
 
           <div class="llm-field">
