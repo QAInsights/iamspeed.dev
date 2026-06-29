@@ -19,6 +19,7 @@ const style = `
     background: var(--surface);
     color: var(--text);
     cursor: pointer;
+    box-sizing: border-box;
   }
   .llm-provider-select:focus {
     outline: 1px solid var(--accent);
