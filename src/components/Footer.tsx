@@ -4,7 +4,6 @@
  * Reusable Footer component sharing developer branding, GitHub repository link,
  * and trademark disclaimers across all pages (Home, Leaderboard).
  */
-import { Tooltip } from "./Tooltip";
 
 export function Footer({ mode }: { mode?: string } = {}) {
   return (
