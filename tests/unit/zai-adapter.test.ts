@@ -12,12 +12,6 @@ function createSSEStream(chunks: string[]): ReadableStream<Uint8Array> {
   });
 }
 
-function createErrorStream(status: number, body: object): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
 
 describe("zai-adapter", () => {
   const originalFetch = globalThis.fetch;

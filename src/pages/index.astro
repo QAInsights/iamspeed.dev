@@ -92,6 +92,6 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
   <body>
     <div class="llm-telemetry-decor-left">LLMMARK PERFORMANCE GP // GRID TELEMETRY // SECTOR 24</div>
     <div class="llm-telemetry-decor-right">LIVE THROUGHPUT TIMING // FASTEST TOK/S // ENGINE STATUS: ACTIVE</div>
-    <BenchmarkPanel client:load turnstileSiteKey={turnstileSiteKey} />
+    <BenchmarkPanel client:only="preact" turnstileSiteKey={turnstileSiteKey} />
   </body>
 </html>

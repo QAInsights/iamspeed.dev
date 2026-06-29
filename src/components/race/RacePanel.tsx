@@ -64,9 +64,10 @@ function makeIdleLaneState(laneId: string): LaneState {
 
 interface RacePanelProps {
   soundEnabled: boolean;
+  showFooter?: boolean;
 }
 
-export function RacePanel({ soundEnabled }: RacePanelProps) {
+export function RacePanel({ soundEnabled, showFooter = true }: RacePanelProps) {
   const [prompt, setPrompt] = useState<string>(() => DEFAULT_PROMPT);
   const [raceState, setRaceState] = useState<RaceState>("idle");
 
@@ -234,7 +235,7 @@ export function RacePanel({ soundEnabled }: RacePanelProps) {
   }, []);
 
   return (
-    <main class="race-app">
+    <div class="race-app">
       <div class="race-setup-wrap">
         <RaceSetupBar
           prompt={prompt}
@@ -349,9 +350,11 @@ export function RacePanel({ soundEnabled }: RacePanelProps) {
         <RaceTrack lanes={lanes} providerNames={providerNames} />
       )}
 
-      <footer class="race-footer">
-        Doc Hudson says: it's not about speed, it's about consistency.
-      </footer>
+      {showFooter && (
+        <footer class="race-footer">
+          Doc Hudson says: it's not about speed, it's about consistency.
+        </footer>
+      )}
 
       {/* Base URL dialog for local provider lanes. */}
       {baseUrlLane && (() => {
@@ -386,6 +389,6 @@ export function RacePanel({ soundEnabled }: RacePanelProps) {
           </div>
         );
       })()}
-    </main>
+    </div>
   );
 }

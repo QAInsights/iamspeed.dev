@@ -324,7 +324,7 @@ function BenchmarkPanelContent({ turnstileSiteKey }: { turnstileSiteKey?: string
   return (
     <>
       <WeatherBackground theme={theme} />
-      <main class="llm-app">
+      <main class={`llm-app mode-${mode}`}>
         <TopBar
           onToggleTheme={toggleTheme}
           onHistory={handleOpenHistory}
@@ -339,7 +339,7 @@ function BenchmarkPanelContent({ turnstileSiteKey }: { turnstileSiteKey?: string
         />
 
         {mode === "race" ? (
-          <RacePanel soundEnabled={soundEnabled} />
+          <RacePanel soundEnabled={soundEnabled} showFooter={false} />
         ) : (
           <>
             {/* Hero */}
@@ -424,7 +424,7 @@ function BenchmarkPanelContent({ turnstileSiteKey }: { turnstileSiteKey?: string
         {/* Futuristic Car Silhouette & Footer wrapper to maintain bottom alignment in block flow */}
         <div class="llm-footer-wrap">
           <CarSilhouette animating={isActive} />
-          <Footer />
+          <Footer mode={mode} />
         </div>
       </main>
 
