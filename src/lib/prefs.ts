@@ -5,6 +5,7 @@ export interface Prefs {
   modelId?: string;
   prompt?: string;
   baseUrl?: string;
+  apiKey?: string;
 }
 
 export function loadPrefs(): Prefs {
