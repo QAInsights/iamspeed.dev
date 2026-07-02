@@ -1,8 +1,10 @@
 /** @jsxImportSource preact */
 
+import { type ModelEntry } from "../lib/modelRegistry";
+
 interface CurrentSelectionProps {
   providerName: string;
-  modelId?: string;
+  model?: ModelEntry;
   onClick: () => void;
 }
 
@@ -39,9 +41,17 @@ const style = `
     color: var(--accent);
     text-decoration: underline;
   }
+  .llm-current-selection .pricing {
+    opacity: 0.6;
+  }
 `;
 
-export function CurrentSelection({ providerName, modelId, onClick }: CurrentSelectionProps) {
+export function CurrentSelection({ providerName, model, onClick }: CurrentSelectionProps) {
+  const modelId = model?.id;
+  const pricing = model?.pricing;
+  const isFree = pricing && pricing.input === 0 && pricing.output === 0;
+  const hasPricing = pricing && (pricing.input > 0 || pricing.output > 0);
+
   return (
     <>
       <style>{style}</style>
@@ -60,6 +70,17 @@ export function CurrentSelection({ providerName, modelId, onClick }: CurrentSele
       >
         <span class="provider">{providerName}</span>
         {modelId && <span> · {modelId}</span>}
+        {isFree && (
+          <span class="pricing"> · Free</span>
+        )}
+        {!isFree && hasPricing && (
+          <span class="pricing">
+            {" "}· ${pricing.input.toFixed(2)} / ${pricing.output.toFixed(2)}
+          </span>
+        )}
+        {!pricing && modelId && (
+          <span class="pricing"> · No pricing</span>
+        )}
         <span class="change">change</span>
       </div>
     </>

@@ -531,4 +531,31 @@ describe("RacePanel", () => {
       expect(container.querySelector(".race-baseurl-dialog")).toBeNull();
     });
   });
+
+  it("calls runRace with pricing information", async () => {
+    const { loadModels } = await import("../../src/lib/modelRegistry");
+    vi.mocked(loadModels).mockResolvedValue([
+      { id: "gpt-4o", label: "GPT-4o", contextWindow: 128000, pricing: { input: 1, output: 2 } },
+    ]);
+
+    const { container } = render(<RacePanel soundEnabled={true} />);
+
+    await waitFor(() => {
+      expect(container.querySelectorAll(".race-config-model option").length).toBeGreaterThan(0);
+    });
+
+    const input = container.querySelector(".race-prompt-input") as HTMLInputElement;
+    fireEvent.input(input, { target: { value: "race!" } });
+
+    await waitFor(() => {
+      const btn = container.querySelector(".race-btn-start") as HTMLButtonElement;
+      if (btn && !btn.disabled) fireEvent.click(btn);
+    });
+
+    await waitFor(() => {
+      expect(mockRunRace).toHaveBeenCalled();
+      const raceConfigs = mockRunRace.mock.calls[0][0];
+      expect(raceConfigs[0].pricing).toEqual({ input: 1, output: 2 });
+    });
+  });
 });

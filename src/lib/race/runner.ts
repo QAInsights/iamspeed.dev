@@ -46,6 +46,7 @@ function makeInitialLaneState(config: RaceConfig): LaneState {
     text: "",
     providerQueued: false,
     finishRank: null,
+    pricing: config.pricing,
   };
 }
 
@@ -62,6 +63,7 @@ function toResult(lane: LaneState): RaceResult {
     inputTokens: lane.inputTokens,
     outputTokens: lane.outputTokens,
     error: lane.error,
+    pricing: lane.pricing,
   };
 }
 

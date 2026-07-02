@@ -14,6 +14,10 @@ export interface RaceConfig {
   apiKey: string;
   /** Only used for the `local` provider. */
   baseUrl?: string;
+  pricing?: {
+    input: number;
+    output: number;
+  };
 }
 
 /** Live state for one lane, surfaced to the UI on every update. */
@@ -42,6 +46,10 @@ export interface LaneState {
   finishRank: number | null;
   /** Present when status === "error". */
   error?: string;
+  pricing?: {
+    input: number;
+    output: number;
+  };
 }
 
 export type LaneStatus = "idle" | "running" | "done" | "error";
@@ -59,6 +67,10 @@ export interface RaceResult {
   inputTokens: number | null;
   outputTokens: number | null;
   error?: string;
+  pricing?: {
+    input: number;
+    output: number;
+  };
 }
 
 /** Callbacks the runner emits. UI wires these to setState. */

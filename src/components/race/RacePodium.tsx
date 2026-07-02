@@ -21,6 +21,7 @@ function buildRaceShareText(
   providerNames: Record<string, string>,
   laneIndexById: Record<string, number>,
   fastestStart: RaceResult | null,
+  cheapest: RaceResult | null,
 ): string {
   const lines = ranked
     .filter((r) => r.tokenCount > 0)
@@ -39,6 +40,14 @@ function buildRaceShareText(
     const name = providerNames[fastestStart.laneId] ?? fastestStart.providerId;
     extras.push(`⚡ Fastest Start: ${color.label} (${name}): ${Math.round(fastestStart.ttft!)}ms TTFT`);
   }
+  if (cheapest) {
+    const color = LANE_COLORS[laneIndexById[cheapest.laneId] ?? 0] ?? LANE_COLORS[0];
+    const name = providerNames[cheapest.laneId] ?? cheapest.providerId;
+    const cost =
+      (cheapest.inputTokens! / 1_000_000) * cheapest.pricing!.input +
+      (cheapest.outputTokens! / 1_000_000) * cheapest.pricing!.output;
+    extras.push(`💰 Cheapest: ${color.label} (${name}): $${cost.toFixed(5)}`);
+  }
   return `🏁 Piston Cup results on iamspeed.dev\n\n${lines.join("\n")}${extras.length ? "\n" + extras.join("\n") : ""}\n\n${SITE_URL}`;
 }
 
@@ -52,20 +61,44 @@ function pickFastestStart(results: RaceResult[]): RaceResult | null {
   return candidates.reduce((best, r) => (r.ttft! < best.ttft! ? r : best));
 }
 
+function pickCheapest(results: RaceResult[]): RaceResult | null {
+  const candidates = results.filter(
+    (r) =>
+      r.tokenCount > 0 &&
+      r.pricing &&
+      r.inputTokens !== null &&
+      r.outputTokens !== null
+  );
+  if (candidates.length === 0) return null;
+
+  const resultsWithCost = candidates.map((r) => {
+    const inputCost = (r.inputTokens! / 1_000_000) * r.pricing!.input;
+    const outputCost = (r.outputTokens! / 1_000_000) * r.pricing!.output;
+    return { ...r, totalCost: inputCost + outputCost };
+  });
+
+  return resultsWithCost.reduce((best, r) => (r.totalCost < best.totalCost ? r : best));
+}
+
 export function RacePodium({ results, providerNames, laneIndexById }: RacePodiumProps) {
   const ranked = rankResults(results);
   const fastestStart = pickFastestStart(results);
-  const shareText = buildRaceShareText(ranked, providerNames, laneIndexById, fastestStart);
+  const cheapest = pickCheapest(results);
+  const shareText = buildRaceShareText(ranked, providerNames, laneIndexById, fastestStart, cheapest);
 
   const fastestColor = fastestStart
     ? LANE_COLORS[laneIndexById[fastestStart.laneId] ?? 0] ?? LANE_COLORS[0]
+    : null;
+
+  const cheapestColor = cheapest
+    ? LANE_COLORS[laneIndexById[cheapest.laneId] ?? 0] ?? LANE_COLORS[0]
     : null;
 
   return (
     <div class="race-podium" role="group" aria-label="Race results">
       <div class="race-podium-title-row">
         <div class="race-podium-title">Piston Cup Results</div>
-        <Tooltip label="Winner = first to finish (TTLT, time-to-last-token). Tiebreaker: tokens/sec. Fastest Start award = lowest TTFT. TTLT captures the full end-to-end wait; TPS alone rewards short answers and ignores first-token latency.">
+        <Tooltip label="Winner = first to finish (TTLT, time-to-last-token). Tiebreaker: tokens/sec. Fastest Start award = lowest TTFT. Cheapest award = lowest total request cost.">
           <span class="race-podium-info-toggle" aria-label="How is the winner decided?">?</span>
         </Tooltip>
       </div>
@@ -79,6 +112,19 @@ export function RacePodium({ results, providerNames, laneIndexById }: RacePodium
         </div>
       )}
 
+      {cheapest && cheapestColor && (
+        <div class="race-podium-award" style={`--lane-color: ${cheapestColor.hex};`}>
+          <span class="race-podium-award-icon" aria-hidden="true">💰</span>
+          <span class="race-podium-award-label">Cheapest</span>
+          <span class="race-podium-award-name">{cheapestColor.label}</span>
+          <span class="race-podium-award-value">
+            $
+            {((cheapest.inputTokens! / 1_000_000) * cheapest.pricing!.input +
+              (cheapest.outputTokens! / 1_000_000) * cheapest.pricing!.output).toFixed(5)}
+          </span>
+        </div>
+      )}
+
       <ol class="race-podium-list">
         {ranked.map((r, i) => {
           const colorIdx = laneIndexById[r.laneId] ?? 0;
@@ -86,10 +132,11 @@ export function RacePodium({ results, providerNames, laneIndexById }: RacePodium
           const medal = MEDALS[i] ?? `${i + 1}.`;
           const raced = r.tokenCount > 0;
           const isFastestStart = fastestStart?.laneId === r.laneId;
+          const isCheapest = cheapest?.laneId === r.laneId;
           return (
             <li
               key={r.laneId}
-              class={`race-podium-row${raced ? "" : " race-podium-row--dnf"}${isFastestStart ? " race-podium-row--fastest-start" : ""}`}
+              class={`race-podium-row${raced ? "" : " race-podium-row--dnf"}${isFastestStart ? " race-podium-row--fastest-start" : ""}${isCheapest ? " race-podium-row--cheapest" : ""}`}
               style={`--lane-color: ${color.hex};`}
             >
               <span class="race-podium-medal" aria-hidden="true">{medal}</span>
@@ -105,6 +152,9 @@ export function RacePodium({ results, providerNames, laneIndexById }: RacePodium
               </span>
               {isFastestStart && (
                 <span class="race-podium-row-badge" aria-label="Fastest start">⚡</span>
+              )}
+              {isCheapest && (
+                <span class="race-podium-row-badge" aria-label="Cheapest">💰</span>
               )}
               {!raced && r.error && (
                 <span class="race-podium-error">{r.error}</span>

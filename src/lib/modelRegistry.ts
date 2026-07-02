@@ -5,6 +5,10 @@ export interface ModelEntry {
   id: string;
   label: string;
   contextWindow: number;
+  pricing?: {
+    input: number;
+    output: number;
+  };
 }
 
 const CACHE_KEY = "iamspeed_models_cache_v3"; // bumped for api.json + xai support
@@ -14,39 +18,39 @@ const MODELS_URL = "https://models.dev/api.json";
 // Hardcoded fallback models — ONLY used when models.dev fetch fails or returns nothing usable.
 const FALLBACK_MODELS: Record<string, ModelEntry[]> = {
   openai: [
-    { id: "gpt-4o", label: "GPT-4o", contextWindow: 128000 },
-    { id: "gpt-4o-mini", label: "GPT-4o Mini", contextWindow: 128000 },
-    { id: "gpt-4-turbo", label: "GPT-4 Turbo", contextWindow: 128000 },
-    { id: "gpt-3.5-turbo", label: "GPT-3.5 Turbo", contextWindow: 16385 },
+    { id: "gpt-4o", label: "GPT-4o", contextWindow: 128000, pricing: { input: 2.50, output: 10.00 } },
+    { id: "gpt-4o-mini", label: "GPT-4o Mini", contextWindow: 128000, pricing: { input: 0.15, output: 0.60 } },
+    { id: "gpt-4-turbo", label: "GPT-4 Turbo", contextWindow: 128000, pricing: { input: 10.00, output: 30.00 } },
+    { id: "gpt-3.5-turbo", label: "GPT-3.5 Turbo", contextWindow: 16385, pricing: { input: 0.50, output: 1.50 } },
   ],
   anthropic: [
-    { id: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet", contextWindow: 200000 },
-    { id: "claude-3-5-haiku-20241022", label: "Claude 3.5 Haiku", contextWindow: 200000 },
-    { id: "claude-3-opus-20240229", label: "Claude 3 Opus", contextWindow: 200000 },
-    { id: "claude-3-sonnet-20240229", label: "Claude 3 Sonnet", contextWindow: 200000 },
-    { id: "claude-3-haiku-20240307", label: "Claude 3 Haiku", contextWindow: 200000 },
+    { id: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet", contextWindow: 200000, pricing: { input: 3.00, output: 15.00 } },
+    { id: "claude-3-5-haiku-20241022", label: "Claude 3.5 Haiku", contextWindow: 200000, pricing: { input: 0.80, output: 4.00 } },
+    { id: "claude-3-opus-20240229", label: "Claude 3 Opus", contextWindow: 200000, pricing: { input: 15.00, output: 75.00 } },
+    { id: "claude-3-sonnet-20240229", label: "Claude 3 Sonnet", contextWindow: 200000, pricing: { input: 3.00, output: 15.00 } },
+    { id: "claude-3-haiku-20240307", label: "Claude 3 Haiku", contextWindow: 200000, pricing: { input: 0.25, output: 1.25 } },
   ],
   groq: [
-    { id: "llama-3.3-70b-versatile", label: "Llama 3.3 70B", contextWindow: 128000 },
-    { id: "llama-3.1-8b-instant", label: "Llama 3.1 8B Instant", contextWindow: 128000 },
-    { id: "gemma2-9b-it", label: "Gemma 2 9B", contextWindow: 8192 },
+    { id: "llama-3.3-70b-versatile", label: "Llama 3.3 70B", contextWindow: 128000, pricing: { input: 0.59, output: 0.79 } },
+    { id: "llama-3.1-8b-instant", label: "Llama 3.1 8B Instant", contextWindow: 128000, pricing: { input: 0.05, output: 0.08 } },
+    { id: "gemma2-9b-it", label: "Gemma 2 9B", contextWindow: 8192, pricing: { input: 0.20, output: 0.20 } },
   ],
   openrouter: [
-    { id: "openai/gpt-4o", label: "GPT-4o (via OpenRouter)", contextWindow: 128000 },
-    { id: "anthropic/claude-3.5-sonnet", label: "Claude 3.5 Sonnet (via OpenRouter)", contextWindow: 200000 },
-    { id: "google/gemini-flash-1.5", label: "Gemini Flash 1.5 (via OpenRouter)", contextWindow: 1000000 },
-    { id: "meta-llama/llama-3.3-70b-instruct", label: "Llama 3.3 70B (via OpenRouter)", contextWindow: 128000 },
+    { id: "openai/gpt-4o", label: "GPT-4o (via OpenRouter)", contextWindow: 128000, pricing: { input: 2.50, output: 10.00 } },
+    { id: "anthropic/claude-3.5-sonnet", label: "Claude 3.5 Sonnet (via OpenRouter)", contextWindow: 200000, pricing: { input: 3.00, output: 15.00 } },
+    { id: "google/gemini-flash-1.5", label: "Gemini Flash 1.5 (via OpenRouter)", contextWindow: 1000000, pricing: { input: 0.075, output: 0.30 } },
+    { id: "meta-llama/llama-3.3-70b-instruct", label: "Llama 3.3 70B (via OpenRouter)", contextWindow: 128000, pricing: { input: 0.12, output: 0.40 } },
   ],
   xai: [
-    { id: "grok-4.3", label: "Grok 4.3", contextWindow: 1000000 },
-    { id: "grok-build-0.1", label: "Grok Build 0.1", contextWindow: 256000 },
-    { id: "grok-4.20-0309-reasoning", label: "Grok 4.20 (Reasoning)", contextWindow: 1000000 },
+    { id: "grok-4.3", label: "Grok 4.3", contextWindow: 1000000, pricing: { input: 2.00, output: 10.00 } },
+    { id: "grok-build-0.1", label: "Grok Build 0.1", contextWindow: 256000, pricing: { input: 2.00, output: 10.00 } },
+    { id: "grok-4.20-0309-reasoning", label: "Grok 4.20 (Reasoning)", contextWindow: 1000000, pricing: { input: 2.00, output: 10.00 } },
   ],
   zai: [
-    { id: "glm-5.2", label: "GLM-5.2", contextWindow: 1000000 },
-    { id: "glm-5.1", label: "GLM-5.1", contextWindow: 200000 },
-    { id: "glm-4.7-flash", label: "GLM-4.7 Flash", contextWindow: 200000 },
-    { id: "glm-4.6", label: "GLM-4.6", contextWindow: 204800 },
+    { id: "glm-5.2", label: "GLM-5.2", contextWindow: 1000000, pricing: { input: 1.00, output: 2.00 } },
+    { id: "glm-5.1", label: "GLM-5.1", contextWindow: 200000, pricing: { input: 1.00, output: 2.00 } },
+    { id: "glm-4.7-flash", label: "GLM-4.7 Flash", contextWindow: 200000, pricing: { input: 0.10, output: 0.10 } },
+    { id: "glm-4.6", label: "GLM-4.6", contextWindow: 204800, pricing: { input: 1.00, output: 2.00 } },
   ],
 };
 
@@ -60,6 +64,10 @@ interface ModelsDevEntry {
   name: string;
   limit?: {
     context?: number;
+    output?: number;
+  };
+  cost?: {
+    input?: number;
     output?: number;
   };
 }
@@ -109,6 +117,7 @@ function getModelsForProvider(catalog: Record<string, ModelsDevEntry>, providerI
         id: entry.id || key.split('/').pop() || key,
         label: entry.name || key,
         contextWindow: entry.limit?.context || 0,
+        pricing: entry.cost ? { input: entry.cost.input || 0, output: entry.cost.output || 0 } : undefined,
       });
     }
   }
@@ -150,7 +159,15 @@ export async function loadModels(providerId: string, apiKey?: string): Promise<M
         data: catalog,
         timestamp: Date.now(),
       };
-      localStorage.setItem(CACHE_KEY, JSON.stringify(cacheEntry));
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cacheEntry));
+      } catch (e) {
+        if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+          console.warn('Failed to cache models due to storage quota. The app will continue to work but may be slower.');
+        } else {
+          throw e; // re-throw other errors
+        }
+      }
     } catch (error) {
       console.warn("Failed to fetch models from models.dev:", error);
       // catalog stays null — provider-endpoint fallback below may still work

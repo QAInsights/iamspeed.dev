@@ -6,7 +6,7 @@ import { SettingsPanel, type SettingsState } from "./SettingsPanel";
 import { StreamOutput } from "./StreamOutput";
 import { RawResponsePanel } from "./RawResponsePanel";
 import { DEFAULT_PROMPT, PROVIDERS, LOCAL_PROVIDER_ID } from "../lib/config";
-import { loadModels, discoverLocalModels } from "../lib/modelRegistry";
+import { loadModels, discoverLocalModels, type ModelEntry } from "../lib/modelRegistry";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { WeatherBackground } from "./WeatherBackground";
 import { RecentRuns } from "./RecentRuns";
@@ -39,9 +39,10 @@ function BenchmarkPanelContent({ turnstileSiteKey }: { turnstileSiteKey?: string
     providerId: prefs.providerId || "openai",
     modelId: prefs.modelId || "",
     prompt: prefs.prompt || DEFAULT_PROMPT,
-    apiKey: null,
+    apiKey: prefs.apiKey || null,
     baseUrl: prefs.baseUrl,
   });
+  const [models, setModels] = useState<ModelEntry[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [runState, setRunState] = useState<RunState>("idle");
   const [theme, setTheme] = useState<"light" | "dark">(() => {
@@ -141,11 +142,12 @@ function BenchmarkPanelContent({ turnstileSiteKey }: { turnstileSiteKey?: string
       ? discoverLocalModels(settings.baseUrl)
       : loadModels(settings.providerId, settings.apiKey || undefined);
 
-    loader.then((models) => {
-      if (models.length > 0) {
-        const isValid = settings.modelId && models.some((m) => m.id === settings.modelId);
+    loader.then((loadedModels) => {
+      setModels(loadedModels);
+      if (loadedModels.length > 0) {
+        const isValid = settings.modelId && loadedModels.some((m) => m.id === settings.modelId);
         if (!isValid) {
-          setSettings((prev) => ({ ...prev, modelId: models[0].id }));
+          setSettings((prev) => ({ ...prev, modelId: loadedModels[0].id }));
         }
       }
     });
@@ -323,6 +325,8 @@ function BenchmarkPanelContent({ turnstileSiteKey }: { turnstileSiteKey?: string
     setRunState("done");
   }, [settings.modelId, settings.providerId]);
 
+  const selectedModel = models.find((m) => m.id === settings.modelId);
+
   const heroText = displayTps !== null ? String(displayTps) : "--";
   const sparklineData = recentRuns
     .filter((r) => r.tokensPerSecond !== null)
@@ -366,7 +370,8 @@ function BenchmarkPanelContent({ turnstileSiteKey }: { turnstileSiteKey?: string
                   inputTokens={inputTokens}
                   outputTokens={outputTokens}
                   totalTime={totalTime}
-                  modelId={settings.modelId}
+                  model={selectedModel}
+                  tps={displayTps}
                 />
               )}
 
@@ -406,7 +411,7 @@ function BenchmarkPanelContent({ turnstileSiteKey }: { turnstileSiteKey?: string
               {settings.providerId && (
                 <CurrentSelection
                   providerName={PROVIDERS[settings.providerId]?.displayName || settings.providerId}
-                  modelId={settings.modelId || undefined}
+                  model={selectedModel}
                   onClick={handleOpenSettings}
                 />
               )}

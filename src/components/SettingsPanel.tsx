@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { useState, useEffect, useRef } from "preact/hooks";
 import { saveKey, loadKey, clearKey, hasStoredKey } from "../lib/crypto";
-import { loadModels, discoverLocalModels, type ModelEntry } from "../lib/modelRegistry";
+import { loadModels, discoverLocalModels, clearModelCache, type ModelEntry } from "../lib/modelRegistry";
 import { LOCAL_PROVIDER_ID, DEFAULT_LOCAL_BASE_URL, PROVIDERS } from "../lib/config";
 import { ProviderSelect } from "./ProviderSelect";
 import { ApiKeyField } from "./ApiKeyField";
@@ -498,6 +498,17 @@ export function SettingsPanel({ open, onClose, settings, onSettingsChange }: Set
               </>
             )}
           </p>
+
+          <button
+            class="llm-action-btn"
+            style={{ marginTop: "1rem" }}
+            onClick={() => {
+              clearModelCache();
+              window.location.reload();
+            }}
+          >
+            Clear Model Cache & Reload
+          </button>
 
           <button class="llm-settings-done" onClick={onClose}>Done</button>
         </div>

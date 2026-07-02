@@ -2,11 +2,14 @@
 
 import { Tooltip } from "./Tooltip";
 
+import { type ModelEntry } from "../lib/modelRegistry";
+
 interface SecondaryMetricsProps {
   inputTokens: number | null;
   outputTokens: number | null;
   totalTime: number | null;
-  modelId: string;
+  model: ModelEntry | undefined;
+  tps: number | null;
 }
 
 const style = `
@@ -33,7 +36,14 @@ const style = `
   }
 `;
 
-export function SecondaryMetrics({ inputTokens, outputTokens, totalTime, modelId }: SecondaryMetricsProps) {
+export function SecondaryMetrics({ inputTokens, outputTokens, totalTime, model, tps }: SecondaryMetricsProps) {
+  const valueScore =
+    tps && model?.pricing
+      ? model.pricing.output === 0
+        ? "∞"
+        : Math.round(tps / (model.pricing.output / 1_000_000)).toLocaleString()
+      : null;
+
   return (
     <>
       <style>{style}</style>
@@ -52,8 +62,16 @@ export function SecondaryMetrics({ inputTokens, outputTokens, totalTime, modelId
             <div class="llm-sec-label">TTLT</div>
           </Tooltip>
         </div>
+        {valueScore !== null && (
+          <div class="llm-sec-item">
+            <div class="llm-sec-value">{valueScore}</div>
+            <Tooltip label="Tokens per second per dollar of output, a measure of value.">
+              <div class="llm-sec-label">TPS/$</div>
+            </Tooltip>
+          </div>
+        )}
         <div class="llm-sec-item">
-          <div class="llm-sec-value">{modelId}</div>
+          <div class="llm-sec-value">{model?.id || "--"}</div>
           <div class="llm-sec-label">Model</div>
         </div>
       </div>

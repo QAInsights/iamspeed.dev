@@ -17,6 +17,7 @@ function result(overrides: Partial<RaceResult> & { laneId: string }): RaceResult
     inputTokens: overrides.inputTokens ?? null,
     outputTokens: overrides.outputTokens ?? null,
     error: overrides.error,
+    pricing: overrides.pricing,
   };
 }
 
@@ -222,5 +223,79 @@ describe("RacePodium", () => {
     expect(award.textContent).toContain("Fastest Start");
     expect(award.textContent).toContain("Sally");
     expect(award.textContent).toContain("300ms TTFT");
+  });
+
+  it("renders Cheapest award for the lane with lowest total cost", () => {
+    const results = [
+      result({
+        laneId: "lane-1",
+        finishRank: 1,
+        tps: 100,
+        ttft: 800,
+        tokenCount: 50,
+        inputTokens: 10,
+        outputTokens: 40,
+        pricing: { input: 1, output: 2 }, // cost = (10/1M)*1 + (40/1M)*2 = 90/1M
+      }),
+      result({
+        laneId: "lane-2",
+        finishRank: 2,
+        tps: 120,
+        ttft: 300,
+        tokenCount: 40,
+        inputTokens: 10,
+        outputTokens: 30,
+        pricing: { input: 0.5, output: 1 }, // cost = (10/1M)*0.5 + (30/1M)*1 = 35/1M
+      }),
+    ];
+    const { container } = render(
+      <RacePodium
+        results={results}
+        providerNames={{ "lane-1": "OpenAI", "lane-2": "Anthropic" }}
+        laneIndexById={{ "lane-1": 0, "lane-2": 1 }}
+      />,
+    );
+    const awards = container.querySelectorAll(".race-podium-award");
+    const cheapestAward = Array.from(awards).find((a) => a.textContent?.includes("Cheapest"));
+    expect(cheapestAward).toBeDefined();
+    expect(cheapestAward!.querySelector(".race-podium-award-name")!.textContent).toBe("Sally");
+    expect(cheapestAward!.querySelector(".race-podium-award-value")!.textContent?.trim()).toBe("$0.00004");
+  });
+
+  it("renders Cheapest award when a lane is completely free", () => {
+    const results = [
+      result({
+        laneId: "lane-1",
+        finishRank: 1,
+        tps: 100,
+        ttft: 800,
+        tokenCount: 50,
+        inputTokens: 10,
+        outputTokens: 40,
+        pricing: { input: 1, output: 2 },
+      }),
+      result({
+        laneId: "lane-2",
+        finishRank: 2,
+        tps: 120,
+        ttft: 300,
+        tokenCount: 40,
+        inputTokens: 10,
+        outputTokens: 30,
+        pricing: { input: 0, output: 0 },
+      }),
+    ];
+    const { container } = render(
+      <RacePodium
+        results={results}
+        providerNames={{ "lane-1": "OpenAI", "lane-2": "Anthropic" }}
+        laneIndexById={{ "lane-1": 0, "lane-2": 1 }}
+      />,
+    );
+    const awards = container.querySelectorAll(".race-podium-award");
+    const cheapestAward = Array.from(awards).find((a) => a.textContent?.includes("Cheapest"));
+    expect(cheapestAward).toBeDefined();
+    expect(cheapestAward!.querySelector(".race-podium-award-name")!.textContent).toBe("Sally");
+    expect(cheapestAward!.querySelector(".race-podium-award-value")!.textContent?.trim()).toBe("$0.00000");
   });
 });

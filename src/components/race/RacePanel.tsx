@@ -180,12 +180,14 @@ export function RacePanel({ soundEnabled, showFooter = true }: RacePanelProps) {
       const isLocal = c.providerId === LOCAL_PROVIDER_ID;
       const apiKey = isLocal ? "" : await loadKey(c.providerId) ?? "";
       if (!isLocal && !apiKey) return; // missing key — abort start
+      const model = c.models.find((m) => m.id === c.modelId);
       raceConfigs.push({
         laneId: c.laneId,
         providerId: c.providerId,
         modelId: c.modelId,
         apiKey,
         baseUrl: c.baseUrl,
+        pricing: model?.pricing,
       });
     }
 

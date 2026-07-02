@@ -85,10 +85,10 @@ describe('BenchmarkPanel - Local support (integration)', () => {
 
   it('renders Disney/Pixar trademark disclaimer in the site footer', () => {
     const { container } = render(<BenchmarkPanel />);
-    const disclaimer = container.querySelector('.llm-footer-disclaimer')!;
-    expect(disclaimer.textContent).toContain('Disney/Pixar');
-    expect(disclaimer.textContent).toContain('unofficial fan project');
-    expect(disclaimer.textContent).toContain('not affiliated with or endorsed by Disney');
+    const disclaimer = container.querySelector('.llm-footer-tooltip')!;
+    expect(disclaimer.getAttribute('title')).toContain('Disney/Pixar');
+    expect(disclaimer.getAttribute('title')).toContain('unofficial fan project');
+    expect(disclaimer.getAttribute('title')).toContain('not affiliated with or endorsed by Disney');
   });
 
   it('opens settings panel when gear is clicked in race mode', async () => {
